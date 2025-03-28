@@ -93,6 +93,15 @@ export default function HomePage() {
             <ShareButton />
             <ScreenshotGenerator rates={rates} />
           </div>
+
+          {/* B2B Utility Tools */}
+          <div className="mt-6">
+            <h2 className="text-xl font-semibold text-amber-800 mb-4">Business Tools</h2>
+            <div className="grid md:grid-cols-2 gap-4">
+              <MarginCalculator />
+              <StockCalculator />
+            </div>
+          </div>
           
           {/* Featured Collections */}
           <FeaturedCollections />

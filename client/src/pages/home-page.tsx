@@ -7,6 +7,7 @@ import { ShareButton } from "@/components/ui/share-button";
 import { BottomNavigation } from "@/components/layout/bottom-navigation";
 import { AdminTrigger } from "@/components/admin/admin-trigger";
 import { ScreenshotGenerator } from "@/components/screenshot/screenshot-generator";
+import { FeaturedCollections } from "@/components/layout/featured-collections";
 
 export default function HomePage() {
   // Use try/catch to handle potential auth context errors
@@ -70,6 +71,9 @@ export default function HomePage() {
             <ShareButton />
             <ScreenshotGenerator rates={rates} />
           </div>
+          
+          {/* Featured Collections */}
+          <FeaturedCollections />
           
           <div className="mt-3 text-2xs text-gray-500 px-1">
             <p className="text-center">

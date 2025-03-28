@@ -17,6 +17,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { CollectionManager } from "@/components/admin/collection-manager";
 
 const rateSchema = z.object({
   type: z.string(),
@@ -133,121 +134,141 @@ export default function AdminPage() {
             </div>
           </div>
           
-          <Card className="shadow">
-            <CardHeader className="bg-gradient-to-r from-amber-50 to-yellow-50 border-b">
-              <CardTitle className="text-amber-800">Rate Management</CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <Tabs defaultValue="gold" className="w-full" onValueChange={setActiveTab}>
-                <TabsList className="grid w-full grid-cols-2 rounded-none">
-                  <TabsTrigger value="gold" className="data-[state=active]:bg-amber-100">Gold Rates</TabsTrigger>
-                  <TabsTrigger value="silver" className="data-[state=active]:bg-gray-200">Silver Rates</TabsTrigger>
-                </TabsList>
-                
-                <div className="p-4">
-                  <div className="mb-4">
-                    <h3 className="text-sm font-medium mb-2">Select rate to update:</h3>
-                    <div className="grid grid-cols-2 gap-2">
-                      {rates
-                        .filter(rate => rate.category === activeTab)
-                        .map(rate => (
-                          <Button 
-                            key={rate.id} 
-                            variant={selectedRate?.id === rate.id ? "default" : "outline"}
-                            size="sm"
-                            className={selectedRate?.id === rate.id ? "border-2 border-amber-500" : ""}
-                            onClick={() => handleSelectRate(rate)}
-                          >
-                            {rate.type}
-                          </Button>
-                        ))
-                      }
+          <Tabs defaultValue="rates" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 rounded-md mb-4">
+              <TabsTrigger value="rates" className="data-[state=active]:bg-amber-100">Rate Management</TabsTrigger>
+              <TabsTrigger value="collections" className="data-[state=active]:bg-amber-100">Collections</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="rates">
+              <Card className="shadow">
+                <CardHeader className="bg-gradient-to-r from-amber-50 to-yellow-50 border-b">
+                  <CardTitle className="text-amber-800">Rate Management</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <Tabs defaultValue="gold" className="w-full" onValueChange={setActiveTab}>
+                    <TabsList className="grid w-full grid-cols-2 rounded-none">
+                      <TabsTrigger value="gold" className="data-[state=active]:bg-amber-100">Gold Rates</TabsTrigger>
+                      <TabsTrigger value="silver" className="data-[state=active]:bg-gray-200">Silver Rates</TabsTrigger>
+                    </TabsList>
+                    
+                    <div className="p-4">
+                      <div className="mb-4">
+                        <h3 className="text-sm font-medium mb-2">Select rate to update:</h3>
+                        <div className="grid grid-cols-2 gap-2">
+                          {rates
+                            .filter(rate => rate.category === activeTab)
+                            .map(rate => (
+                              <Button 
+                                key={rate.id} 
+                                variant={selectedRate?.id === rate.id ? "default" : "outline"}
+                                size="sm"
+                                className={selectedRate?.id === rate.id ? "border-2 border-amber-500" : ""}
+                                onClick={() => handleSelectRate(rate)}
+                              >
+                                {rate.type}
+                              </Button>
+                            ))
+                          }
+                        </div>
+                      </div>
+                      
+                      {selectedRate && (
+                        <Form {...form}>
+                          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                            <FormField
+                              control={form.control}
+                              name="type"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Rate Type</FormLabel>
+                                  <FormControl>
+                                    <Input {...field} placeholder="Enter rate type" />
+                                  </FormControl>
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={form.control}
+                              name="current"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Current Rate (₹)</FormLabel>
+                                  <FormControl>
+                                    <Input {...field} type="number" placeholder="Enter current rate" />
+                                  </FormControl>
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <div className="grid grid-cols-2 gap-4">
+                              <FormField
+                                control={form.control}
+                                name="high"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>High (₹)</FormLabel>
+                                    <FormControl>
+                                      <Input {...field} type="number" placeholder="High rate" />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                              
+                              <FormField
+                                control={form.control}
+                                name="low"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Low (₹)</FormLabel>
+                                    <FormControl>
+                                      <Input {...field} type="number" placeholder="Low rate" />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                            
+                            <div className="flex justify-end">
+                              <Button 
+                                type="submit" 
+                                className="bg-amber-600 hover:bg-amber-700 text-white" 
+                                disabled={updateRateMutation.isPending}
+                              >
+                                {updateRateMutation.isPending ? (
+                                  <>
+                                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                    Updating...
+                                  </>
+                                ) : (
+                                  <>
+                                    <Save className="h-4 w-4 mr-2" />
+                                    Update Rate
+                                  </>
+                                )}
+                              </Button>
+                            </div>
+                          </form>
+                        </Form>
+                      )}
                     </div>
-                  </div>
-                  
-                  {selectedRate && (
-                    <Form {...form}>
-                      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                        <FormField
-                          control={form.control}
-                          name="type"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Rate Type</FormLabel>
-                              <FormControl>
-                                <Input {...field} placeholder="Enter rate type" />
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="current"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Current Rate (₹)</FormLabel>
-                              <FormControl>
-                                <Input {...field} type="number" placeholder="Enter current rate" />
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <div className="grid grid-cols-2 gap-4">
-                          <FormField
-                            control={form.control}
-                            name="high"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>High (₹)</FormLabel>
-                                <FormControl>
-                                  <Input {...field} type="number" placeholder="High rate" />
-                                </FormControl>
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <FormField
-                            control={form.control}
-                            name="low"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Low (₹)</FormLabel>
-                                <FormControl>
-                                  <Input {...field} type="number" placeholder="Low rate" />
-                                </FormControl>
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                        
-                        <div className="flex justify-end">
-                          <Button 
-                            type="submit" 
-                            className="bg-amber-600 hover:bg-amber-700 text-white" 
-                            disabled={updateRateMutation.isPending}
-                          >
-                            {updateRateMutation.isPending ? (
-                              <>
-                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                                Updating...
-                              </>
-                            ) : (
-                              <>
-                                <Save className="h-4 w-4 mr-2" />
-                                Update Rate
-                              </>
-                            )}
-                          </Button>
-                        </div>
-                      </form>
-                    </Form>
-                  )}
-                </div>
-              </Tabs>
-            </CardContent>
-          </Card>
+                  </Tabs>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="collections">
+              <Card className="shadow">
+                <CardHeader className="bg-gradient-to-r from-amber-50 to-yellow-50 border-b">
+                  <CardTitle className="text-amber-800">Collection Management</CardTitle>
+                </CardHeader>
+                <CardContent className="p-4">
+                  <CollectionManager />
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </div>
       </main>
       

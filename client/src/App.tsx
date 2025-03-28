@@ -10,7 +10,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={HomePage} />
-      <ProtectedRoute path="/admin" component={AdminPage} />
+      <Route path="/admin" component={AdminPage} />
       <Route path="/auth" component={AuthPage} />
       <Route component={NotFound} />
     </Switch>

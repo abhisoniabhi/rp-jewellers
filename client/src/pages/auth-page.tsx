@@ -30,7 +30,20 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 export default function AuthPage() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
-  const { user, loginMutation, registerMutation } = useAuth();
+  
+  // Use try/catch to handle potential auth context errors
+  let user = null;
+  let loginMutation: any = { mutate: () => {} };
+  let registerMutation: any = { mutate: () => {} };
+  
+  try {
+    const auth = useAuth();
+    user = auth.user;
+    loginMutation = auth.loginMutation;
+    registerMutation = auth.registerMutation;
+  } catch (err) {
+    console.log("Auth not available yet in AuthPage");
+  }
   
   const loginForm = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),

@@ -8,6 +8,9 @@ import { BottomNavigation } from "@/components/layout/bottom-navigation";
 import { AdminTrigger } from "@/components/admin/admin-trigger";
 import { ScreenshotGenerator } from "@/components/screenshot/screenshot-generator";
 import { FeaturedCollections } from "@/components/layout/featured-collections";
+import { useEffect } from "react";
+import { eventBus, EVENTS } from "@/lib/events";
+import { queryClient } from "@/lib/queryClient";
 
 export default function HomePage() {
   // Use try/catch to handle potential auth context errors
@@ -22,6 +25,21 @@ export default function HomePage() {
   const { data: rates, isLoading, error } = useQuery<RateInfo[]>({
     queryKey: ["/api/rates"],
   });
+  
+  // Set up real-time event listener for rate updates
+  useEffect(() => {
+    // Subscribe to rate update events
+    const unsubscribe = eventBus.subscribe(EVENTS.RATES_UPDATED, () => {
+      console.log("Received rate update event on home page");
+      // Refetch rates data when a rate update event is received
+      queryClient.invalidateQueries({ queryKey: ["/api/rates"] });
+    });
+    
+    // Cleanup subscription when component unmounts
+    return () => {
+      unsubscribe();
+    };
+  }, []);
 
   if (isLoading) {
     return (

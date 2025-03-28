@@ -18,6 +18,7 @@ import { z } from "zod";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { CollectionManager } from "@/components/admin/collection-manager";
+import { eventBus, EVENTS } from "@/lib/events";
 
 const rateSchema = z.object({
   type: z.string(),
@@ -86,6 +87,10 @@ export default function AdminPage() {
       
       // Force a hard refresh of rates data
       queryClient.invalidateQueries({ queryKey: ["/api/rates"] });
+      
+      // Emit event to update rates in real-time across the app
+      eventBus.publish(EVENTS.RATES_UPDATED);
+      console.log("Published rate update event");
       
       // Don't reset form - allow user to see the updated values
       // Instead, update the selected rate with new data

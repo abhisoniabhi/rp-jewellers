@@ -209,12 +209,24 @@ export class MemStorage implements IStorage {
         name: "Diamond Jewelry",
         description: "Elegant pieces with premium diamonds",
         imageUrl: "https://images.unsplash.com/photo-1619119712072-f22d10d4dd5c?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-        featured: 0
+        featured: 1
       },
       {
         name: "Silver Collection",
         description: "Modern silver designs for daily wear",
         imageUrl: "https://images.unsplash.com/photo-1602173574767-37ac01994b2a?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3", 
+        featured: 1
+      },
+      {
+        name: "Bridal Sets",
+        description: "Complete sets for the perfect bridal look",
+        imageUrl: "https://images.unsplash.com/photo-1569154941061-e231b4725ef1?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+        featured: 0
+      },
+      {
+        name: "Men's Collection",
+        description: "Elegant jewelry designs for men",
+        imageUrl: "https://images.unsplash.com/photo-1536243298747-ea8874136d64?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
         featured: 0
       }
     ];

@@ -11,12 +11,12 @@ export function FeaturedCollections() {
 
   if (isLoading) {
     return (
-      <div className="py-8">
-        <h2 className="text-2xl font-semibold mb-6">Featured Collections</h2>
-        <div className="grid grid-cols-2 gap-4">
-          {[1, 2].map((i) => (
-            <div key={i} className="space-y-3">
-              <Skeleton className="h-48 w-full" />
+      <div className="py-6">
+        <h2 className="text-xl sm:text-2xl font-semibold mb-4">Featured Collections</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="space-y-2">
+              <Skeleton className="aspect-square w-full" />
               <Skeleton className="h-4 w-3/4" />
               <Skeleton className="h-3 w-1/2" />
             </div>
@@ -28,8 +28,8 @@ export function FeaturedCollections() {
 
   if (error) {
     return (
-      <div className="py-8">
-        <h2 className="text-2xl font-semibold mb-6">Featured Collections</h2>
+      <div className="py-6">
+        <h2 className="text-xl sm:text-2xl font-semibold mb-4">Featured Collections</h2>
         <p className="text-red-500">Failed to load collections</p>
       </div>
     );
@@ -45,11 +45,15 @@ export function FeaturedCollections() {
   }
 
   return (
-    <div className="py-8">
-      <h2 className="text-2xl font-semibold mb-6">Featured Collections</h2>
-      <div className="grid grid-cols-2 gap-4">
+    <div className="py-6">
+      <h2 className="text-xl sm:text-2xl font-semibold mb-4">Featured Collections</h2>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {featuredCollections.map((collection) => (
-          <CollectionCard key={collection.id} collection={collection} />
+          <CollectionCard 
+            key={collection.id} 
+            collection={collection} 
+            className="rounded-md shadow-sm transition-transform hover:scale-105"
+          />
         ))}
       </div>
     </div>

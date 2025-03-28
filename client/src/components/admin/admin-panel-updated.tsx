@@ -73,23 +73,23 @@ export function AdminPanel({ rates, isOpen, onOpenChange }: AdminPanelProps) {
 
   const handleSelectRate = (rate: RateInfo) => {
     form.setValue("type", rate.type);
-    form.setValue("current", Number(rate.current));
-    form.setValue("high", Number(rate.high));
-    form.setValue("low", Number(rate.low));
+    form.setValue("current", rate.current);
+    form.setValue("high", rate.high);
+    form.setValue("low", rate.low);
     form.setValue("category", rate.category);
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-white max-w-md">
-        <DialogHeader>
-          <DialogTitle className="text-lg font-bold text-amber-800">Admin Panel - Update Rates</DialogTitle>
+      <DialogContent className="bg-white max-w-md border-amber-200 shadow-md">
+        <DialogHeader className="bg-gradient-to-r from-amber-50 to-amber-100 border-b border-amber-200 rounded-t-lg p-4">
+          <DialogTitle className="text-xl font-bold text-amber-800">Admin Panel - Update Rates</DialogTitle>
         </DialogHeader>
         
-        <Tabs defaultValue="gold" className="w-full" onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-2 mb-4">
-            <TabsTrigger value="gold">Gold Rates</TabsTrigger>
-            <TabsTrigger value="silver">Silver Rates</TabsTrigger>
+        <Tabs defaultValue="gold" className="w-full p-4" onValueChange={setActiveTab}>
+          <TabsList className="grid w-full grid-cols-2 mb-6 bg-amber-100">
+            <TabsTrigger value="gold" className="data-[state=active]:bg-amber-600 data-[state=active]:text-white">Gold Rates</TabsTrigger>
+            <TabsTrigger value="silver" className="data-[state=active]:bg-amber-600 data-[state=active]:text-white">Silver Rates</TabsTrigger>
           </TabsList>
           
           <TabsContent value="gold">
@@ -100,10 +100,10 @@ export function AdminPanel({ rates, isOpen, onOpenChange }: AdminPanelProps) {
                   name="type"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Gold Type</FormLabel>
+                      <FormLabel className="text-amber-900">Gold Type</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger className="border-amber-200 focus:ring-amber-500">
                             <SelectValue placeholder="Select Gold Type" />
                           </SelectTrigger>
                         </FormControl>
@@ -131,9 +131,9 @@ export function AdminPanel({ rates, isOpen, onOpenChange }: AdminPanelProps) {
                   name="current"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Current Rate (₹)</FormLabel>
+                      <FormLabel className="text-amber-900">Current Rate (₹)</FormLabel>
                       <FormControl>
-                        <Input {...field} type="number" placeholder="Enter current rate" />
+                        <Input {...field} type="number" placeholder="Enter current rate" className="border-amber-200 focus-visible:ring-amber-500" />
                       </FormControl>
                     </FormItem>
                   )}
@@ -145,9 +145,9 @@ export function AdminPanel({ rates, isOpen, onOpenChange }: AdminPanelProps) {
                     name="high"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>High (₹)</FormLabel>
+                        <FormLabel className="text-amber-900">High (₹)</FormLabel>
                         <FormControl>
-                          <Input {...field} type="number" placeholder="High rate" />
+                          <Input {...field} type="number" placeholder="High rate" className="border-amber-200 focus-visible:ring-amber-500" />
                         </FormControl>
                       </FormItem>
                     )}
@@ -158,17 +158,17 @@ export function AdminPanel({ rates, isOpen, onOpenChange }: AdminPanelProps) {
                     name="low"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Low (₹)</FormLabel>
+                        <FormLabel className="text-amber-900">Low (₹)</FormLabel>
                         <FormControl>
-                          <Input {...field} type="number" placeholder="Low rate" />
+                          <Input {...field} type="number" placeholder="Low rate" className="border-amber-200 focus-visible:ring-amber-500" />
                         </FormControl>
                       </FormItem>
                     )}
                   />
                 </div>
                 
-                <div className="flex justify-end">
-                  <Button type="button" variant="outline" className="mr-2" onClick={() => onOpenChange(false)}>
+                <div className="flex justify-end pt-2">
+                  <Button type="button" variant="outline" className="mr-2 border-amber-300 hover:bg-amber-50" onClick={() => onOpenChange(false)}>
                     Cancel
                   </Button>
                   <Button type="submit" className="bg-amber-600 hover:bg-amber-700 text-white" disabled={updateRateMutation.isPending}>
@@ -187,10 +187,10 @@ export function AdminPanel({ rates, isOpen, onOpenChange }: AdminPanelProps) {
                   name="type"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Silver Type</FormLabel>
+                      <FormLabel className="text-amber-900">Silver Type</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger className="border-amber-200 focus:ring-amber-500">
                             <SelectValue placeholder="Select Silver Type" />
                           </SelectTrigger>
                         </FormControl>
@@ -218,9 +218,9 @@ export function AdminPanel({ rates, isOpen, onOpenChange }: AdminPanelProps) {
                   name="current"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Current Rate (₹)</FormLabel>
+                      <FormLabel className="text-amber-900">Current Rate (₹)</FormLabel>
                       <FormControl>
-                        <Input {...field} type="number" placeholder="Enter current rate" />
+                        <Input {...field} type="number" placeholder="Enter current rate" className="border-amber-200 focus-visible:ring-amber-500" />
                       </FormControl>
                     </FormItem>
                   )}
@@ -232,9 +232,9 @@ export function AdminPanel({ rates, isOpen, onOpenChange }: AdminPanelProps) {
                     name="high"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>High (₹)</FormLabel>
+                        <FormLabel className="text-amber-900">High (₹)</FormLabel>
                         <FormControl>
-                          <Input {...field} type="number" placeholder="High rate" />
+                          <Input {...field} type="number" placeholder="High rate" className="border-amber-200 focus-visible:ring-amber-500" />
                         </FormControl>
                       </FormItem>
                     )}
@@ -245,17 +245,17 @@ export function AdminPanel({ rates, isOpen, onOpenChange }: AdminPanelProps) {
                     name="low"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Low (₹)</FormLabel>
+                        <FormLabel className="text-amber-900">Low (₹)</FormLabel>
                         <FormControl>
-                          <Input {...field} type="number" placeholder="Low rate" />
+                          <Input {...field} type="number" placeholder="Low rate" className="border-amber-200 focus-visible:ring-amber-500" />
                         </FormControl>
                       </FormItem>
                     )}
                   />
                 </div>
                 
-                <div className="flex justify-end">
-                  <Button type="button" variant="outline" className="mr-2" onClick={() => onOpenChange(false)}>
+                <div className="flex justify-end pt-2">
+                  <Button type="button" variant="outline" className="mr-2 border-amber-300 hover:bg-amber-50" onClick={() => onOpenChange(false)}>
                     Cancel
                   </Button>
                   <Button type="submit" className="bg-amber-600 hover:bg-amber-700 text-white" disabled={updateRateMutation.isPending}>

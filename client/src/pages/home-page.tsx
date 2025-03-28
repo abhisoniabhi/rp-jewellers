@@ -68,18 +68,29 @@ export default function HomePage() {
       <Header />
       
       {/* Poster area with improved styles */}
-      <div className="bg-gradient-to-r from-amber-50 to-yellow-50 p-3 border-b border-amber-100">
+      <div className="bg-gradient-to-r from-amber-100 to-yellow-100 p-4 border-b border-amber-200">
         <div className="container mx-auto">
-          <div className="h-52 w-full bg-white rounded-lg shadow-md border border-amber-100 overflow-hidden">
-            <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-amber-50 to-yellow-50 p-4">
-              <div className="text-center flex flex-col items-center">
-                <img 
-                  src={rpLogo} 
-                  alt="RP Jewellers Logo" 
-                  className="h-24 w-24 object-contain mb-2 rounded-full border-4 border-amber-300 p-1 shadow-lg" 
-                />
-                <h2 className="text-xl font-bold text-amber-800 mb-1">RP JEWELLERS</h2>
-                <p className="text-amber-700">Today's Gold & Silver Rates</p>
+          <div className="h-56 w-full bg-white rounded-lg shadow-lg border border-amber-200 overflow-hidden">
+            <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-amber-50 via-yellow-50 to-amber-100 p-4 relative">
+              {/* Decorative elements */}
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-300 to-yellow-400"></div>
+              <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-400 to-amber-300"></div>
+              
+              <div className="text-center flex flex-col items-center relative z-10">
+                <div className="bg-white bg-opacity-70 rounded-full p-1.5 shadow-xl mb-3">
+                  <img 
+                    src={rpLogo} 
+                    alt="RP Jewellers Logo" 
+                    className="h-28 w-28 object-contain rounded-full border-4 border-amber-300 p-1 shadow-inner" 
+                  />
+                </div>
+                <h2 className="text-2xl font-bold text-amber-800 mb-1 font-playfair tracking-wide">RP JEWELLERS</h2>
+                <p className="text-amber-700 font-medium">Today's Gold & Silver Rates</p>
+                <div className="mt-2">
+                  <span className="text-xs bg-amber-100 text-amber-800 px-3 py-1 rounded-full font-medium border border-amber-200">
+                    Updated {new Date().toLocaleDateString('en-US', {day: 'numeric', month: 'short', year: 'numeric'})}
+                  </span>
+                </div>
               </div>
             </div>
           </div>

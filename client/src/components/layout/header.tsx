@@ -19,22 +19,12 @@ export function Header() {
   }, []);
 
   return (
-    <header className="bg-gradient-to-r from-amber-600 to-amber-700 text-white shadow-md">
-      <div className="container mx-auto px-4 py-3">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center">
-            <div className="flex items-center mr-3">
-              <img 
-                src={rpLogo} 
-                alt="RP Jewellers Logo" 
-                className="h-10 w-10 object-contain mr-2 rounded-full border-2 border-amber-300"
-              />
-              <h1 className="font-playfair text-xl font-bold">RP Jewellers</h1>
-            </div>
-            <span className="text-xs bg-yellow-300 text-amber-800 px-2 py-0.5 rounded font-medium">Today's Rates</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <span id="current-time" className="text-sm">{currentTime}</span>
+    <header className="bg-gradient-to-r from-amber-700 to-amber-800 text-white shadow-lg">
+      {/* Status bar */}
+      <div className="bg-black bg-opacity-20 py-1">
+        <div className="container mx-auto px-4">
+          <div className="flex justify-end items-center space-x-2">
+            <span id="current-time" className="text-sm font-medium">{currentTime}</span>
             <Bell className="h-4 w-4" />
             <Bluetooth className="h-4 w-4" />
             <Wifi className="h-4 w-4" />
@@ -47,6 +37,29 @@ export function Header() {
               </div>
             </div>
             <Battery className="h-4 w-4" />
+          </div>
+        </div>
+      </div>
+      
+      {/* Main header */}
+      <div className="container mx-auto px-4 py-3">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center">
+            <div className="flex items-center mr-4">
+              <div className="bg-white rounded-full p-0.5 shadow-md mr-3">
+                <img 
+                  src={rpLogo} 
+                  alt="RP Jewellers Logo" 
+                  className="h-11 w-11 object-contain rounded-full border-2 border-amber-300"
+                />
+              </div>
+              <div>
+                <h1 className="font-playfair text-2xl font-bold text-white tracking-wide">RP Jewellers</h1>
+                <div className="mt-0.5">
+                  <span className="text-xs bg-gradient-to-r from-yellow-300 to-amber-300 text-amber-900 px-2 py-0.5 rounded-sm font-medium shadow-sm">Premium Gold Rates</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

@@ -39,6 +39,8 @@ export const updateRateSchema = createInsertSchema(rates).pick({
   high: true,
   low: true,
   category: true,
+}).extend({
+  category: z.enum(["gold", "silver", "chains"])
 });
 
 // Collection model

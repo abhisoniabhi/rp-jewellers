@@ -1,5 +1,5 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Loader2, Save, ArrowLeft } from "lucide-react";
+import { Loader2, Save, ArrowLeft, CreditCard, LayoutGrid, UserCircle } from "lucide-react";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -138,46 +138,86 @@ export default function AdminPage() {
 
       <main className="flex-grow bg-gray-50">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between mb-4">
-            <Button 
-              variant="ghost" 
-              className="p-0 text-gray-700" 
-              onClick={() => setLocation("/")}
-            >
-              <ArrowLeft className="h-5 w-5 mr-1" />
-              <span>Back</span>
-            </Button>
+          {/* Admin Header */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <Button 
+                variant="ghost" 
+                className="p-0 text-gray-700" 
+                onClick={() => setLocation("/")}
+              >
+                <ArrowLeft className="h-5 w-5 mr-1" />
+                <span>Back to Home</span>
+              </Button>
+              <h1 className="text-2xl font-semibold text-amber-800 hidden md:block">Admin Dashboard</h1>
+            </div>
 
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={handleLogout}>
+            <div className="flex gap-2 items-center">
+              {user && (
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-100 text-amber-800 mr-1">
+                  <UserCircle className="h-4 w-4" />
+                  <span className="text-sm font-medium hidden md:inline-block">
+                    {user.username}
+                  </span>
+                </div>
+              )}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleLogout}
+                className="border-amber-600 text-amber-700 hover:bg-amber-50"
+              >
                 Logout
               </Button>
             </div>
           </div>
 
+          {/* Main Admin Tabs */}
           <Tabs defaultValue="rates" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 rounded-md mb-4">
-              <TabsTrigger value="rates" className="data-[state=active]:bg-amber-100">Rate Management</TabsTrigger>
-              <TabsTrigger value="collections" className="data-[state=active]:bg-amber-100">Collections</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 rounded-md mb-6 shadow-sm bg-amber-50 p-1">
+              <TabsTrigger 
+                value="rates" 
+                className="data-[state=active]:bg-amber-600 data-[state=active]:text-white rounded-md py-2.5 transition-all"
+              >
+                Rate Management
+              </TabsTrigger>
+              <TabsTrigger 
+                value="collections" 
+                className="data-[state=active]:bg-amber-600 data-[state=active]:text-white rounded-md py-2.5 transition-all"
+              >
+                Collections
+              </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="rates">
-              <Card className="shadow">
+            {/* Rates Tab Content */}
+            <TabsContent value="rates" className="space-y-4 animate-in fade-in-50 slide-in-from-left-5">
+              <Card className="shadow-md border-amber-100">
                 <CardHeader className="bg-gradient-to-r from-amber-50 to-yellow-50 border-b">
-                  <CardTitle className="text-amber-800">Rate Management</CardTitle>
+                  <CardTitle className="text-amber-800 flex items-center">
+                    <span className="bg-amber-100 rounded-full p-1.5 mr-2">
+                      <CreditCard className="h-5 w-5 text-amber-700" />
+                    </span>
+                    Rate Management
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
                   <Tabs defaultValue="gold" className="w-full" onValueChange={setActiveTab}>
-                    <TabsList className="grid w-full grid-cols-3 rounded-none">
-                      <TabsTrigger value="gold" className="data-[state=active]:bg-amber-100">Gold Rates</TabsTrigger>
-                      <TabsTrigger value="silver" className="data-[state=active]:bg-gray-200">Silver Rates</TabsTrigger>
-                      <TabsTrigger value="chains" className="data-[state=active]:bg-amber-50">Chain Rates</TabsTrigger>
+                    <TabsList className="grid w-full grid-cols-3 rounded-none border-b">
+                      <TabsTrigger value="gold" className="data-[state=active]:bg-amber-100 data-[state=active]:border-b-2 data-[state=active]:border-amber-600 rounded-none">
+                        Gold Rates
+                      </TabsTrigger>
+                      <TabsTrigger value="silver" className="data-[state=active]:bg-gray-100 data-[state=active]:border-b-2 data-[state=active]:border-gray-500 rounded-none">
+                        Silver Rates
+                      </TabsTrigger>
+                      <TabsTrigger value="chains" className="data-[state=active]:bg-amber-50 data-[state=active]:border-b-2 data-[state=active]:border-amber-300 rounded-none">
+                        Chain Rates
+                      </TabsTrigger>
                     </TabsList>
 
-                    <div className="p-4">
-                      <div className="mb-4">
-                        <h3 className="text-sm font-medium mb-2">Select rate to update:</h3>
-                        <div className="grid grid-cols-2 gap-2">
+                    <div className="p-6">
+                      <div className="mb-6">
+                        <h3 className="text-sm font-medium mb-3 text-gray-700">Select rate to update:</h3>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                           {rates
                             .filter(rate => rate.category === activeTab)
                             .map(rate => (
@@ -185,7 +225,9 @@ export default function AdminPage() {
                                 key={rate.id} 
                                 variant={selectedRate?.id === rate.id ? "default" : "outline"}
                                 size="sm"
-                                className={selectedRate?.id === rate.id ? "border-2 border-amber-500" : ""}
+                                className={`${selectedRate?.id === rate.id 
+                                  ? 'bg-amber-100 border-2 border-amber-500 text-amber-900' 
+                                  : 'hover:bg-amber-50'} justify-start overflow-hidden text-ellipsis`}
                                 onClick={() => handleSelectRate(rate)}
                               >
                                 {rate.type}
@@ -195,84 +237,92 @@ export default function AdminPage() {
                         </div>
                       </div>
 
-                      {selectedRate && (
-                        <Form {...form}>
-                          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                            <FormField
-                              control={form.control}
-                              name="type"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Rate Type</FormLabel>
-                                  <FormControl>
-                                    <Input {...field} placeholder="Enter rate type" />
-                                  </FormControl>
-                                </FormItem>
-                              )}
-                            />
+                      {selectedRate ? (
+                        <div className="border rounded-md p-4 bg-amber-50/50">
+                          <Form {...form}>
+                            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                              <div className="grid md:grid-cols-2 gap-4">
+                                <FormField
+                                  control={form.control}
+                                  name="type"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel className="text-amber-900">Rate Type</FormLabel>
+                                      <FormControl>
+                                        <Input {...field} placeholder="Enter rate type" className="border-amber-200 focus-visible:ring-amber-500" />
+                                      </FormControl>
+                                    </FormItem>
+                                  )}
+                                />
 
-                            <FormField
-                              control={form.control}
-                              name="current"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Current Rate (₹)</FormLabel>
-                                  <FormControl>
-                                    <Input {...field} type="number" placeholder="Enter current rate" />
-                                  </FormControl>
-                                </FormItem>
-                              )}
-                            />
+                                <FormField
+                                  control={form.control}
+                                  name="current"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel className="text-amber-900">Current Rate (₹)</FormLabel>
+                                      <FormControl>
+                                        <Input {...field} type="number" placeholder="Enter current rate" className="border-amber-200 focus-visible:ring-amber-500" />
+                                      </FormControl>
+                                    </FormItem>
+                                  )}
+                                />
+                              </div>
 
-                            <div className="grid grid-cols-2 gap-4">
-                              <FormField
-                                control={form.control}
-                                name="high"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel>High (₹)</FormLabel>
-                                    <FormControl>
-                                      <Input {...field} type="number" placeholder="High rate" />
-                                    </FormControl>
-                                  </FormItem>
-                                )}
-                              />
+                              <div className="grid grid-cols-2 gap-4">
+                                <FormField
+                                  control={form.control}
+                                  name="high"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel className="text-amber-900">High (₹)</FormLabel>
+                                      <FormControl>
+                                        <Input {...field} type="number" placeholder="High rate" className="border-amber-200 focus-visible:ring-amber-500" />
+                                      </FormControl>
+                                    </FormItem>
+                                  )}
+                                />
 
-                              <FormField
-                                control={form.control}
-                                name="low"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel>Low (₹)</FormLabel>
-                                    <FormControl>
-                                      <Input {...field} type="number" placeholder="Low rate" />
-                                    </FormControl>
-                                  </FormItem>
-                                )}
-                              />
-                            </div>
+                                <FormField
+                                  control={form.control}
+                                  name="low"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel className="text-amber-900">Low (₹)</FormLabel>
+                                      <FormControl>
+                                        <Input {...field} type="number" placeholder="Low rate" className="border-amber-200 focus-visible:ring-amber-500" />
+                                      </FormControl>
+                                    </FormItem>
+                                  )}
+                                />
+                              </div>
 
-                            <div className="flex justify-end">
-                              <Button 
-                                type="submit" 
-                                className="bg-amber-600 hover:bg-amber-700 text-white" 
-                                disabled={updateRateMutation.isPending}
-                              >
-                                {updateRateMutation.isPending ? (
-                                  <>
-                                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                                    Updating...
-                                  </>
-                                ) : (
-                                  <>
-                                    <Save className="h-4 w-4 mr-2" />
-                                    Update Rate
-                                  </>
-                                )}
-                              </Button>
-                            </div>
-                          </form>
-                        </Form>
+                              <div className="flex justify-end pt-2">
+                                <Button 
+                                  type="submit" 
+                                  className="bg-amber-600 hover:bg-amber-700 text-white" 
+                                  disabled={updateRateMutation.isPending}
+                                >
+                                  {updateRateMutation.isPending ? (
+                                    <>
+                                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                      Updating...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Save className="h-4 w-4 mr-2" />
+                                      Update Rate
+                                    </>
+                                  )}
+                                </Button>
+                              </div>
+                            </form>
+                          </Form>
+                        </div>
+                      ) : (
+                        <div className="text-center py-6 border rounded-md bg-gray-50/80 text-gray-500">
+                          Select a rate from above to update its values
+                        </div>
                       )}
                     </div>
                   </Tabs>
@@ -280,12 +330,18 @@ export default function AdminPage() {
               </Card>
             </TabsContent>
 
-            <TabsContent value="collections">
-              <Card className="shadow">
+            {/* Collections Tab Content */}
+            <TabsContent value="collections" className="animate-in fade-in-50 slide-in-from-right-5">
+              <Card className="shadow-md border-amber-100">
                 <CardHeader className="bg-gradient-to-r from-amber-50 to-yellow-50 border-b">
-                  <CardTitle className="text-amber-800">Collection Management</CardTitle>
+                  <CardTitle className="text-amber-800 flex items-center">
+                    <span className="bg-amber-100 rounded-full p-1.5 mr-2">
+                      <LayoutGrid className="h-5 w-5 text-amber-700" />
+                    </span>
+                    Collection Management
+                  </CardTitle>
                 </CardHeader>
-                <CardContent className="p-4">
+                <CardContent className="p-6">
                   <CollectionManager />
                 </CardContent>
               </Card>

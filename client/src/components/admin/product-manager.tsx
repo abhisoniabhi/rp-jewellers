@@ -268,6 +268,7 @@ export function ProductManager({ collection, onBack }: ProductManagerProps) {
             <Button 
               variant="default" 
               className="bg-amber-600 hover:bg-amber-700 text-white"
+              data-add-product-button="true"
               onClick={() => {
                 setCurrentProduct(null);
                 form.reset({

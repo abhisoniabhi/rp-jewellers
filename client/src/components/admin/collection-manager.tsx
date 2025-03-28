@@ -404,6 +404,25 @@ export function CollectionManager() {
                       Edit
                     </Button>
                     <Button
+                      variant="outline"
+                      size="sm"
+                      className="bg-white hover:bg-green-50 border-green-200 text-green-800"
+                      onClick={(e) => {
+                        e.stopPropagation();  // Prevent triggering collection card click
+                        setSelectedCollection(collection);
+                        // Reset the Product form and open dialog in ProductManager component
+                        setTimeout(() => {
+                          const addProductButton = document.querySelector('[data-add-product-button="true"]');
+                          if (addProductButton && addProductButton instanceof HTMLButtonElement) {
+                            addProductButton.click();
+                          }
+                        }, 100);
+                      }}
+                    >
+                      <Plus className="h-3.5 w-3.5 mr-1 text-green-700" />
+                      Add Products
+                    </Button>
+                    <Button
                       variant="destructive"
                       size="sm"
                       onClick={() => handleDelete(collection)}

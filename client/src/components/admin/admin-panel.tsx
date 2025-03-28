@@ -15,9 +15,9 @@ import { RateInfo } from "@/components/ui/rate-card";
 
 const rateSchema = z.object({
   type: z.string(),
-  current: z.coerce.number(),
-  high: z.coerce.number(),
-  low: z.coerce.number(),
+  current: z.string().transform((val) => parseInt(val, 10)),
+  high: z.string().transform((val) => parseInt(val, 10)),
+  low: z.string().transform((val) => parseInt(val, 10)),
   category: z.string()
 });
 
@@ -36,10 +36,10 @@ export function AdminPanel({ rates, isOpen, onOpenChange }: AdminPanelProps) {
   const form = useForm<RateFormData>({
     resolver: zodResolver(rateSchema),
     defaultValues: {
-      type: "नंबर 99.99 Gold",
-      current: 91700,
-      high: 92000,
-      low: 91650,
+      type: "नंबर 99.99 Retail",
+      current: "91700",
+      high: "92000",
+      low: "91650",
       category: "gold"
     },
   });
@@ -73,9 +73,9 @@ export function AdminPanel({ rates, isOpen, onOpenChange }: AdminPanelProps) {
 
   const handleSelectRate = (rate: RateInfo) => {
     form.setValue("type", rate.type);
-    form.setValue("current", rate.current);
-    form.setValue("high", rate.high);
-    form.setValue("low", rate.low);
+    form.setValue("current", String(rate.current));
+    form.setValue("high", String(rate.high));
+    form.setValue("low", String(rate.low));
     form.setValue("category", rate.category);
   };
 
@@ -83,7 +83,7 @@ export function AdminPanel({ rates, isOpen, onOpenChange }: AdminPanelProps) {
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="bg-white max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-lg font-bold text-amber-800">Admin Panel - Update Rates</DialogTitle>
+          <DialogTitle className="font-playfair text-lg font-bold text-burgundy-default">Admin Panel</DialogTitle>
         </DialogHeader>
         
         <Tabs defaultValue="gold" className="w-full" onValueChange={setActiveTab}>

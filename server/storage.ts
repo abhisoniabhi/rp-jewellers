@@ -18,13 +18,13 @@ export interface IStorage {
   updateRate(id: number, rate: Partial<Rate>): Promise<Rate>;
   
   // Session store
-  sessionStore: session.SessionStore;
+  sessionStore: any; // Using any for sessionStore
 }
 
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
   private rates: Map<number, Rate>;
-  sessionStore: session.SessionStore;
+  sessionStore: any; // Using any for sessionStore type
   private userIdCounter: number;
   private rateIdCounter: number;
 

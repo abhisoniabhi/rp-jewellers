@@ -42,11 +42,17 @@ export default function HomePage() {
     <div className="flex flex-col min-h-screen">
       <Header />
       
-      {/* Empty space for poster area */}
-      <div className="bg-amber-50 p-4 border-b border-gray-300">
+      {/* Poster area with improved styles */}
+      <div className="bg-gradient-to-r from-amber-50 to-yellow-50 p-3 border-b border-amber-100">
         <div className="container mx-auto">
-          <div className="h-48 w-full bg-white rounded-lg shadow-sm border border-gray-200 flex items-center justify-center">
-            <p className="text-gray-500">Poster area - Clean and empty as requested</p>
+          <div className="h-52 w-full bg-white rounded-lg shadow-md border border-amber-100 overflow-hidden">
+            {/* You can add your poster/banner image here */}
+            <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-amber-50 to-yellow-50 p-4">
+              <div className="text-center">
+                <h2 className="text-xl font-bold text-amber-800 mb-1">JEWELRY SHOP</h2>
+                <p className="text-amber-700">Today's Gold & Silver Rates</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>

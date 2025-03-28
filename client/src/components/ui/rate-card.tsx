@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { BadgeCheck } from "lucide-react";
+import { BadgeCheck, Box, ChevronUp, Circle, Calculator } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface RateInfo {
@@ -39,13 +39,15 @@ export function RateCard({ rate, className }: RateCardProps) {
     }
   };
 
-  const getIcon = () => {
+  const renderIcon = () => {
+    const className = `${getIconTextColor()} h-3 w-3`;
+    
     switch (rate.icon) {
-      case "cube": return "fas fa-cube";
-      case "chevron-up": return "fas fa-chevron-up";
-      case "coin": return "fas fa-coins";
-      case "calculator": return "fas fa-calculator";
-      default: return "fas fa-cube";
+      case "cube": return <Box className={className} />;
+      case "chevron-up": return <ChevronUp className={className} />;
+      case "coin": return <Circle className={className} />;
+      case "calculator": return <Calculator className={className} />;
+      default: return <Box className={className} />;
     }
   };
 
@@ -54,12 +56,12 @@ export function RateCard({ rate, className }: RateCardProps) {
       <CardContent className="p-4">
         <div className="flex items-center mb-2">
           <div className={`w-6 h-6 rounded-md ${getIconColor()} flex items-center justify-center mr-2`}>
-            <i className={`${getIcon()} ${getIconTextColor()} text-xs`}></i>
+            {renderIcon()}
           </div>
           <h3 className="text-sm font-medium">{rate.type}</h3>
         </div>
         <div className="flex items-baseline">
-          <i className="fas fa-rupee-sign text-lg mr-1"></i>
+          <span className="text-md mr-1">₹</span>
           <span className="text-2xl font-bold">{rate.current}</span>
           <span className="ml-2 text-green-500">
             <BadgeCheck className="h-4 w-4" />

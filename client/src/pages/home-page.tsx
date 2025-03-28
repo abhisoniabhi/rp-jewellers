@@ -2,8 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Header } from "@/components/layout/header";
-import { CategoryTabs } from "@/components/layout/category-tabs";
-import { FeaturedCollection } from "@/components/layout/featured-collection";
 import { RateCard, RateInfo } from "@/components/ui/rate-card";
 import { ShareButton } from "@/components/ui/share-button";
 import { BottomNavigation } from "@/components/layout/bottom-navigation";
@@ -43,8 +41,15 @@ export default function HomePage() {
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
-      <CategoryTabs />
-      <FeaturedCollection />
+      
+      {/* Empty space for poster area */}
+      <div className="bg-amber-50 p-4 border-b border-gray-300">
+        <div className="container mx-auto">
+          <div className="h-48 w-full bg-white rounded-lg shadow-sm border border-gray-200 flex items-center justify-center">
+            <p className="text-gray-500">Poster area - Clean and empty as requested</p>
+          </div>
+        </div>
+      </div>
       
       <main className="flex-grow bg-gray-100">
         <div className="container mx-auto px-3 py-3">

@@ -9,8 +9,8 @@ import { AdminTrigger } from "@/components/admin/admin-trigger";
 import { ScreenshotGenerator } from "@/components/screenshot/screenshot-generator";
 import { FeaturedCollections } from "@/components/layout/featured-collections";
 import { useEffect } from "react";
-import { eventBus, EVENTS } from "@/lib/events";
 import { queryClient } from "@/lib/queryClient";
+import { wsClient, WS_EVENTS } from "@/lib/websocket";
 
 export default function HomePage() {
   // Use try/catch to handle potential auth context errors
@@ -26,12 +26,16 @@ export default function HomePage() {
     queryKey: ["/api/rates"],
   });
   
-  // Set up real-time event listener for rate updates
+  // Set up real-time WebSocket listener for rate updates
   useEffect(() => {
+    // Connect to WebSocket server
+    wsClient.connect();
+    
     // Subscribe to rate update events
-    const unsubscribe = eventBus.subscribe(EVENTS.RATES_UPDATED, () => {
-      console.log("Received rate update event on home page");
-      // Refetch rates data when a rate update event is received
+    const unsubscribe = wsClient.subscribe(WS_EVENTS.RATE_UPDATED, (updatedRate) => {
+      console.log("Received real-time rate update via WebSocket:", updatedRate);
+      
+      // Refetch all rates data
       queryClient.invalidateQueries({ queryKey: ["/api/rates"] });
     });
     

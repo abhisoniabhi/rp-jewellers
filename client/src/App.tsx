@@ -4,6 +4,7 @@ import NotFound from "@/pages/not-found";
 import HomePage from "@/pages/home-page";
 import AdminPage from "@/pages/admin-page";
 import AuthPage from "@/pages/auth-page";
+import CollectionDetailPage from "@/pages/collection-detail-page";
 import { ProtectedRoute } from "./lib/protected-route";
 
 function Router() {
@@ -12,6 +13,7 @@ function Router() {
       <Route path="/" component={HomePage} />
       <Route path="/admin" component={AdminPage} />
       <Route path="/auth" component={AuthPage} />
+      <Route path="/collections/:id" component={CollectionDetailPage} />
       <Route component={NotFound} />
     </Switch>
   );

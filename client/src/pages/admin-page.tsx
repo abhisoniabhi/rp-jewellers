@@ -35,7 +35,7 @@ export default function AdminPage() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("gold");
   const [selectedRate, setSelectedRate] = useState<RateInfo | null>(null);
-  
+
   const { data: rates, isLoading } = useQuery<RateInfo[]>({
     queryKey: ["/api/rates"],
   });
@@ -114,7 +114,7 @@ export default function AdminPage() {
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
-      
+
       <main className="flex-grow bg-gray-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-4">
@@ -126,20 +126,20 @@ export default function AdminPage() {
               <ArrowLeft className="h-5 w-5 mr-1" />
               <span>Back</span>
             </Button>
-            
+
             <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={handleLogout}>
                 Logout
               </Button>
             </div>
           </div>
-          
+
           <Tabs defaultValue="rates" className="w-full">
             <TabsList className="grid w-full grid-cols-2 rounded-md mb-4">
               <TabsTrigger value="rates" className="data-[state=active]:bg-amber-100">Rate Management</TabsTrigger>
               <TabsTrigger value="collections" className="data-[state=active]:bg-amber-100">Collections</TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="rates">
               <Card className="shadow">
                 <CardHeader className="bg-gradient-to-r from-amber-50 to-yellow-50 border-b">
@@ -147,11 +147,12 @@ export default function AdminPage() {
                 </CardHeader>
                 <CardContent className="p-0">
                   <Tabs defaultValue="gold" className="w-full" onValueChange={setActiveTab}>
-                    <TabsList className="grid w-full grid-cols-2 rounded-none">
+                    <TabsList className="grid w-full grid-cols-3 rounded-none">
                       <TabsTrigger value="gold" className="data-[state=active]:bg-amber-100">Gold Rates</TabsTrigger>
                       <TabsTrigger value="silver" className="data-[state=active]:bg-gray-200">Silver Rates</TabsTrigger>
+                      <TabsTrigger value="chains" className="data-[state=active]:bg-amber-50">Chain Rates</TabsTrigger>
                     </TabsList>
-                    
+
                     <div className="p-4">
                       <div className="mb-4">
                         <h3 className="text-sm font-medium mb-2">Select rate to update:</h3>
@@ -172,7 +173,7 @@ export default function AdminPage() {
                           }
                         </div>
                       </div>
-                      
+
                       {selectedRate && (
                         <Form {...form}>
                           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -188,7 +189,7 @@ export default function AdminPage() {
                                 </FormItem>
                               )}
                             />
-                            
+
                             <FormField
                               control={form.control}
                               name="current"
@@ -201,7 +202,7 @@ export default function AdminPage() {
                                 </FormItem>
                               )}
                             />
-                            
+
                             <div className="grid grid-cols-2 gap-4">
                               <FormField
                                 control={form.control}
@@ -215,7 +216,7 @@ export default function AdminPage() {
                                   </FormItem>
                                 )}
                               />
-                              
+
                               <FormField
                                 control={form.control}
                                 name="low"
@@ -229,7 +230,7 @@ export default function AdminPage() {
                                 )}
                               />
                             </div>
-                            
+
                             <div className="flex justify-end">
                               <Button 
                                 type="submit" 
@@ -257,7 +258,7 @@ export default function AdminPage() {
                 </CardContent>
               </Card>
             </TabsContent>
-            
+
             <TabsContent value="collections">
               <Card className="shadow">
                 <CardHeader className="bg-gradient-to-r from-amber-50 to-yellow-50 border-b">
@@ -271,7 +272,7 @@ export default function AdminPage() {
           </Tabs>
         </div>
       </main>
-      
+
       <BottomNavigation />
     </div>
   );

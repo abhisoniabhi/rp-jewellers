@@ -1,5 +1,6 @@
 import { Bell, Bluetooth, Wifi, Battery } from "lucide-react";
 import { useState, useEffect } from "react";
+import rpLogo from "../../assets/rp-logo.jpg";
 
 export function Header() {
   const [currentTime, setCurrentTime] = useState<string>("");
@@ -22,7 +23,14 @@ export function Header() {
       <div className="container mx-auto px-4 py-3">
         <div className="flex justify-between items-center">
           <div className="flex items-center">
-            <h1 className="font-playfair text-xl font-bold mr-2">ShineRates</h1>
+            <div className="flex items-center mr-3">
+              <img 
+                src={rpLogo} 
+                alt="RP Jewellers Logo" 
+                className="h-10 w-10 object-contain mr-2"
+              />
+              <h1 className="font-playfair text-xl font-bold">RP Jewellers</h1>
+            </div>
             <span className="text-xs bg-yellow-300 text-amber-800 px-2 py-0.5 rounded font-medium">Today's Rates</span>
           </div>
           <div className="flex items-center space-x-2">

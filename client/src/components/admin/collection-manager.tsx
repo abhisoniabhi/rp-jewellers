@@ -4,7 +4,7 @@ import { Collection, InsertCollection, updateCollectionSchema } from "@shared/sc
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, Plus, Pencil, Trash2 } from "lucide-react";
+import { Loader2, Plus, Pencil, Trash2, LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -184,26 +184,44 @@ export function CollectionManager() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Collections</h2>
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex items-center gap-2">
+          <span className="text-amber-600 bg-amber-100 p-1.5 rounded-full inline-flex">
+            <LayoutGrid className="h-5 w-5" />
+          </span>
+          <h2 className="text-xl font-semibold text-amber-800">Manage Collections</h2>
+        </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button variant="default" onClick={() => {
-              setCurrentCollection(null);
-              form.reset({
-                name: "",
-                description: "",
-                imageUrl: "",
-                featured: false
-              });
-            }}>
+            <Button 
+              variant="default" 
+              className="bg-amber-600 hover:bg-amber-700 text-white"
+              onClick={() => {
+                setCurrentCollection(null);
+                form.reset({
+                  name: "",
+                  description: "",
+                  imageUrl: "",
+                  featured: false
+                });
+              }}>
               <Plus className="mr-2 h-4 w-4" /> Add Collection
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="sm:max-w-[525px]">
             <DialogHeader>
-              <DialogTitle>
-                {isEditing ? "Edit Collection" : "Add New Collection"}
+              <DialogTitle className="text-amber-800 flex items-center gap-2">
+                {isEditing ? (
+                  <>
+                    <Pencil className="h-5 w-5 text-amber-600" />
+                    Edit Collection
+                  </>
+                ) : (
+                  <>
+                    <Plus className="h-5 w-5 text-amber-600" />
+                    Add New Collection
+                  </>
+                )}
               </DialogTitle>
             </DialogHeader>
             <Form {...form}>
@@ -213,9 +231,13 @@ export function CollectionManager() {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Name</FormLabel>
+                      <FormLabel className="text-amber-900">Collection Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="Collection name" {...field} />
+                        <Input 
+                          placeholder="Collection name" 
+                          {...field} 
+                          className="border-amber-200 focus-visible:ring-amber-500"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -227,12 +249,13 @@ export function CollectionManager() {
                   name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Description</FormLabel>
+                      <FormLabel className="text-amber-900">Description</FormLabel>
                       <FormControl>
                         <Textarea 
                           placeholder="Enter a description" 
                           {...field} 
                           value={field.value || ""}
+                          className="border-amber-200 focus-visible:ring-amber-500 min-h-[80px]"
                         />
                       </FormControl>
                       <FormMessage />
@@ -245,9 +268,13 @@ export function CollectionManager() {
                   name="imageUrl"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Image URL</FormLabel>
+                      <FormLabel className="text-amber-900">Image URL</FormLabel>
                       <FormControl>
-                        <Input placeholder="https://example.com/image.jpg" {...field} />
+                        <Input 
+                          placeholder="https://example.com/image.jpg" 
+                          {...field} 
+                          className="border-amber-200 focus-visible:ring-amber-500"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -258,10 +285,10 @@ export function CollectionManager() {
                   control={form.control}
                   name="featured"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border border-amber-200 p-3 bg-amber-50/50">
                       <div className="space-y-0.5">
-                        <FormLabel>Featured</FormLabel>
-                        <div className="text-sm text-muted-foreground">
+                        <FormLabel className="text-amber-900">Featured Collection</FormLabel>
+                        <div className="text-sm text-amber-700/70">
                           Show this collection on the homepage
                         </div>
                       </div>
@@ -269,6 +296,7 @@ export function CollectionManager() {
                         <Switch
                           checked={field.value}
                           onCheckedChange={field.onChange}
+                          className="data-[state=checked]:bg-amber-600"
                         />
                       </FormControl>
                     </FormItem>
@@ -276,17 +304,23 @@ export function CollectionManager() {
                 />
                 
                 <div className="flex justify-end space-x-2 pt-4">
-                  <Button type="button" variant="outline" onClick={handleCloseDialog}>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={handleCloseDialog}
+                    className="border-amber-300"
+                  >
                     Cancel
                   </Button>
                   <Button 
                     type="submit" 
                     disabled={createMutation.isPending || updateMutation.isPending}
+                    className="bg-amber-600 hover:bg-amber-700 text-white"
                   >
                     {(createMutation.isPending || updateMutation.isPending) && (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     )}
-                    {isEditing ? "Update" : "Create"}
+                    {isEditing ? "Update Collection" : "Create Collection"}
                   </Button>
                 </div>
               </form>
@@ -296,34 +330,42 @@ export function CollectionManager() {
       </div>
 
       {collections && collections.length > 0 ? (
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {collections.map((collection) => (
-            <div key={collection.id} className="relative group">
+            <div key={collection.id} className="relative group overflow-hidden rounded-md shadow-sm border border-amber-100 hover:shadow-md transition-all duration-300">
               <CollectionCard collection={collection} />
-              <div className="absolute top-2 left-2 space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  className="h-8 w-8 bg-white/80 hover:bg-white"
-                  onClick={() => handleEdit(collection)}
-                >
-                  <Pencil className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="icon"
-                  className="h-8 w-8 bg-white/80 hover:bg-red-600"
-                  onClick={() => handleDelete(collection)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300">
+                <div className="absolute bottom-3 left-3 right-3 flex justify-between items-center">
+                  <div className="text-white font-medium">{collection.featured === 1 && "✨ Featured"}</div>
+                  <div className="flex space-x-2">
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      className="h-8 w-8 bg-white hover:bg-amber-50"
+                      onClick={() => handleEdit(collection)}
+                    >
+                      <Pencil className="h-4 w-4 text-amber-800" />
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => handleDelete(collection)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
               </div>
             </div>
           ))}
         </div>
       ) : (
-        <div className="text-center py-8 border rounded-md bg-muted/30">
-          <p className="text-muted-foreground">No collections found. Add your first collection to get started.</p>
+        <div className="text-center py-12 border rounded-md bg-amber-50/30 border-amber-100">
+          <span className="inline-block p-4 bg-amber-100 rounded-full mb-3">
+            <LayoutGrid className="h-6 w-6 text-amber-600" />
+          </span>
+          <p className="text-amber-800">No collections found. Add your first collection to get started.</p>
         </div>
       )}
     </div>

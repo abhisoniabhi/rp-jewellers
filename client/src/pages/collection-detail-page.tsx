@@ -66,7 +66,7 @@ export default function CollectionDetailPage() {
                 <ArrowLeft className="h-5 w-5" />
               </Button>
             </Link>
-            <h1 className="text-xl font-bold text-amber-800">Collection Details</h1>
+            <h1 className="text-xl font-bold text-amber-800">{collection.name}</h1>
           </div>
           
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
@@ -103,6 +103,55 @@ export default function CollectionDetailPage() {
                 <Button className="bg-amber-600 hover:bg-amber-700">
                   Contact For Inquiry
                 </Button>
+              </div>
+            </div>
+          </div>
+          
+          <div className="mt-6">
+            <h3 className="text-lg font-bold text-amber-800 mb-3">Product Gallery</h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {/* Sample product images - replace with actual data when available */}
+              <div className="rounded-md overflow-hidden aspect-square shadow-sm hover:shadow-md transition-shadow">
+                <img 
+                  src={`${collection.imageUrl}?v=1`} 
+                  alt={`${collection.name} Product 1`}
+                  className="object-cover w-full h-full hover:scale-105 transition-transform" 
+                />
+              </div>
+              <div className="rounded-md overflow-hidden aspect-square shadow-sm hover:shadow-md transition-shadow">
+                <img 
+                  src={`${collection.imageUrl}?v=2`} 
+                  alt={`${collection.name} Product 2`}
+                  className="object-cover w-full h-full hover:scale-105 transition-transform" 
+                />
+              </div>
+              <div className="rounded-md overflow-hidden aspect-square shadow-sm hover:shadow-md transition-shadow">
+                <img 
+                  src={`${collection.imageUrl}?v=3`} 
+                  alt={`${collection.name} Product 3`}
+                  className="object-cover w-full h-full hover:scale-105 transition-transform" 
+                />
+              </div>
+              <div className="rounded-md overflow-hidden aspect-square shadow-sm hover:shadow-md transition-shadow">
+                <img 
+                  src={`${collection.imageUrl}?v=4`} 
+                  alt={`${collection.name} Product 4`}
+                  className="object-cover w-full h-full hover:scale-105 transition-transform" 
+                />
+              </div>
+              <div className="rounded-md overflow-hidden aspect-square shadow-sm hover:shadow-md transition-shadow">
+                <img 
+                  src={`${collection.imageUrl}?v=5`} 
+                  alt={`${collection.name} Product 5`}
+                  className="object-cover w-full h-full hover:scale-105 transition-transform" 
+                />
+              </div>
+              <div className="rounded-md overflow-hidden aspect-square shadow-sm hover:shadow-md transition-shadow">
+                <img 
+                  src={`${collection.imageUrl}?v=6`} 
+                  alt={`${collection.name} Product 6`}
+                  className="object-cover w-full h-full hover:scale-105 transition-transform" 
+                />
               </div>
             </div>
           </div>

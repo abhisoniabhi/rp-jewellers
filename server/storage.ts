@@ -64,22 +64,6 @@ export class MemStorage implements IStorage {
         category: "gold",
       },
       {
-        type: "Choco Chain",
-        current: 9200,
-        high: 9300,
-        low: 9100,
-        icon: "link",
-        category: "chains",
-      },
-      {
-        type: "Singapore Chain",
-        current: 9400,
-        high: 9500,
-        low: 9300,
-        icon: "link",
-        category: "chains",
-      },
-      {
         type: "ब्रैंड 99.50 Gold",
         current: 91250,
         high: 91550,

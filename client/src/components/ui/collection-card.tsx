@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "wouter";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingBag, Plus } from "lucide-react";
+import { ShoppingBag, Plus, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Collection } from "@shared/schema";
+import { motion } from "framer-motion";
 
 interface CollectionCardProps {
   collection: Collection;
@@ -15,63 +16,124 @@ interface CollectionCardProps {
 }
 
 export function CollectionCard({ collection, className, isAdmin = false, onClick, onAddProduct }: CollectionCardProps) {
+  const [isHovered, setIsHovered] = useState(false);
+  
   const CardComponent = () => (
-    <Card className={`overflow-hidden h-full ${className} cursor-pointer transition-transform hover:scale-[1.02] hover:shadow-md`}>
-      <div className="relative aspect-square">
-        <img 
-          src={collection.imageUrl} 
-          alt={collection.name}
-          className="object-cover w-full h-full" 
-        />
-        {collection.featured === 1 && (
-          <Badge 
-            variant="secondary" 
-            className="absolute top-2 right-2 bg-amber-500 text-white hover:bg-amber-600 text-xs py-0 px-2"
+    <motion.div
+      initial={{ opacity: 1 }}
+      whileHover={{ 
+        scale: 1.03,
+        transition: { duration: 0.3, ease: "easeOut" }
+      }}
+      className="h-full"
+      onHoverStart={() => setIsHovered(true)}
+      onHoverEnd={() => setIsHovered(false)}
+    >
+      <Card className={`overflow-hidden h-full ${className} cursor-pointer border-amber-100 shadow-sm ${isHovered ? 'shadow-lg border-amber-200' : ''}`}>
+        <div className="relative aspect-square overflow-hidden">
+          <motion.div
+            animate={isHovered ? { scale: 1.08 } : { scale: 1 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="h-full w-full"
           >
-            Featured
-          </Badge>
-        )}
-        
-        {/* Add Product Button - shown only for admin when hovering */}
-        {isAdmin && onAddProduct && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 hover:opacity-100 transition-opacity duration-200">
-            <Button
-              variant="default"
-              size="sm"
-              className="bg-green-600 hover:bg-green-700 text-white"
-              onClick={(e) => {
-                e.stopPropagation();
-                onAddProduct(e, collection);
-              }}
-              data-collection-add-product="true"
+            <img 
+              src={collection.imageUrl} 
+              alt={collection.name}
+              className="object-cover w-full h-full transition-all duration-500" 
+            />
+          </motion.div>
+          
+          {collection.featured === 1 && (
+            <motion.div
+              initial={{ y: 0, x: 0 }}
+              animate={isHovered ? { y: -5, x: -5 } : { y: 0, x: 0 }}
+              transition={{ duration: 0.3 }}
+              className="absolute top-2 right-2"
             >
-              <Plus className="mr-1 h-3.5 w-3.5" />
-              Add Product
-            </Button>
-          </div>
-        )}
-      </div>
-      <CardHeader className="pb-1 pt-2 px-3">
-        <h3 className="text-sm font-medium truncate">{collection.name}</h3>
-      </CardHeader>
-      {collection.description && (
-        <CardContent className="py-0 px-3">
-          <p className="text-muted-foreground text-xs line-clamp-2">{collection.description}</p>
-        </CardContent>
-      )}
-      <CardFooter className="pt-1 pb-2 px-3">
-        <span className="text-amber-600 text-xs font-medium flex items-center">
-          {isAdmin ? (
-            <>
-              <ShoppingBag className="h-3 w-3 mr-1" />
-              Manage Products
-            </>
-          ) : (
-            "View →"
+              <Badge 
+                variant="secondary" 
+                className="bg-amber-500 text-white hover:bg-amber-600 text-xs py-0 px-2 flex items-center gap-1"
+              >
+                <Sparkles className="h-2.5 w-2.5" />
+                Featured
+              </Badge>
+            </motion.div>
           )}
-        </span>
-      </CardFooter>
-    </Card>
+          
+          {/* Add Product Button - shown only for admin when hovering */}
+          {isAdmin && onAddProduct && (
+            <motion.div 
+              className="absolute inset-0 flex items-center justify-center bg-gradient-to-t from-black/60 via-black/30 to-transparent"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: isHovered ? 1 : 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ 
+                  y: isHovered ? 0 : 20, 
+                  opacity: isHovered ? 1 : 0 
+                }}
+                transition={{ 
+                  duration: 0.3, 
+                  delay: 0.1 
+                }}
+              >
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="bg-green-600 hover:bg-green-700 text-white shadow-lg"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onAddProduct(e, collection);
+                  }}
+                  data-collection-add-product="true"
+                >
+                  <Plus className="mr-1 h-3.5 w-3.5" />
+                  Add Product
+                </Button>
+              </motion.div>
+            </motion.div>
+          )}
+        </div>
+        
+        <motion.div
+          animate={isHovered ? { backgroundColor: "#FFF7E6" } : { backgroundColor: "white" }}
+          transition={{ duration: 0.3 }}
+        >
+          <CardHeader className="pb-1 pt-2 px-3">
+            <motion.h3 
+              className="text-sm font-medium truncate text-amber-900"
+              animate={isHovered ? { color: "#9A3412" } : { color: "#78350F" }}
+            >
+              {collection.name}
+            </motion.h3>
+          </CardHeader>
+          
+          {collection.description && (
+            <CardContent className="py-0 px-3">
+              <p className="text-muted-foreground text-xs line-clamp-2">{collection.description}</p>
+            </CardContent>
+          )}
+          
+          <CardFooter className="pt-1 pb-2 px-3">
+            <motion.span 
+              className="text-amber-600 text-xs font-medium flex items-center"
+              animate={isHovered ? { x: isAdmin ? 0 : 5 } : { x: 0 }}
+            >
+              {isAdmin ? (
+                <>
+                  <ShoppingBag className="h-3 w-3 mr-1" />
+                  Manage Products
+                </>
+              ) : (
+                <>View <motion.span animate={isHovered ? { x: 3 } : { x: 0 }}>→</motion.span></>
+              )}
+            </motion.span>
+          </CardFooter>
+        </motion.div>
+      </Card>
+    </motion.div>
   );
 
   if (isAdmin && onClick) {

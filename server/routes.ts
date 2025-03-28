@@ -6,14 +6,11 @@ import { updateRateSchema } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  try {
-    // Setup authentication routes
-    setupAuth(app);
-    
-    console.log("Authentication routes registered successfully");
-    
-    // Get all rates
-    app.get("/api/rates", async (req, res) => {
+  // Setup authentication routes
+  setupAuth(app);
+  
+  // Get all rates
+  app.get("/api/rates", async (req, res) => {
     try {
       const rates = await storage.getRates();
       res.json(rates);
@@ -86,14 +83,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-    console.log("Routes registered successfully");
-    
-    const httpServer = createServer(app);
-    return httpServer;
-  } catch (error) {
-    console.error("Error registering routes:", error);
-    // Create an HTTP server even if there's an error
-    const httpServer = createServer(app);
-    return httpServer;
-  }
+  const httpServer = createServer(app);
+  return httpServer;
 }

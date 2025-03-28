@@ -29,12 +29,8 @@ async function comparePasswords(supplied: string, stored: string) {
 }
 
 export function setupAuth(app: Express) {
-  // Ensure we have a session secret, using a default if not provided
-  const sessionSecret = process.env.SESSION_SECRET || "Jhala-gold-rates-secret-key-2025";
-  console.log("Using session secret:", sessionSecret.substring(0, 5) + '...');
-  
   const sessionSettings: session.SessionOptions = {
-    secret: sessionSecret,
+    secret: process.env.SESSION_SECRET || "jhala-gold-rates-secret",
     resave: false,
     saveUninitialized: false,
     store: storage.sessionStore,

@@ -31,7 +31,7 @@ export function ScreenshotView({
           <img 
             src={rpLogo} 
             alt="RP Jewellers Logo" 
-            className="h-12 w-12 object-contain mr-2" 
+            className="h-12 w-12 object-contain mr-2 rounded-full border-2 border-amber-300 p-0.5" 
           />
           <h1 className="text-2xl font-bold text-amber-800">{shopName}</h1>
         </div>

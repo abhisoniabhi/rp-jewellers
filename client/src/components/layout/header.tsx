@@ -27,7 +27,7 @@ export function Header() {
               <img 
                 src={rpLogo} 
                 alt="RP Jewellers Logo" 
-                className="h-10 w-10 object-contain mr-2"
+                className="h-10 w-10 object-contain mr-2 rounded-full border-2 border-amber-300"
               />
               <h1 className="font-playfair text-xl font-bold">RP Jewellers</h1>
             </div>

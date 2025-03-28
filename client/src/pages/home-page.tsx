@@ -76,7 +76,7 @@ export default function HomePage() {
                 <img 
                   src={rpLogo} 
                   alt="RP Jewellers Logo" 
-                  className="h-24 w-24 object-contain mb-2" 
+                  className="h-24 w-24 object-contain mb-2 rounded-full border-4 border-amber-300 p-1 shadow-lg" 
                 />
                 <h2 className="text-xl font-bold text-amber-800 mb-1">RP JEWELLERS</h2>
                 <p className="text-amber-700">Today's Gold & Silver Rates</p>

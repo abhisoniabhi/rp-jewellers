@@ -2,7 +2,8 @@ import React from "react";
 import { Link } from "wouter";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingBag } from "lucide-react";
+import { ShoppingBag, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Collection } from "@shared/schema";
 
 interface CollectionCardProps {
@@ -10,9 +11,10 @@ interface CollectionCardProps {
   className?: string;
   isAdmin?: boolean;
   onClick?: () => void;
+  onAddProduct?: (e: React.MouseEvent, collection: Collection) => void;
 }
 
-export function CollectionCard({ collection, className, isAdmin = false, onClick }: CollectionCardProps) {
+export function CollectionCard({ collection, className, isAdmin = false, onClick, onAddProduct }: CollectionCardProps) {
   const CardComponent = () => (
     <Card className={`overflow-hidden h-full ${className} cursor-pointer transition-transform hover:scale-[1.02] hover:shadow-md`}>
       <div className="relative aspect-square">
@@ -28,6 +30,25 @@ export function CollectionCard({ collection, className, isAdmin = false, onClick
           >
             Featured
           </Badge>
+        )}
+        
+        {/* Add Product Button - shown only for admin when hovering */}
+        {isAdmin && onAddProduct && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 hover:opacity-100 transition-opacity duration-200">
+            <Button
+              variant="default"
+              size="sm"
+              className="bg-green-600 hover:bg-green-700 text-white"
+              onClick={(e) => {
+                e.stopPropagation();
+                onAddProduct(e, collection);
+              }}
+              data-collection-add-product="true"
+            >
+              <Plus className="mr-1 h-3.5 w-3.5" />
+              Add Product
+            </Button>
+          </div>
         )}
       </div>
       <CardHeader className="pb-1 pt-2 px-3">

@@ -242,8 +242,8 @@ export function ProductManager({ collection, onBack }: ProductManagerProps) {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center mb-5">
+    <div className="max-w-2xl mx-auto py-6 bg-white rounded-xl shadow-sm border border-amber-100">
+      <div className="flex items-center justify-between px-6 pb-6 border-b border-amber-100">
         <div className="flex items-center gap-2">
           <Button 
             variant="ghost" 
@@ -253,275 +253,208 @@ export function ProductManager({ collection, onBack }: ProductManagerProps) {
           >
             <ArrowLeft className="h-5 w-5 text-amber-700" />
           </Button>
-          <div className="flex flex-col">
-            <h2 className="text-xl font-semibold text-amber-800 mb-0.5 flex items-center gap-1.5">
+          <div>
+            <h2 className="text-xl font-semibold text-amber-800 flex items-center gap-1.5">
               <ShoppingBag className="h-5 w-5 text-amber-600" />
-              Products in {collection.name}
+              {collection.name}
             </h2>
-            <p className="text-sm text-amber-600/80">
-              Manage products for this collection
-            </p>
           </div>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button 
-              variant="default" 
-              className="bg-amber-600 hover:bg-amber-700 text-white"
-              data-add-product-button="true"
-              onClick={() => {
-                setCurrentProduct(null);
-                form.reset({
-                  name: "",
-                  description: "",
-                  price: 0,
-                  category: "",
-                  imageUrl: "",
-                  collectionId: collection.id,
-                  inStock: true
-                });
-              }}>
-              <Plus className="mr-2 h-4 w-4" /> Add Product
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[525px]">
-            <DialogHeader>
-              <DialogTitle className="text-amber-800 flex items-center gap-2">
-                {isEditing ? (
-                  <>
-                    <Pencil className="h-5 w-5 text-amber-600" />
-                    Edit Product
-                  </>
-                ) : (
-                  <>
-                    <Plus className="h-5 w-5 text-amber-600" />
-                    Add New Product
-                  </>
-                )}
-              </DialogTitle>
-            </DialogHeader>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-amber-900">Product Name</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="Product name" 
-                          {...field} 
-                          className="border-amber-200 focus-visible:ring-amber-500"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-amber-900">Description</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder="Enter a description" 
-                          {...field} 
-                          value={field.value || ""}
-                          className="border-amber-200 focus-visible:ring-amber-500 min-h-[80px]"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="price"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-amber-900">Price</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-800/60">₹</span>
-                            <Input 
-                              type="number"
-                              placeholder="0.00" 
-                              {...field}
-                              className="border-amber-200 focus-visible:ring-amber-500 pl-7"
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="category"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-amber-900">Category</FormLabel>
-                        <FormControl>
-                          <Input 
-                            placeholder="e.g. Rings, Necklaces" 
-                            {...field} 
-                            className="border-amber-200 focus-visible:ring-amber-500"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
-                <FormField
-                  control={form.control}
-                  name="imageUrl"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-amber-900">Image URL</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="https://example.com/image.jpg" 
-                          {...field} 
-                          className="border-amber-200 focus-visible:ring-amber-500"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="inStock"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border border-amber-200 p-3 bg-amber-50/50">
-                      <div className="space-y-0.5">
-                        <FormLabel className="text-amber-900">Available in Stock</FormLabel>
-                        <div className="text-sm text-amber-700/70">
-                          Show this product as available for purchase
-                        </div>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                          className="data-[state=checked]:bg-amber-600"
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                
-                <div className="flex justify-end space-x-2 pt-4">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={handleCloseDialog}
-                    className="border-amber-300"
-                  >
-                    Cancel
-                  </Button>
-                  <Button 
-                    type="submit" 
-                    disabled={createMutation.isPending || updateMutation.isPending}
-                    className="bg-amber-600 hover:bg-amber-700 text-white"
-                  >
-                    {(createMutation.isPending || updateMutation.isPending) && (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    )}
-                    {isEditing ? "Update Product" : "Create Product"}
-                  </Button>
-                </div>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
       </div>
 
-      {products && products.length > 0 ? (
-        <div className="bg-white rounded-md border border-amber-100 overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-amber-50 border-b border-amber-100">
-              <tr>
-                <th className="text-left py-3 px-4 font-medium text-amber-800">Name</th>
-                <th className="text-left py-3 px-4 font-medium text-amber-800">Category</th>
-                <th className="text-right py-3 px-4 font-medium text-amber-800">Price</th>
-                <th className="text-center py-3 px-4 font-medium text-amber-800">Status</th>
-                <th className="text-right py-3 px-4 font-medium text-amber-800">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-amber-100">
-              {products.map((product) => (
-                <tr key={product.id} className="hover:bg-amber-50/30">
-                  <td className="py-3 px-4 text-amber-800 font-medium">{product.name}</td>
-                  <td className="py-3 px-4 text-amber-600">
-                    {product.category ? (
-                      <div className="flex items-center">
-                        <Tag className="h-3 w-3 mr-1 text-amber-600/70" />
-                        {product.category}
+      <div className="px-6 py-8">
+        <div className="text-center">
+          <div className="inline-flex items-center justify-center p-5 bg-amber-50 rounded-full mb-4">
+            <Plus className="h-8 w-8 text-amber-600" />
+          </div>
+          <h3 className="text-lg font-medium text-amber-800 mb-2">Add Products to Collection</h3>
+          <p className="text-amber-600/80 max-w-md mx-auto mb-6">
+            Add products to this collection to showcase them to your customers. Products can be jewelry items, accessories, or any other items you sell.
+          </p>
+          <Button 
+            variant="default" 
+            className="bg-amber-600 hover:bg-amber-700 text-white px-6"
+            data-add-product-button="true"
+            onClick={() => {
+              setCurrentProduct(null);
+              form.reset({
+                name: "",
+                description: "",
+                price: 0,
+                category: "",
+                imageUrl: "",
+                collectionId: collection.id,
+                inStock: true
+              });
+              setIsDialogOpen(true);
+            }}>
+            <Plus className="mr-2 h-4 w-4" /> Add New Product
+          </Button>
+        </div>
+      </div>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-[525px]">
+          <DialogHeader>
+            <DialogTitle className="text-amber-800 flex items-center gap-2">
+              {isEditing ? (
+                <>
+                  <Pencil className="h-5 w-5 text-amber-600" />
+                  Edit Product
+                </>
+              ) : (
+                <>
+                  <Plus className="h-5 w-5 text-amber-600" />
+                  Add New Product
+                </>
+              )}
+            </DialogTitle>
+          </DialogHeader>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-amber-900">Product Name</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="Product name" 
+                        {...field} 
+                        className="border-amber-200 focus-visible:ring-amber-500"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-amber-900">Description</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Enter a description" 
+                        {...field} 
+                        value={field.value || ""}
+                        className="border-amber-200 focus-visible:ring-amber-500 min-h-[80px]"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="price"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-amber-900">Price</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-800/60">₹</span>
+                          <Input 
+                            type="number"
+                            placeholder="0.00" 
+                            {...field}
+                            className="border-amber-200 focus-visible:ring-amber-500 pl-7"
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="category"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-amber-900">Category</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="e.g. Rings, Necklaces" 
+                          {...field} 
+                          className="border-amber-200 focus-visible:ring-amber-500"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              
+              <FormField
+                control={form.control}
+                name="imageUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-amber-900">Image URL</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="https://example.com/image.jpg" 
+                        {...field} 
+                        className="border-amber-200 focus-visible:ring-amber-500"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="inStock"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border border-amber-200 p-3 bg-amber-50/50">
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-amber-900">Available in Stock</FormLabel>
+                      <div className="text-sm text-amber-700/70">
+                        Show this product as available for purchase
                       </div>
-                    ) : (
-                      <span className="text-amber-400/70">—</span>
-                    )}
-                  </td>
-                  <td className="py-3 px-4 text-right">
-                    {product.price ? (
-                      <span className="font-semibold text-amber-700">₹{product.price.toLocaleString()}</span>
-                    ) : (
-                      <span className="text-amber-400">No price</span>
-                    )}
-                  </td>
-                  <td className="py-3 px-4 text-center">
-                    {product.inStock === 1 ? (
-                      <Badge className="bg-green-100 text-green-800 hover:bg-green-200 border-none">In Stock</Badge>
-                    ) : (
-                      <Badge className="bg-red-100 text-red-800 hover:bg-red-200 border-none">Out of Stock</Badge>
-                    )}
-                  </td>
-                  <td className="py-3 px-4 text-right">
-                    <div className="flex justify-end space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-8 border-amber-200 hover:bg-amber-50"
-                        onClick={() => handleEdit(product)}
-                      >
-                        <Pencil className="h-3.5 w-3.5 mr-1 text-amber-700" />
-                        Edit
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        className="h-8"
-                        onClick={() => handleDelete(product)}
-                      >
-                        <Trash2 className="h-3.5 w-3.5 mr-1" />
-                        Delete
-                      </Button>
                     </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        <div className="text-center py-12 border rounded-md bg-amber-50/30 border-amber-100">
-          <span className="inline-block p-4 bg-amber-100 rounded-full mb-3">
-            <ShoppingBag className="h-6 w-6 text-amber-600" />
-          </span>
-          <p className="text-amber-800">No products found in this collection. Add your first product to get started.</p>
-        </div>
-      )}
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        className="data-[state=checked]:bg-amber-600"
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={handleCloseDialog}
+                  className="border-amber-300"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  type="submit" 
+                  disabled={createMutation.isPending || updateMutation.isPending}
+                  className="bg-amber-600 hover:bg-amber-700 text-white"
+                >
+                  {(createMutation.isPending || updateMutation.isPending) && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
+                  {isEditing ? "Update Product" : "Create Product"}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

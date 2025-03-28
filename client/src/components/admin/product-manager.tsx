@@ -509,10 +509,38 @@ export function ProductManager({ collection, onBack }: ProductManagerProps) {
                   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
                     const file = e.target.files?.[0];
                     if (file) {
-                      // For this implementation, we're converting the image to a data URL
+                      // Compress and convert the image to a data URL
                       const reader = new FileReader();
-                      reader.onload = () => {
-                        field.onChange(reader.result as string);
+                      reader.onload = (event) => {
+                        const img = new Image();
+                        img.onload = () => {
+                          // Create a canvas to compress the image
+                          const canvas = document.createElement('canvas');
+                          
+                          // Resize if the image is very large (> 1200px)
+                          let width = img.width;
+                          let height = img.height;
+                          
+                          if (width > 1200) {
+                            const ratio = width / 1200;
+                            width = 1200;
+                            height = Math.floor(height / ratio);
+                          }
+                          
+                          canvas.width = width;
+                          canvas.height = height;
+                          
+                          // Draw and compress
+                          const ctx = canvas.getContext('2d');
+                          if (ctx) {
+                            ctx.drawImage(img, 0, 0, width, height);
+                            // Use 0.7 quality jpeg for good compression
+                            const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                            field.onChange(dataUrl);
+                          }
+                        };
+                        
+                        img.src = event.target?.result as string;
                       };
                       reader.readAsDataURL(file);
                     }
@@ -559,8 +587,8 @@ export function ProductManager({ collection, onBack }: ProductManagerProps) {
                       if (context) {
                         context.drawImage(video, 0, 0, canvas.width, canvas.height);
                         
-                        // Convert to data URL and set as field value
-                        const dataUrl = canvas.toDataURL('image/jpeg');
+                        // Convert to data URL with compression (0.7 quality) and set as field value
+                        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
                         field.onChange(dataUrl);
                         
                         // Stop the camera stream

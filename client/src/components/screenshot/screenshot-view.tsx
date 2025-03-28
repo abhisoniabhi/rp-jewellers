@@ -2,6 +2,7 @@ import { RateInfo } from "@/components/ui/rate-card";
 import { Card, CardContent } from "@/components/ui/card";
 import { format } from "date-fns";
 import { Separator } from "@/components/ui/separator";
+import rpLogo from "../../assets/rp-logo.jpg";
 
 interface ScreenshotViewProps {
   rates: RateInfo[];
@@ -12,7 +13,7 @@ interface ScreenshotViewProps {
 
 export function ScreenshotView({
   rates,
-  shopName = "Jewellery Shop",
+  shopName = "RP Jewellers",
   includeTimestamp = true,
   includeWatermark = true,
 }: ScreenshotViewProps) {
@@ -26,7 +27,14 @@ export function ScreenshotView({
       className="w-full max-w-md mx-auto bg-white p-4 rounded-lg shadow-md"
     >
       <div className="flex flex-col items-center justify-center mb-4">
-        <h1 className="text-2xl font-bold text-amber-800">{shopName}</h1>
+        <div className="flex items-center mb-2">
+          <img 
+            src={rpLogo} 
+            alt="RP Jewellers Logo" 
+            className="h-12 w-12 object-contain mr-2" 
+          />
+          <h1 className="text-2xl font-bold text-amber-800">{shopName}</h1>
+        </div>
         {includeTimestamp && (
           <p className="text-gray-600 text-sm">{currentDate}</p>
         )}
@@ -83,7 +91,7 @@ export function ScreenshotView({
       {includeWatermark && (
         <div className="mt-6 pt-2 border-t border-gray-200">
           <p className="text-center text-xs text-gray-400">
-            Rates updated on {format(new Date(), "dd MMM yyyy 'at' hh:mm a")}
+            RP Jewellers - Rates updated on {format(new Date(), "dd MMM yyyy 'at' hh:mm a")}
           </p>
         </div>
       )}

@@ -11,6 +11,7 @@ import { FeaturedCollections } from "@/components/layout/featured-collections";
 import { useEffect } from "react";
 import { queryClient } from "@/lib/queryClient";
 import { wsClient, WS_EVENTS } from "@/lib/websocket";
+import rpLogo from "../assets/rp-logo.jpg";
 
 export default function HomePage() {
   // Use try/catch to handle potential auth context errors
@@ -70,10 +71,14 @@ export default function HomePage() {
       <div className="bg-gradient-to-r from-amber-50 to-yellow-50 p-3 border-b border-amber-100">
         <div className="container mx-auto">
           <div className="h-52 w-full bg-white rounded-lg shadow-md border border-amber-100 overflow-hidden">
-            {/* You can add your poster/banner image here */}
             <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-amber-50 to-yellow-50 p-4">
-              <div className="text-center">
-                <h2 className="text-xl font-bold text-amber-800 mb-1">JEWELRY SHOP</h2>
+              <div className="text-center flex flex-col items-center">
+                <img 
+                  src={rpLogo} 
+                  alt="RP Jewellers Logo" 
+                  className="h-24 w-24 object-contain mb-2" 
+                />
+                <h2 className="text-xl font-bold text-amber-800 mb-1">RP JEWELLERS</h2>
                 <p className="text-amber-700">Today's Gold & Silver Rates</p>
               </div>
             </div>

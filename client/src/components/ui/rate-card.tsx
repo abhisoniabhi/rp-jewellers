@@ -54,22 +54,22 @@ export function RateCard({ rate, className }: RateCardProps) {
   return (
     <Card className={cn("shadow-md", className)}>
       <CardContent className="p-3">
-        <div className="flex items-center mb-1">
-          <div className={`w-5 h-5 rounded-md ${getIconColor()} flex items-center justify-center mr-2`}>
+        <div className="flex items-start mb-1">
+          <div className={`w-5 h-5 rounded-md ${getIconColor()} flex items-center justify-center mr-2 shrink-0 mt-0.5`}>
             {renderIcon()}
           </div>
-          <h3 className="text-xs font-medium truncate">{rate.type}</h3>
+          <h3 className="text-xs font-medium leading-tight" style={{ wordBreak: 'break-word' }}>{rate.type}</h3>
         </div>
-        <div className="flex items-baseline">
-          <span className="text-sm mr-1">₹</span>
-          <span className="text-xl font-bold">{rate.current}</span>
+        <div className="flex items-baseline mt-1">
+          <span className="text-sm mr-0.5">₹</span>
+          <span className="text-lg font-bold">{rate.current.toLocaleString()}</span>
           <span className="ml-1 text-green-500">
             <BadgeCheck className="h-3 w-3" />
           </span>
         </div>
         <div className="flex justify-between text-2xs text-gray-600 mt-1">
-          <span>H: {rate.high}</span>
-          <span>L: {rate.low}</span>
+          <span>H: {rate.high.toLocaleString()}</span>
+          <span>L: {rate.low.toLocaleString()}</span>
         </div>
         <div className="text-2xs text-gray-500 mt-1">
           Updated: {rate.updatedAt}

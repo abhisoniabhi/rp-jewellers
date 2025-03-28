@@ -1,4 +1,4 @@
-import { users, rates, type User, type InsertUser, type Rate, type InsertRate, type UpdateRate } from "@shared/schema";
+import { users, rates, collections, type User, type InsertUser, type Rate, type InsertRate, type UpdateRate, type Collection, type InsertCollection, type UpdateCollection } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
 
@@ -17,6 +17,13 @@ export interface IStorage {
   createRate(rate: InsertRate): Promise<Rate>;
   updateRate(id: number, rate: Partial<Rate>): Promise<Rate>;
   
+  // Collection related methods
+  getCollections(): Promise<Collection[]>;
+  getCollectionById(id: number): Promise<Collection | undefined>;
+  createCollection(collection: InsertCollection): Promise<Collection>;
+  updateCollection(id: number, collection: Partial<UpdateCollection>): Promise<Collection>;
+  deleteCollection(id: number): Promise<boolean>;
+  
   // Session store
   sessionStore: any; // Using any for sessionStore
 }
@@ -24,21 +31,26 @@ export interface IStorage {
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
   private rates: Map<number, Rate>;
+  private collections: Map<number, Collection>;
   sessionStore: any; // Using any for sessionStore type
   private userIdCounter: number;
   private rateIdCounter: number;
+  private collectionIdCounter: number;
 
   constructor() {
     this.users = new Map();
     this.rates = new Map();
+    this.collections = new Map();
     this.userIdCounter = 1;
     this.rateIdCounter = 1;
+    this.collectionIdCounter = 1;
     this.sessionStore = new MemoryStore({
       checkPeriod: 86400000 // prune expired entries every 24h
     });
     
-    // Initialize with default rates
+    // Initialize with default rates and collections
     this.initializeRates();
+    this.initializeCollections();
   }
   
   private initializeRates() {
@@ -176,6 +188,106 @@ export class MemStorage implements IStorage {
     
     this.rates.set(id, updatedRate);
     return updatedRate;
+  }
+  
+  // Initialize default collections
+  private initializeCollections(): void {
+    const defaultCollections: InsertCollection[] = [
+      {
+        name: "Wedding Collection",
+        description: "Exclusive designs for your special day",
+        imageUrl: "https://images.unsplash.com/photo-1611652022419-a9419f74343d?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+        featured: 1
+      },
+      {
+        name: "Traditional Gold",
+        description: "Timeless designs inspired by culture",
+        imageUrl: "https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+        featured: 1
+      },
+      {
+        name: "Diamond Jewelry",
+        description: "Elegant pieces with premium diamonds",
+        imageUrl: "https://images.unsplash.com/photo-1619119712072-f22d10d4dd5c?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+        featured: 0
+      },
+      {
+        name: "Silver Collection",
+        description: "Modern silver designs for daily wear",
+        imageUrl: "https://images.unsplash.com/photo-1602173574767-37ac01994b2a?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3", 
+        featured: 0
+      }
+    ];
+    
+    const now = new Date().toISOString();
+    
+    defaultCollections.forEach(collection => {
+      const id = this.collectionIdCounter++;
+      const collectionItem: Collection = {
+        id,
+        name: collection.name,
+        description: collection.description || null,
+        imageUrl: collection.imageUrl,
+        featured: collection.featured || 0,
+        createdAt: now
+      };
+      this.collections.set(id, collectionItem);
+    });
+  }
+  
+  // Collection methods
+  async getCollections(): Promise<Collection[]> {
+    return Array.from(this.collections.values());
+  }
+  
+  async getCollectionById(id: number): Promise<Collection | undefined> {
+    return this.collections.get(id);
+  }
+  
+  async createCollection(insertCollection: InsertCollection): Promise<Collection> {
+    const id = this.collectionIdCounter++;
+    const now = new Date().toISOString();
+    
+    // Create collection with proper types
+    const collection: Collection = {
+      id,
+      name: insertCollection.name,
+      description: insertCollection.description || null,
+      imageUrl: insertCollection.imageUrl,
+      featured: insertCollection.featured || 0,
+      createdAt: now
+    };
+    
+    this.collections.set(id, collection);
+    return collection;
+  }
+  
+  async updateCollection(id: number, updateData: Partial<UpdateCollection>): Promise<Collection> {
+    const existingCollection = this.collections.get(id);
+    if (!existingCollection) {
+      throw new Error(`Collection with id ${id} not found`);
+    }
+    
+    // Handle specific fields with proper types
+    const updatedCollection: Collection = {
+      ...existingCollection,
+      name: updateData.name || existingCollection.name,
+      description: updateData.description ?? existingCollection.description,
+      imageUrl: updateData.imageUrl || existingCollection.imageUrl,
+      featured: typeof updateData.featured === 'number' ? updateData.featured : existingCollection.featured
+    };
+    
+    this.collections.set(id, updatedCollection);
+    return updatedCollection;
+  }
+  
+  async deleteCollection(id: number): Promise<boolean> {
+    if (!this.collections.has(id)) {
+      return false;
+    }
+    
+    this.collections.delete(id);
+    return true;
   }
 }
 

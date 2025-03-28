@@ -41,8 +41,33 @@ export const updateRateSchema = createInsertSchema(rates).pick({
   category: true,
 });
 
+// Collection model
+export const collections = pgTable("collections", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 100 }).notNull(),
+  description: text("description"),
+  imageUrl: text("image_url").notNull(),
+  featured: integer("featured").default(0).notNull(),
+  createdAt: text("created_at").notNull(),
+});
+
+export const insertCollectionSchema = createInsertSchema(collections).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const updateCollectionSchema = createInsertSchema(collections).pick({
+  name: true,
+  description: true,
+  imageUrl: true,
+  featured: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertRate = z.infer<typeof insertRateSchema>;
 export type UpdateRate = z.infer<typeof updateRateSchema>;
 export type Rate = typeof rates.$inferSelect;
+export type InsertCollection = z.infer<typeof insertCollectionSchema>;
+export type UpdateCollection = z.infer<typeof updateCollectionSchema>;
+export type Collection = typeof collections.$inferSelect;

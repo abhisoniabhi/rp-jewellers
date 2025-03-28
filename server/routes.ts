@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
-import { updateRateSchema, insertCollectionSchema, updateCollectionSchema } from "@shared/schema";
+import { updateRateSchema, insertCollectionSchema, updateCollectionSchema, insertProductSchema, updateProductSchema } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 
 // Create WebSocket manager for real-time updates
@@ -227,6 +227,147 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting collection:", error);
       res.status(500).json({ message: "Failed to delete collection" });
+    }
+  });
+
+  // Product routes
+  // Get all products
+  app.get("/api/products", async (req, res) => {
+    try {
+      const products = await storage.getProducts();
+      res.json(products);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch products" });
+    }
+  });
+  
+  // Get a specific product by ID
+  app.get("/api/products/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const product = await storage.getProductById(id);
+      
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+      
+      res.json(product);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch product" });
+    }
+  });
+  
+  // Get products by collection ID
+  app.get("/api/collections/:id/products", async (req, res) => {
+    try {
+      const collectionId = parseInt(req.params.id);
+      const collection = await storage.getCollectionById(collectionId);
+      
+      if (!collection) {
+        return res.status(404).json({ message: "Collection not found" });
+      }
+      
+      const products = await storage.getProductsByCollectionId(collectionId);
+      res.json(products);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch products for collection" });
+    }
+  });
+  
+  // Create a new product (admin only)
+  app.post("/api/products", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    
+    try {
+      const result = insertProductSchema.safeParse(req.body);
+      
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({ message: validationError.message });
+      }
+      
+      // Verify collection exists
+      const collection = await storage.getCollectionById(result.data.collectionId);
+      if (!collection) {
+        return res.status(400).json({ message: "Collection does not exist" });
+      }
+      
+      const newProduct = await storage.createProduct(result.data);
+      
+      // Broadcast the update via WebSockets
+      wsManager.broadcast('PRODUCT_CREATED', newProduct);
+      
+      return res.status(201).json(newProduct);
+    } catch (error) {
+      console.error("Error creating product:", error);
+      res.status(500).json({ message: "Failed to create product" });
+    }
+  });
+  
+  // Update a product (admin only)
+  app.put("/api/products/:id", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    
+    try {
+      const id = parseInt(req.params.id);
+      const result = updateProductSchema.safeParse(req.body);
+      
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({ message: validationError.message });
+      }
+      
+      // If collection ID is provided, verify it exists
+      if (result.data.collectionId) {
+        const collection = await storage.getCollectionById(result.data.collectionId);
+        if (!collection) {
+          return res.status(400).json({ message: "Collection does not exist" });
+        }
+      }
+      
+      const existingProduct = await storage.getProductById(id);
+      
+      if (!existingProduct) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+      
+      const updatedProduct = await storage.updateProduct(id, result.data);
+      
+      // Broadcast the update via WebSockets
+      wsManager.broadcast('PRODUCT_UPDATED', updatedProduct);
+      
+      return res.json(updatedProduct);
+    } catch (error) {
+      console.error("Error updating product:", error);
+      res.status(500).json({ message: "Failed to update product" });
+    }
+  });
+  
+  // Delete a product (admin only)
+  app.delete("/api/products/:id", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteProduct(id);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+      
+      // Broadcast the update via WebSockets
+      wsManager.broadcast('PRODUCT_DELETED', { id });
+      
+      return res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      res.status(500).json({ message: "Failed to delete product" });
     }
   });
 

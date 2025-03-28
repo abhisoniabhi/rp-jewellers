@@ -180,9 +180,20 @@ export class MemStorage implements IStorage {
       hour12: true
     });
     
+    // Auto-calculate high and low based on the current update
+    const currentRate = updateData.current !== undefined ? updateData.current : existingRate.current;
+    
+    // Update high if current rate is higher than existing high
+    const newHigh = currentRate > existingRate.high ? currentRate : existingRate.high;
+    
+    // Update low if current rate is lower than existing low
+    const newLow = currentRate < existingRate.low ? currentRate : existingRate.low;
+    
     const updatedRate: Rate = {
       ...existingRate,
       ...updateData,
+      high: newHigh,
+      low: newLow,
       updatedAt: now
     };
     

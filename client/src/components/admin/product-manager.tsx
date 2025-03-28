@@ -448,69 +448,71 @@ export function ProductManager({ collection, onBack }: ProductManagerProps) {
       </div>
 
       {products && products.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {products.map((product) => (
-            <div key={product.id} className="group bg-white rounded-md shadow-sm overflow-hidden border border-amber-100 hover:shadow-md transition-all duration-300">
-              <div className="aspect-square bg-amber-50 relative overflow-hidden">
-                {product.imageUrl ? (
-                  <img 
-                    src={product.imageUrl} 
-                    alt={product.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-amber-300">
-                    <ImageIcon className="w-16 h-16" />
-                  </div>
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end">
-                  <div className="w-full p-3 flex justify-between items-center">
-                    <div>
-                      {product.inStock === 1 ? (
-                        <Badge className="bg-green-100 text-green-800 hover:bg-green-200 border-none">In Stock</Badge>
-                      ) : (
-                        <Badge className="bg-red-100 text-red-800 hover:bg-red-200 border-none">Out of Stock</Badge>
-                      )}
-                    </div>
-                    <div className="flex space-x-2">
+        <div className="bg-white rounded-md border border-amber-100 overflow-hidden">
+          <table className="w-full text-sm">
+            <thead className="bg-amber-50 border-b border-amber-100">
+              <tr>
+                <th className="text-left py-3 px-4 font-medium text-amber-800">Name</th>
+                <th className="text-left py-3 px-4 font-medium text-amber-800">Category</th>
+                <th className="text-right py-3 px-4 font-medium text-amber-800">Price</th>
+                <th className="text-center py-3 px-4 font-medium text-amber-800">Status</th>
+                <th className="text-right py-3 px-4 font-medium text-amber-800">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-amber-100">
+              {products.map((product) => (
+                <tr key={product.id} className="hover:bg-amber-50/30">
+                  <td className="py-3 px-4 text-amber-800 font-medium">{product.name}</td>
+                  <td className="py-3 px-4 text-amber-600">
+                    {product.category ? (
+                      <div className="flex items-center">
+                        <Tag className="h-3 w-3 mr-1 text-amber-600/70" />
+                        {product.category}
+                      </div>
+                    ) : (
+                      <span className="text-amber-400/70">—</span>
+                    )}
+                  </td>
+                  <td className="py-3 px-4 text-right">
+                    {product.price ? (
+                      <span className="font-semibold text-amber-700">₹{product.price.toLocaleString()}</span>
+                    ) : (
+                      <span className="text-amber-400">No price</span>
+                    )}
+                  </td>
+                  <td className="py-3 px-4 text-center">
+                    {product.inStock === 1 ? (
+                      <Badge className="bg-green-100 text-green-800 hover:bg-green-200 border-none">In Stock</Badge>
+                    ) : (
+                      <Badge className="bg-red-100 text-red-800 hover:bg-red-200 border-none">Out of Stock</Badge>
+                    )}
+                  </td>
+                  <td className="py-3 px-4 text-right">
+                    <div className="flex justify-end space-x-2">
                       <Button
-                        variant="secondary"
-                        size="icon"
-                        className="h-8 w-8 bg-white hover:bg-amber-50"
+                        variant="outline"
+                        size="sm"
+                        className="h-8 border-amber-200 hover:bg-amber-50"
                         onClick={() => handleEdit(product)}
                       >
-                        <Pencil className="h-4 w-4 text-amber-800" />
+                        <Pencil className="h-3.5 w-3.5 mr-1 text-amber-700" />
+                        Edit
                       </Button>
                       <Button
                         variant="destructive"
-                        size="icon"
-                        className="h-8 w-8"
+                        size="sm"
+                        className="h-8"
                         onClick={() => handleDelete(product)}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-3.5 w-3.5 mr-1" />
+                        Delete
                       </Button>
                     </div>
-                  </div>
-                </div>
-              </div>
-              <div className="p-3">
-                <h3 className="font-semibold text-amber-800 truncate">{product.name}</h3>
-                <div className="flex items-center justify-between mt-1">
-                  {product.price ? (
-                    <p className="text-amber-600 font-bold">₹{product.price.toLocaleString()}</p>
-                  ) : (
-                    <p className="text-amber-400">No price set</p>
-                  )}
-                  {product.category && (
-                    <div className="flex items-center text-xs text-amber-600/80">
-                      <Tag className="h-3 w-3 mr-1" />
-                      {product.category}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       ) : (
         <div className="text-center py-12 border rounded-md bg-amber-50/30 border-amber-100">

@@ -1,37 +1,88 @@
 import { useQuery } from "@tanstack/react-query";
 import { useRoute } from "wouter";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { Loader2, ArrowLeft, Scale, Clock, Tag } from "lucide-react";
 import { Link } from "wouter";
 import { useEffect } from "react";
-import { Collection } from "@shared/schema";
+import { Collection, Product } from "@shared/schema";
 import { Header } from "@/components/layout/header";
 import { BottomNavigation } from "@/components/layout/bottom-navigation";
 import { Button } from "@/components/ui/button";
 import { wsClient, WS_EVENTS } from "@/lib/websocket";
 import { queryClient } from "@/lib/queryClient";
+import { Badge } from "@/components/ui/badge";
 
 export default function CollectionDetailPage() {
   const [, params] = useRoute("/collections/:id");
   const collectionId = params?.id ? parseInt(params.id) : null;
   
-  // Set up WebSocket connection for real-time updates
-  useEffect(() => {
-    wsClient.connect();
-    
-    return () => {
-      // No need to disconnect since other components might be using it
-    };
-  }, []);
-  
+  // Fetch collection data
   const { 
     data: collection, 
-    isLoading, 
-    error 
+    isLoading: isLoadingCollection, 
+    error: collectionError 
   } = useQuery<Collection>({
     queryKey: ["/api/collections", collectionId],
     enabled: !!collectionId, // Only run query if we have an ID
   });
+  
+  // Fetch products for this collection
+  const {
+    data: products,
+    isLoading: isLoadingProducts,
+    error: productsError
+  } = useQuery<Product[]>({
+    queryKey: ["/api/collections", collectionId, "products"],
+    enabled: !!collectionId,
+  });
 
+  // Set up WebSocket connection for real-time updates
+  useEffect(() => {
+    wsClient.connect();
+    
+    // Set up WebSocket event listeners for product updates
+    const onProductCreated = (product: Product) => {
+      if (product.collectionId === collectionId) {
+        queryClient.invalidateQueries({
+          queryKey: ["/api/collections", collectionId, "products"]
+        });
+      }
+    };
+    
+    const onProductUpdated = (product: Product) => {
+      if (product.collectionId === collectionId) {
+        queryClient.invalidateQueries({
+          queryKey: ["/api/collections", collectionId, "products"]
+        });
+      }
+    };
+    
+    const onProductDeleted = (data: { id: number }) => {
+      // Since we don't know the collection ID of the deleted product,
+      // invalidate the query anyway to be safe
+      queryClient.invalidateQueries({
+        queryKey: ["/api/collections", collectionId, "products"]
+      });
+    };
+    
+    // Subscribe to WebSocket events
+    const unsubscribeCreated = wsClient.subscribe(WS_EVENTS.PRODUCT_CREATED, onProductCreated);
+    const unsubscribeUpdated = wsClient.subscribe(WS_EVENTS.PRODUCT_UPDATED, onProductUpdated);
+    const unsubscribeDeleted = wsClient.subscribe(WS_EVENTS.PRODUCT_DELETED, onProductDeleted);
+    
+    return () => {
+      // Unsubscribe from WebSocket events
+      unsubscribeCreated();
+      unsubscribeUpdated();
+      unsubscribeDeleted();
+      // No need to disconnect since other components might be using it
+    };
+  }, [collectionId]);
+
+  // Combined loading state and error
+  const isLoading = isLoadingCollection || isLoadingProducts;
+  const error = collectionError || productsError;
+
+  // Loading state
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -40,6 +91,7 @@ export default function CollectionDetailPage() {
     );
   }
 
+  // Error state
   if (error || !collection) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-4">
@@ -54,12 +106,14 @@ export default function CollectionDetailPage() {
     );
   }
 
+  // Main content
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
       
       <main className="flex-grow bg-gray-100">
         <div className="container mx-auto px-3 py-4">
+          {/* Back button and title */}
           <div className="mb-4 flex items-center">
             <Link href="/">
               <Button variant="ghost" className="p-0 mr-2">
@@ -69,6 +123,7 @@ export default function CollectionDetailPage() {
             <h1 className="text-xl font-bold text-amber-800">{collection.name}</h1>
           </div>
           
+          {/* Collection details */}
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
             {collection.imageUrl && (
               <div className="h-48 w-full overflow-hidden">
@@ -107,55 +162,68 @@ export default function CollectionDetailPage() {
             </div>
           </div>
           
+          {/* Products gallery */}
           <div className="mt-6">
-            <h3 className="text-lg font-bold text-amber-800 mb-3">Product Gallery</h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {/* Sample product images - replace with actual data when available */}
-              <div className="rounded-md overflow-hidden aspect-square shadow-sm hover:shadow-md transition-shadow">
-                <img 
-                  src={`${collection.imageUrl}?v=1`} 
-                  alt={`${collection.name} Product 1`}
-                  className="object-cover w-full h-full hover:scale-105 transition-transform" 
-                />
+            <h3 className="text-lg font-bold text-amber-800 mb-3">
+              Product Gallery {products && products.length > 0 && (
+                <span className="text-sm font-normal text-gray-500 ml-2">
+                  ({products.length} items)
+                </span>
+              )}
+            </h3>
+            
+            {products && products.length > 0 ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {products.map((product) => (
+                  <div key={product.id} className="bg-white rounded-md overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                    <div className="aspect-square overflow-hidden">
+                      <img 
+                        src={product.imageUrl || collection.imageUrl} 
+                        alt={product.name}
+                        className="object-cover w-full h-full hover:scale-105 transition-transform" 
+                      />
+                    </div>
+                    <div className="p-3">
+                      <div className="flex justify-between items-start mb-1">
+                        <h3 className="font-semibold text-amber-800 truncate flex-1">{product.name}</h3>
+                        {product.inStock === 1 ? (
+                          <Badge className="text-xs bg-green-100 text-green-800 border-none">In Stock</Badge>
+                        ) : (
+                          <Badge className="text-xs bg-red-100 text-red-800 border-none">Out of Stock</Badge>
+                        )}
+                      </div>
+                      
+                      <div className="flex items-center justify-between mt-2">
+                        {product.price && (
+                          <p className="text-amber-600 font-bold">
+                            ₹{product.price.toLocaleString()}
+                          </p>
+                        )}
+                        <div className="flex flex-wrap gap-1">
+                          {product.category && (
+                            <Badge variant="outline" className="text-xs bg-amber-50 border-amber-200 text-amber-800">
+                              {product.category}
+                            </Badge>
+                          )}
+                          {product.weight > 0 && (
+                            <Badge variant="outline" className="text-xs bg-blue-50 border-blue-200 text-blue-800">
+                              {product.weight}g
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div className="rounded-md overflow-hidden aspect-square shadow-sm hover:shadow-md transition-shadow">
-                <img 
-                  src={`${collection.imageUrl}?v=2`} 
-                  alt={`${collection.name} Product 2`}
-                  className="object-cover w-full h-full hover:scale-105 transition-transform" 
-                />
+            ) : (
+              <div className="bg-white rounded-md p-6 text-center shadow-sm">
+                <p className="text-gray-500">No products available in this collection</p>
               </div>
-              <div className="rounded-md overflow-hidden aspect-square shadow-sm hover:shadow-md transition-shadow">
-                <img 
-                  src={`${collection.imageUrl}?v=3`} 
-                  alt={`${collection.name} Product 3`}
-                  className="object-cover w-full h-full hover:scale-105 transition-transform" 
-                />
-              </div>
-              <div className="rounded-md overflow-hidden aspect-square shadow-sm hover:shadow-md transition-shadow">
-                <img 
-                  src={`${collection.imageUrl}?v=4`} 
-                  alt={`${collection.name} Product 4`}
-                  className="object-cover w-full h-full hover:scale-105 transition-transform" 
-                />
-              </div>
-              <div className="rounded-md overflow-hidden aspect-square shadow-sm hover:shadow-md transition-shadow">
-                <img 
-                  src={`${collection.imageUrl}?v=5`} 
-                  alt={`${collection.name} Product 5`}
-                  className="object-cover w-full h-full hover:scale-105 transition-transform" 
-                />
-              </div>
-              <div className="rounded-md overflow-hidden aspect-square shadow-sm hover:shadow-md transition-shadow">
-                <img 
-                  src={`${collection.imageUrl}?v=6`} 
-                  alt={`${collection.name} Product 6`}
-                  className="object-cover w-full h-full hover:scale-105 transition-transform" 
-                />
-              </div>
-            </div>
+            )}
           </div>
           
+          {/* Features */}
           <div className="mt-6">
             <h3 className="text-lg font-bold text-amber-800 mb-3">Features</h3>
             <ul className="list-disc pl-5 text-gray-700 space-y-2">
@@ -167,6 +235,7 @@ export default function CollectionDetailPage() {
             </ul>
           </div>
           
+          {/* Available options */}
           <div className="mt-6">
             <h3 className="text-lg font-bold text-amber-800 mb-3">Available Options</h3>
             <div className="grid grid-cols-2 gap-3">

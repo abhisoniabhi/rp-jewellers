@@ -1,4 +1,4 @@
-import { users, rates, collections, type User, type InsertUser, type Rate, type InsertRate, type UpdateRate, type Collection, type InsertCollection, type UpdateCollection } from "@shared/schema";
+import { users, rates, collections, products, type User, type InsertUser, type Rate, type InsertRate, type UpdateRate, type Collection, type InsertCollection, type UpdateCollection, type Product, type InsertProduct, type UpdateProduct } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
 
@@ -24,6 +24,14 @@ export interface IStorage {
   updateCollection(id: number, collection: Partial<UpdateCollection>): Promise<Collection>;
   deleteCollection(id: number): Promise<boolean>;
   
+  // Product related methods
+  getProducts(): Promise<Product[]>;
+  getProductById(id: number): Promise<Product | undefined>;
+  getProductsByCollectionId(collectionId: number): Promise<Product[]>;
+  createProduct(product: InsertProduct): Promise<Product>;
+  updateProduct(id: number, product: Partial<UpdateProduct>): Promise<Product>;
+  deleteProduct(id: number): Promise<boolean>;
+  
   // Session store
   sessionStore: any; // Using any for sessionStore
 }
@@ -32,18 +40,22 @@ export class MemStorage implements IStorage {
   private users: Map<number, User>;
   private rates: Map<number, Rate>;
   private collections: Map<number, Collection>;
+  private products: Map<number, Product>;
   sessionStore: any; // Using any for sessionStore type
   private userIdCounter: number;
   private rateIdCounter: number;
   private collectionIdCounter: number;
+  private productIdCounter: number;
 
   constructor() {
     this.users = new Map();
     this.rates = new Map();
     this.collections = new Map();
+    this.products = new Map();
     this.userIdCounter = 1;
     this.rateIdCounter = 1;
     this.collectionIdCounter = 1;
+    this.productIdCounter = 1;
     this.sessionStore = new MemoryStore({
       checkPeriod: 86400000 // prune expired entries every 24h
     });
@@ -51,6 +63,7 @@ export class MemStorage implements IStorage {
     // Initialize with default rates and collections
     this.initializeRates();
     this.initializeCollections();
+    this.initializeProducts();
   }
   
   private initializeRates() {
@@ -309,7 +322,154 @@ export class MemStorage implements IStorage {
       return false;
     }
     
+    // Also delete all products in this collection
+    const productsToDelete = Array.from(this.products.values())
+      .filter(product => product.collectionId === id);
+    
+    productsToDelete.forEach(product => {
+      this.products.delete(product.id);
+    });
+    
     this.collections.delete(id);
+    return true;
+  }
+  
+  // Initialize sample products
+  private initializeProducts(): void {
+    const sampleProducts: InsertProduct[] = [
+      // Wedding Collection products (collection id 1)
+      {
+        name: "Bridal Gold Necklace",
+        description: "Exquisite gold necklace with intricate designs for brides",
+        imageUrl: "https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+        price: 150000,
+        weight: 45.5,
+        category: "necklace",
+        collectionId: 1,
+        featured: 1
+      },
+      {
+        name: "Wedding Bangles Set",
+        description: "Complete set of gold bangles for wedding ceremonies",
+        imageUrl: "https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+        price: 85000,
+        weight: 35.8,
+        category: "bangles",
+        collectionId: 1,
+        featured: 1
+      },
+      
+      // Traditional Gold products (collection id 2)
+      {
+        name: "Traditional Gold Earrings",
+        description: "Classic design inspired by cultural heritage",
+        imageUrl: "https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+        price: 35000,
+        weight: 12.5,
+        category: "earrings",
+        collectionId: 2,
+        featured: 0
+      },
+      {
+        name: "Gold Temple Necklace",
+        description: "Temple design gold necklace with traditional motifs",
+        imageUrl: "https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+        price: 120000,
+        weight: 38.2,
+        category: "necklace",
+        collectionId: 2,
+        featured: 1
+      }
+    ];
+    
+    const now = new Date().toISOString();
+    
+    sampleProducts.forEach(product => {
+      const id = this.productIdCounter++;
+      const productItem: Product = {
+        id,
+        name: product.name,
+        description: product.description || null,
+        imageUrl: product.imageUrl,
+        price: product.price,
+        weight: product.weight || 0,
+        category: product.category,
+        collectionId: product.collectionId,
+        featured: product.featured || 0,
+        inStock: product.inStock || 1,
+        createdAt: now
+      };
+      this.products.set(id, productItem);
+    });
+  }
+  
+  // Product methods
+  async getProducts(): Promise<Product[]> {
+    return Array.from(this.products.values());
+  }
+  
+  async getProductById(id: number): Promise<Product | undefined> {
+    return this.products.get(id);
+  }
+  
+  async getProductsByCollectionId(collectionId: number): Promise<Product[]> {
+    return Array.from(this.products.values())
+      .filter(product => product.collectionId === collectionId);
+  }
+  
+  async createProduct(insertProduct: InsertProduct): Promise<Product> {
+    const id = this.productIdCounter++;
+    const now = new Date().toISOString();
+    
+    // Create product with proper types
+    const product: Product = {
+      id,
+      name: insertProduct.name,
+      description: insertProduct.description || null,
+      imageUrl: insertProduct.imageUrl,
+      price: insertProduct.price,
+      weight: insertProduct.weight || 0,
+      category: insertProduct.category,
+      collectionId: insertProduct.collectionId,
+      featured: insertProduct.featured || 0,
+      inStock: insertProduct.inStock || 1,
+      createdAt: now
+    };
+    
+    this.products.set(id, product);
+    return product;
+  }
+  
+  async updateProduct(id: number, updateData: Partial<UpdateProduct>): Promise<Product> {
+    const existingProduct = this.products.get(id);
+    if (!existingProduct) {
+      throw new Error(`Product with id ${id} not found`);
+    }
+    
+    // Handle specific fields with proper types
+    const updatedProduct: Product = {
+      ...existingProduct,
+      name: updateData.name || existingProduct.name,
+      description: updateData.description ?? existingProduct.description,
+      imageUrl: updateData.imageUrl || existingProduct.imageUrl,
+      price: updateData.price ?? existingProduct.price,
+      weight: updateData.weight ?? existingProduct.weight,
+      category: updateData.category || existingProduct.category,
+      collectionId: updateData.collectionId || existingProduct.collectionId,
+      featured: typeof updateData.featured === 'number' ? updateData.featured : existingProduct.featured,
+      inStock: typeof updateData.inStock === 'number' ? updateData.inStock : existingProduct.inStock
+    };
+    
+    this.products.set(id, updatedProduct);
+    return updatedProduct;
+  }
+  
+  async deleteProduct(id: number): Promise<boolean> {
+    if (!this.products.has(id)) {
+      return false;
+    }
+    
+    this.products.delete(id);
     return true;
   }
 }

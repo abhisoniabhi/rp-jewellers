@@ -107,5 +107,8 @@ export const wsClient = new WebSocketClient();
 
 // Export event names as constants
 export const WS_EVENTS = {
-  RATE_UPDATED: 'RATE_UPDATED'
+  RATE_UPDATED: 'RATE_UPDATED',
+  PRODUCT_CREATED: 'PRODUCT_CREATED',
+  PRODUCT_UPDATED: 'PRODUCT_UPDATED',
+  PRODUCT_DELETED: 'PRODUCT_DELETED'
 };

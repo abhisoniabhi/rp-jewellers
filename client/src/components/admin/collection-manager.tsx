@@ -1,10 +1,28 @@
 import React, { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Collection, InsertCollection, updateCollectionSchema } from "@shared/schema";
+import { 
+  Collection, 
+  InsertCollection, 
+  updateCollectionSchema, 
+  Product, 
+  InsertProduct, 
+  updateProductSchema 
+} from "@shared/schema";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, Plus, Pencil, Trash2, LayoutGrid } from "lucide-react";
+import { 
+  Loader2, 
+  Plus, 
+  Pencil, 
+  Trash2, 
+  LayoutGrid, 
+  Gem, 
+  ShoppingBag, 
+  ListFilter, 
+  ChevronRight,
+  ArrowLeft
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -27,6 +45,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
 
 // Form schema with validations
 const collectionFormSchema = z.object({
@@ -36,12 +61,28 @@ const collectionFormSchema = z.object({
   featured: z.boolean().default(false)
 });
 
+// Product form schema
+const productFormSchema = z.object({
+  name: z.string().min(3, "Name must be at least 3 characters"),
+  description: z.string().nullable().optional(),
+  price: z.number().min(0, "Price cannot be negative"),
+  category: z.string().min(1, "Category is required"),
+  imageUrl: z.string().url("Please enter a valid URL"),
+  collectionId: z.number(),
+  inStock: z.boolean().default(true)
+});
+
 type CollectionFormValues = z.infer<typeof collectionFormSchema>;
+type ProductFormValues = z.infer<typeof productFormSchema>;
+
+// Import the ProductManager component
+import { ProductManager } from "./product-manager";
 
 export function CollectionManager() {
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [currentCollection, setCurrentCollection] = useState<Collection | null>(null);
+  const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
   const isEditing = !!currentCollection;
 
   // Form setup

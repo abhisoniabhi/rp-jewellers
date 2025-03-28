@@ -112,8 +112,13 @@ export default function AdminPage() {
   };
 
   const onSubmit = (data: RateFormData) => {
-    data.category = activeTab;
-    updateRateMutation.mutate(data);
+    // Only send necessary data: type, current rate, and category
+    const updateData = {
+      type: data.type,
+      current: data.current,
+      category: activeTab
+    };
+    updateRateMutation.mutate(updateData as RateFormData);
   };
 
   const handleLogout = () => {
@@ -244,16 +249,17 @@ export default function AdminPage() {
                         <div className="border rounded-md p-4 bg-amber-50/50">
                           <Form {...form}>
                             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                              <div className="grid md:grid-cols-2 gap-4">
+                              <div className="space-y-4">
                                 <FormField
                                   control={form.control}
                                   name="type"
                                   render={({ field }) => (
                                     <FormItem>
                                       <FormLabel className="text-amber-900">Rate Type</FormLabel>
-                                      <FormControl>
-                                        <Input {...field} placeholder="Enter rate type" className="border-amber-200 focus-visible:ring-amber-500" />
-                                      </FormControl>
+                                      <div className="p-2 bg-gray-50 border border-gray-200 rounded-md text-gray-700">
+                                        {field.value}
+                                      </div>
+                                      <Input type="hidden" {...field} />
                                     </FormItem>
                                   )}
                                 />
@@ -272,32 +278,18 @@ export default function AdminPage() {
                                 />
                               </div>
 
-                              <div className="grid grid-cols-2 gap-4">
-                                <FormField
-                                  control={form.control}
-                                  name="high"
-                                  render={({ field }) => (
-                                    <FormItem>
-                                      <FormLabel className="text-amber-900">High (₹)</FormLabel>
-                                      <FormControl>
-                                        <Input {...field} type="number" placeholder="High rate" className="border-amber-200 focus-visible:ring-amber-500" />
-                                      </FormControl>
-                                    </FormItem>
-                                  )}
-                                />
+                              <div className="grid grid-cols-2 gap-4 mt-4">
+                                <div className="p-3 bg-gray-50 border border-gray-200 rounded-md">
+                                  <div className="text-xs text-gray-500 mb-1">Daily High (₹)</div>
+                                  <div className="font-medium text-gray-800">{selectedRate?.high.toLocaleString()}</div>
+                                  <Input type="hidden" {...form.register("high")} />
+                                </div>
 
-                                <FormField
-                                  control={form.control}
-                                  name="low"
-                                  render={({ field }) => (
-                                    <FormItem>
-                                      <FormLabel className="text-amber-900">Low (₹)</FormLabel>
-                                      <FormControl>
-                                        <Input {...field} type="number" placeholder="Low rate" className="border-amber-200 focus-visible:ring-amber-500" />
-                                      </FormControl>
-                                    </FormItem>
-                                  )}
-                                />
+                                <div className="p-3 bg-gray-50 border border-gray-200 rounded-md">
+                                  <div className="text-xs text-gray-500 mb-1">Daily Low (₹)</div>
+                                  <div className="font-medium text-gray-800">{selectedRate?.low.toLocaleString()}</div>
+                                  <Input type="hidden" {...form.register("low")} />
+                                </div>
                               </div>
 
                               <div className="flex justify-end pt-2">

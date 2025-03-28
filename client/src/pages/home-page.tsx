@@ -6,6 +6,7 @@ import { RateCard, RateInfo } from "@/components/ui/rate-card";
 import { ShareButton } from "@/components/ui/share-button";
 import { BottomNavigation } from "@/components/layout/bottom-navigation";
 import { AdminTrigger } from "@/components/admin/admin-trigger";
+import { ScreenshotGenerator } from "@/components/screenshot/screenshot-generator";
 
 export default function HomePage() {
   // Use try/catch to handle potential auth context errors
@@ -65,8 +66,9 @@ export default function HomePage() {
             ))}
           </div>
           
-          <div className="mt-4 flex justify-center">
+          <div className="mt-4 flex justify-center gap-3">
             <ShareButton />
+            <ScreenshotGenerator rates={rates} />
           </div>
           
           <div className="mt-3 text-2xs text-gray-500 px-1">

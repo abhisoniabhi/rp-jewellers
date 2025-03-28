@@ -93,15 +93,6 @@ export default function HomePage() {
             <ShareButton />
             <ScreenshotGenerator rates={rates} />
           </div>
-
-          {/* Utility Tools */}
-          <div className="mt-6 grid md:grid-cols-2 gap-4">
-            <PriceCalculator 
-              currentGoldRate={rates.find(r => r.category === 'gold')?.current || 0}
-              currentSilverRate={rates.find(r => r.category === 'silver')?.current || 0}
-            />
-            <EMICalculator />
-          </div>
           
           {/* Featured Collections */}
           <FeaturedCollections />

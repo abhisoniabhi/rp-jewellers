@@ -44,7 +44,7 @@ export class MemStorage implements IStorage {
   private initializeRates() {
     const defaultRates: InsertRate[] = [
       {
-        type: "नंबर 99.99 Retail",
+        type: "नंबर 99.99 Gold",
         current: 91700,
         high: 92000,
         low: 91650,
@@ -52,7 +52,7 @@ export class MemStorage implements IStorage {
         category: "gold",
       },
       {
-        type: "ब्रैंड 99.50 Retail",
+        type: "ब्रैंड 99.50 Gold",
         current: 91250,
         high: 91550,
         low: 91200,

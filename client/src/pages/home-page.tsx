@@ -78,8 +78,6 @@ export default function HomePage() {
       </main>
       
       <BottomNavigation />
-      
-      {user && <AdminTrigger rates={rates} />}
     </div>
   );
 }

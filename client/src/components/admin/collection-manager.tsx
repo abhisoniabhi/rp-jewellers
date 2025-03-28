@@ -370,44 +370,61 @@ export function CollectionManager() {
         </Dialog>
       </div>
 
-      {collections && collections.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {collections.map((collection) => (
-            <div key={collection.id} className="relative group overflow-hidden rounded-md shadow-sm border border-amber-100 hover:shadow-md transition-all duration-300">
-              <CollectionCard collection={collection} />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300">
-                <div className="absolute bottom-3 left-3 right-3 flex justify-between items-center">
-                  <div className="text-white font-medium">{collection.featured === 1 && "✨ Featured"}</div>
-                  <div className="flex space-x-2">
+      {selectedCollection ? (
+        <div className="animate-in fade-in duration-300">
+          <ProductManager 
+            collection={selectedCollection} 
+            onBack={() => setSelectedCollection(null)}
+          />
+        </div>
+      ) : (
+        <>
+          {collections && collections.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {collections.map((collection) => (
+                <div key={collection.id} className="relative">
+                  {/* Collection card for product management */}
+                  <div className="mb-3">
+                    <CollectionCard 
+                      collection={collection} 
+                      isAdmin={true}
+                      onClick={() => setSelectedCollection(collection)}
+                    />
+                  </div>
+                  
+                  {/* Action buttons */}
+                  <div className="flex justify-end gap-2 mt-1">
                     <Button
-                      variant="secondary"
-                      size="icon"
-                      className="h-8 w-8 bg-white hover:bg-amber-50"
+                      variant="outline"
+                      size="sm"
+                      className="bg-white hover:bg-amber-50 border-amber-200"
                       onClick={() => handleEdit(collection)}
                     >
-                      <Pencil className="h-4 w-4 text-amber-800" />
+                      <Pencil className="h-3.5 w-3.5 mr-1 text-amber-800" />
+                      Edit
                     </Button>
                     <Button
                       variant="destructive"
-                      size="icon"
-                      className="h-8 w-8"
+                      size="sm"
                       onClick={() => handleDelete(collection)}
+                      className="px-2"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-3.5 w-3.5 mr-1" />
+                      Delete
                     </Button>
                   </div>
                 </div>
-              </div>
+              ))}
             </div>
-          ))}
-        </div>
-      ) : (
-        <div className="text-center py-12 border rounded-md bg-amber-50/30 border-amber-100">
-          <span className="inline-block p-4 bg-amber-100 rounded-full mb-3">
-            <LayoutGrid className="h-6 w-6 text-amber-600" />
-          </span>
-          <p className="text-amber-800">No collections found. Add your first collection to get started.</p>
-        </div>
+          ) : (
+            <div className="text-center py-12 border rounded-md bg-amber-50/30 border-amber-100">
+              <span className="inline-block p-4 bg-amber-100 rounded-full mb-3">
+                <LayoutGrid className="h-6 w-6 text-amber-600" />
+              </span>
+              <p className="text-amber-800">No collections found. Add your first collection to get started.</p>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

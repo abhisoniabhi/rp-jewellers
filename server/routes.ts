@@ -62,6 +62,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           category
         });
         
+        // Log update to console for debugging
+        console.log(`[express] Updated rate: ${type} from ${existingRate.current} to ${current}`);
+        
         return res.json(updatedRate);
       } else {
         // Create new rate if it doesn't exist

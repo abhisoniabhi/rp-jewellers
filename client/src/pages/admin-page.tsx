@@ -77,21 +77,24 @@ export default function AdminPage() {
       const res = await apiRequest("POST", "/api/rates/update", data);
       return await res.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      // Show success toast
       toast({
         title: "Success!",
-        description: "Rate updated successfully",
+        description: `Rate updated successfully to ₹${data.current.toLocaleString()}`,
       });
+      
+      // Force a hard refresh of rates data
       queryClient.invalidateQueries({ queryKey: ["/api/rates"] });
-      // Reset form
-      setSelectedRate(null);
-      form.reset({
-        type: "",
-        current: 0,
-        high: 0,
-        low: 0,
-        category: activeTab
-      });
+      
+      // Don't reset form - allow user to see the updated values
+      // Instead, update the selected rate with new data
+      if (selectedRate) {
+        setSelectedRate({
+          ...selectedRate,
+          ...data
+        });
+      }
     },
     onError: (error) => {
       toast({

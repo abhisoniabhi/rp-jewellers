@@ -19,7 +19,9 @@ import {
   Tag,
   ImageIcon,
   Weight,
-  Upload
+  Upload,
+  Camera,
+  Image as ImageIcon2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -54,7 +56,10 @@ const productFormSchema = z.object({
   weight: z.coerce.number().min(0, "Weight cannot be negative").default(0),
   karatType: z.enum(["18k", "22k"]).default("22k"),
   category: z.string().min(1, "Category is required"),
-  imageUrl: z.string().url("Please enter a valid URL"),
+  imageUrl: z.string().refine(
+    (val) => val.startsWith('data:image') || val.startsWith('http'), 
+    { message: "Please enter a valid URL or image data" }
+  ),
   collectionId: z.number(),
   inStock: z.boolean().default(true)
 });
@@ -488,23 +493,237 @@ export function ProductManager({ collection, onBack }: ProductManagerProps) {
               <FormField
                 control={form.control}
                 name="imageUrl"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-amber-900">Product Image</FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder="https://example.com/image.jpg" 
-                        {...field} 
-                        className="border-amber-200 focus-visible:ring-amber-500"
-                      />
-                    </FormControl>
-                    <FormDescription className="text-amber-600/70 flex items-center gap-1 mt-1.5">
-                      <Upload className="h-3.5 w-3.5"/>
-                      Enter a URL for your product image
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                render={({ field }) => {
+                  const [uploadMode, setUploadMode] = useState<'url' | 'file' | 'camera'>('url');
+                  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
+                  const videoRef = React.useRef<HTMLVideoElement>(null);
+                  const canvasRef = React.useRef<HTMLCanvasElement>(null);
+                  
+                  // Handle file upload
+                  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      // For this implementation, we're converting the image to a data URL
+                      const reader = new FileReader();
+                      reader.onload = () => {
+                        field.onChange(reader.result as string);
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  };
+                  
+                  // Start camera
+                  const startCamera = async () => {
+                    try {
+                      const stream = await navigator.mediaDevices.getUserMedia({ 
+                        video: { facingMode: 'environment' } 
+                      });
+                      setCameraStream(stream);
+                      
+                      if (videoRef.current) {
+                        videoRef.current.srcObject = stream;
+                      }
+                    } catch (err) {
+                      console.error("Error accessing camera:", err);
+                      alert("Could not access camera. Please make sure you've granted camera permissions.");
+                      setUploadMode('file');
+                    }
+                  };
+                  
+                  // Stop camera
+                  const stopCamera = () => {
+                    if (cameraStream) {
+                      cameraStream.getTracks().forEach(track => track.stop());
+                      setCameraStream(null);
+                    }
+                  };
+                  
+                  // Take photo
+                  const takePhoto = () => {
+                    if (videoRef.current && canvasRef.current) {
+                      const video = videoRef.current;
+                      const canvas = canvasRef.current;
+                      
+                      // Set canvas dimensions to match video
+                      canvas.width = video.videoWidth;
+                      canvas.height = video.videoHeight;
+                      
+                      // Draw the video frame to the canvas
+                      const context = canvas.getContext('2d');
+                      if (context) {
+                        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                        
+                        // Convert to data URL and set as field value
+                        const dataUrl = canvas.toDataURL('image/jpeg');
+                        field.onChange(dataUrl);
+                        
+                        // Stop the camera stream
+                        stopCamera();
+                        
+                        // Switch to file mode for any additional uploads
+                        setUploadMode('file');
+                      }
+                    }
+                  };
+                  
+                  // Clean up camera on unmount
+                  React.useEffect(() => {
+                    return () => {
+                      stopCamera();
+                    };
+                  }, []);
+                  
+                  // Start camera when mode is changed to camera
+                  React.useEffect(() => {
+                    if (uploadMode === 'camera') {
+                      startCamera();
+                    } else {
+                      stopCamera();
+                    }
+                  }, [uploadMode]);
+                  
+                  return (
+                    <FormItem>
+                      <FormLabel className="text-amber-900">Product Image</FormLabel>
+                      
+                      <div className="flex items-center mb-2 space-x-2">
+                        <Button 
+                          type="button" 
+                          variant={uploadMode === 'url' ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => setUploadMode('url')}
+                          className={uploadMode === 'url' ? 'bg-amber-600' : 'border-amber-200'}
+                        >
+                          <ImageIcon2 className="h-3.5 w-3.5 mr-1" /> URL
+                        </Button>
+                        <Button 
+                          type="button" 
+                          variant={uploadMode === 'file' ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => setUploadMode('file')}
+                          className={uploadMode === 'file' ? 'bg-amber-600' : 'border-amber-200'}
+                        >
+                          <Upload className="h-3.5 w-3.5 mr-1" /> Gallery
+                        </Button>
+                        <Button 
+                          type="button" 
+                          variant={uploadMode === 'camera' ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => setUploadMode('camera')}
+                          className={uploadMode === 'camera' ? 'bg-amber-600' : 'border-amber-200'}
+                        >
+                          <Camera className="h-3.5 w-3.5 mr-1" /> Camera
+                        </Button>
+                      </div>
+                      
+                      {uploadMode === 'url' && (
+                        // URL Input
+                        <>
+                          <FormControl>
+                            <Input 
+                              placeholder="https://example.com/image.jpg" 
+                              value={field.value} 
+                              onChange={field.onChange} 
+                              className="border-amber-200 focus-visible:ring-amber-500"
+                            />
+                          </FormControl>
+                          <FormDescription className="text-amber-600/70 flex items-center gap-1 mt-1.5">
+                            <ImageIcon2 className="h-3.5 w-3.5"/>
+                            Enter a URL for your product image
+                          </FormDescription>
+                        </>
+                      )}
+                      
+                      {uploadMode === 'file' && (
+                        // File Upload
+                        <>
+                          <FormControl>
+                            <div className="border border-amber-200 rounded-md p-4 focus-within:ring-2 focus-within:ring-amber-500 focus-within:ring-offset-2 hover:border-amber-300 transition-colors">
+                              <div className="flex flex-col items-center justify-center gap-1">
+                                <Upload className="h-8 w-8 text-amber-500" />
+                                <p className="text-sm text-amber-700">
+                                  Select from gallery or drag and drop
+                                </p>
+                                <label className="cursor-pointer bg-amber-50 hover:bg-amber-100 px-3 py-1.5 rounded text-sm text-amber-800 transition-colors">
+                                  Browse gallery
+                                  <Input 
+                                    type="file" 
+                                    accept="image/*" 
+                                    className="hidden" 
+                                    onChange={handleFileUpload}
+                                  />
+                                </label>
+                              </div>
+                            </div>
+                          </FormControl>
+                          <FormDescription className="text-amber-600/70 flex items-center gap-1 mt-1.5">
+                            <Upload className="h-3.5 w-3.5"/>
+                            Upload an image from your device
+                          </FormDescription>
+                        </>
+                      )}
+                      
+                      {uploadMode === 'camera' && (
+                        // Camera Capture
+                        <>
+                          <FormControl>
+                            <div className="border border-amber-200 rounded-md p-2 overflow-hidden">
+                              <div className="relative">
+                                <video 
+                                  ref={videoRef}
+                                  autoPlay 
+                                  playsInline
+                                  muted
+                                  className="w-full h-48 object-cover bg-black rounded"
+                                />
+                                <canvas ref={canvasRef} className="hidden" />
+                                
+                                <div className="absolute bottom-2 left-0 right-0 flex justify-center">
+                                  <Button
+                                    type="button"
+                                    onClick={takePhoto}
+                                    size="sm"
+                                    className="bg-amber-600 hover:bg-amber-700 rounded-full h-12 w-12 flex items-center justify-center"
+                                  >
+                                    <div className="h-8 w-8 rounded-full border-2 border-white" />
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          </FormControl>
+                          <FormDescription className="text-amber-600/70 flex items-center gap-1 mt-1.5">
+                            <Camera className="h-3.5 w-3.5"/>
+                            Take a photo with your device camera
+                          </FormDescription>
+                        </>
+                      )}
+                      
+                      {field.value && (
+                        <div className="mt-2 border border-amber-200 rounded-md p-2">
+                          <p className="text-xs text-amber-800 mb-1">Image Preview:</p>
+                          <img 
+                            src={field.value} 
+                            alt="Preview" 
+                            className="max-h-24 object-contain mx-auto"
+                            onError={(e) => {
+                              // Hide the image if it fails to load
+                              (e.target as HTMLImageElement).style.display = 'none';
+                              // Show an error message
+                              e.currentTarget.parentElement?.appendChild(
+                                Object.assign(document.createElement('p'), {
+                                  className: 'text-xs text-red-500 text-center mt-1',
+                                  textContent: 'Error loading image. Please check the URL or upload a different image.'
+                                })
+                              );
+                            }}
+                          />
+                        </div>
+                      )}
+                      
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
               />
               
               <FormField

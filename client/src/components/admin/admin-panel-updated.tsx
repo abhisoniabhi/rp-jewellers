@@ -15,9 +15,9 @@ import { RateInfo } from "@/components/ui/rate-card";
 
 const rateSchema = z.object({
   type: z.string(),
-  current: z.string().transform((val) => parseInt(val, 10)),
-  high: z.string().transform((val) => parseInt(val, 10)),
-  low: z.string().transform((val) => parseInt(val, 10)),
+  current: z.coerce.number(),
+  high: z.coerce.number(),
+  low: z.coerce.number(),
   category: z.string()
 });
 
@@ -37,9 +37,9 @@ export function AdminPanel({ rates, isOpen, onOpenChange }: AdminPanelProps) {
     resolver: zodResolver(rateSchema),
     defaultValues: {
       type: "नंबर 99.99 Gold",
-      current: "91700",
-      high: "92000",
-      low: "91650",
+      current: 91700,
+      high: 92000,
+      low: 91650,
       category: "gold"
     },
   });
@@ -73,9 +73,9 @@ export function AdminPanel({ rates, isOpen, onOpenChange }: AdminPanelProps) {
 
   const handleSelectRate = (rate: RateInfo) => {
     form.setValue("type", rate.type);
-    form.setValue("current", String(rate.current));
-    form.setValue("high", String(rate.high));
-    form.setValue("low", String(rate.low));
+    form.setValue("current", Number(rate.current));
+    form.setValue("high", Number(rate.high));
+    form.setValue("low", Number(rate.low));
     form.setValue("category", rate.category);
   };
 
@@ -171,7 +171,7 @@ export function AdminPanel({ rates, isOpen, onOpenChange }: AdminPanelProps) {
                   <Button type="button" variant="outline" className="mr-2" onClick={() => onOpenChange(false)}>
                     Cancel
                   </Button>
-                  <Button type="submit" className="bg-burgundy-default text-white" disabled={updateRateMutation.isPending}>
+                  <Button type="submit" className="bg-amber-600 hover:bg-amber-700 text-white" disabled={updateRateMutation.isPending}>
                     {updateRateMutation.isPending ? "Updating..." : "Update Rate"}
                   </Button>
                 </div>
@@ -258,7 +258,7 @@ export function AdminPanel({ rates, isOpen, onOpenChange }: AdminPanelProps) {
                   <Button type="button" variant="outline" className="mr-2" onClick={() => onOpenChange(false)}>
                     Cancel
                   </Button>
-                  <Button type="submit" className="bg-burgundy-default text-white" disabled={updateRateMutation.isPending}>
+                  <Button type="submit" className="bg-amber-600 hover:bg-amber-700 text-white" disabled={updateRateMutation.isPending}>
                     {updateRateMutation.isPending ? "Updating..." : "Update Rate"}
                   </Button>
                 </div>

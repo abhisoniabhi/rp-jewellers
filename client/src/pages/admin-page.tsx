@@ -202,24 +202,18 @@ export default function AdminPage() {
                 </CardHeader>
                 <CardContent className="p-0">
                   <Tabs defaultValue="gold" className="w-full" onValueChange={setActiveTab}>
-                    <TabsList className="grid w-full grid-cols-3 rounded-none border-b">
+                    <TabsList className="grid w-full grid-cols-2 rounded-none border-b">
                       <TabsTrigger 
                         value="gold" 
-                        className="data-[state=active]:bg-amber-100 data-[state=active]:border-b-2 data-[state=active]:border-amber-600 rounded-none text-sm px-2 py-1.5"
+                        className="data-[state=active]:bg-amber-100 data-[state=active]:border-b-2 data-[state=active]:border-amber-600 rounded-none text-sm px-3 py-2"
                       >
                         Gold Rates
                       </TabsTrigger>
                       <TabsTrigger 
                         value="silver" 
-                        className="data-[state=active]:bg-gray-100 data-[state=active]:border-b-2 data-[state=active]:border-gray-500 rounded-none text-sm px-2 py-1.5"
+                        className="data-[state=active]:bg-gray-100 data-[state=active]:border-b-2 data-[state=active]:border-gray-500 rounded-none text-sm px-3 py-2"
                       >
                         Silver Rates
-                      </TabsTrigger>
-                      <TabsTrigger 
-                        value="chains" 
-                        className="data-[state=active]:bg-amber-50 data-[state=active]:border-b-2 data-[state=active]:border-amber-300 rounded-none text-sm px-2 py-1.5"
-                      >
-                        Chain Rates
                       </TabsTrigger>
                     </TabsList>
 

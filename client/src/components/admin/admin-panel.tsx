@@ -15,9 +15,9 @@ import { RateInfo } from "@/components/ui/rate-card";
 
 const rateSchema = z.object({
   type: z.string(),
-  current: z.string().transform((val) => parseInt(val, 10)),
-  high: z.string().transform((val) => parseInt(val, 10)),
-  low: z.string().transform((val) => parseInt(val, 10)),
+  current: z.coerce.number(),
+  high: z.coerce.number(),
+  low: z.coerce.number(),
   category: z.string()
 });
 
@@ -37,9 +37,9 @@ export function AdminPanel({ rates, isOpen, onOpenChange }: AdminPanelProps) {
     resolver: zodResolver(rateSchema),
     defaultValues: {
       type: "नंबर 99.99 Gold",
-      current: "91700",
-      high: "92000",
-      low: "91650",
+      current: 91700,
+      high: 92000,
+      low: 91650,
       category: "gold"
     },
   });
@@ -73,9 +73,9 @@ export function AdminPanel({ rates, isOpen, onOpenChange }: AdminPanelProps) {
 
   const handleSelectRate = (rate: RateInfo) => {
     form.setValue("type", rate.type);
-    form.setValue("current", String(rate.current));
-    form.setValue("high", String(rate.high));
-    form.setValue("low", String(rate.low));
+    form.setValue("current", rate.current);
+    form.setValue("high", rate.high);
+    form.setValue("low", rate.low);
     form.setValue("category", rate.category);
   };
 

@@ -11,7 +11,6 @@ import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
 import { useEffect } from "react";
 import { insertUserSchema } from "@shared/schema";
-import { GemIcon, Check } from "lucide-react";
 
 const loginSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters"),
@@ -82,21 +81,21 @@ export default function AuthPage() {
   };
   
   return (
-    <div className="flex min-h-screen bg-gradient-to-b from-amber-50 to-amber-100">
+    <div className="flex min-h-screen bg-gray-100">
       <div className="flex flex-col md:flex-row w-full">
         <div className="w-full md:w-1/2 p-4 flex items-center justify-center">
-          <Card className="w-full max-w-md border-amber-200 shadow-md">
-            <CardHeader className="bg-gradient-to-r from-amber-50 to-amber-100 border-b border-amber-200">
-              <CardTitle className="text-2xl font-bold text-center text-amber-800">ShineRates</CardTitle>
-              <CardDescription className="text-center text-amber-700">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle className="text-2xl font-bold text-center text-burgundy-default">ShineRates</CardTitle>
+              <CardDescription className="text-center">
                 Login or register to access admin features
               </CardDescription>
             </CardHeader>
-            <CardContent className="pt-6">
+            <CardContent>
               <Tabs defaultValue="login" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 mb-6 bg-amber-100">
-                  <TabsTrigger value="login" className="data-[state=active]:bg-amber-600 data-[state=active]:text-white">Login</TabsTrigger>
-                  <TabsTrigger value="register" className="data-[state=active]:bg-amber-600 data-[state=active]:text-white">Register</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-2 mb-6">
+                  <TabsTrigger value="login">Login</TabsTrigger>
+                  <TabsTrigger value="register">Register</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="login">
@@ -132,7 +131,7 @@ export default function AuthPage() {
                       
                       <Button 
                         type="submit" 
-                        className="w-full bg-amber-600 hover:bg-amber-700 text-white"
+                        className="w-full bg-burgundy-default text-white"
                         disabled={loginMutation.isPending}
                       >
                         {loginMutation.isPending ? "Logging in..." : "Login"}
@@ -188,7 +187,7 @@ export default function AuthPage() {
                       
                       <Button 
                         type="submit"
-                        className="w-full bg-amber-600 hover:bg-amber-700 text-white"
+                        className="w-full bg-burgundy-default text-white"
                         disabled={registerMutation.isPending}
                       >
                         {registerMutation.isPending ? "Registering..." : "Register"}
@@ -201,29 +200,26 @@ export default function AuthPage() {
           </Card>
         </div>
         
-        <div className="hidden md:flex md:w-1/2 bg-gradient-to-br from-amber-700 to-amber-900 text-white items-center justify-center p-8">
+        <div className="hidden md:flex md:w-1/2 bg-burgundy-default text-white items-center justify-center p-8">
           <div className="max-w-md text-center">
-            <div className="bg-amber-300/20 p-6 rounded-lg border border-amber-300/30 backdrop-blur-sm mb-6">
-              <GemIcon className="h-14 w-14 text-amber-300 mx-auto mb-4" />
-              <h1 className="text-4xl font-playfair font-bold mb-4">ShineRates Premium</h1>
-              <p className="text-xl mb-6">Stay updated with the latest gold and silver rates for your jewelry business</p>
-            </div>
-            <div className="flex flex-col space-y-6">
-              <div className="flex items-center bg-amber-800/50 rounded-lg p-3">
-                <div className="bg-amber-300 text-amber-900 rounded-full p-2 mr-3 flex items-center justify-center h-8 w-8">
-                  <Check className="h-4 w-4" />
+            <h1 className="text-4xl font-playfair font-bold mb-4">ShineRates Premium</h1>
+            <p className="text-xl mb-6">Stay updated with the latest gold and silver rates for your jewelry business</p>
+            <div className="flex flex-col space-y-4">
+              <div className="flex items-center">
+                <div className="bg-gold-default text-burgundy-default rounded-full p-2 mr-3">
+                  <i className="fas fa-check"></i>
                 </div>
                 <span>Real-time rate updates</span>
               </div>
-              <div className="flex items-center bg-amber-800/50 rounded-lg p-3">
-                <div className="bg-amber-300 text-amber-900 rounded-full p-2 mr-3 flex items-center justify-center h-8 w-8">
-                  <Check className="h-4 w-4" />
+              <div className="flex items-center">
+                <div className="bg-gold-default text-burgundy-default rounded-full p-2 mr-3">
+                  <i className="fas fa-check"></i>
                 </div>
                 <span>Admin panel for rate management</span>
               </div>
-              <div className="flex items-center bg-amber-800/50 rounded-lg p-3">
-                <div className="bg-amber-300 text-amber-900 rounded-full p-2 mr-3 flex items-center justify-center h-8 w-8">
-                  <Check className="h-4 w-4" />
+              <div className="flex items-center">
+                <div className="bg-gold-default text-burgundy-default rounded-full p-2 mr-3">
+                  <i className="fas fa-check"></i>
                 </div>
                 <span>Share rates with customers easily</span>
               </div>

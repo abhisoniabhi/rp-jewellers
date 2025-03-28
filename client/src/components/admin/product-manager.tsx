@@ -17,7 +17,9 @@ import {
   ShoppingBag, 
   ArrowLeft,
   Tag,
-  ImageIcon
+  ImageIcon,
+  Weight,
+  Upload
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,10 +29,12 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -47,6 +51,8 @@ const productFormSchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters"),
   description: z.string().nullable().optional(),
   price: z.coerce.number().min(0, "Price cannot be negative").default(0),
+  weight: z.coerce.number().min(0, "Weight cannot be negative").default(0),
+  karatType: z.enum(["18k", "22k"]).default("22k"),
   category: z.string().min(1, "Category is required"),
   imageUrl: z.string().url("Please enter a valid URL"),
   collectionId: z.number(),
@@ -73,6 +79,8 @@ export function ProductManager({ collection, onBack }: ProductManagerProps) {
       name: "",
       description: "",
       price: 0,
+      weight: 0,
+      karatType: "22k",
       category: "",
       imageUrl: "",
       collectionId: collection.id,
@@ -104,6 +112,8 @@ export function ProductManager({ collection, onBack }: ProductManagerProps) {
         name: "",
         description: "",
         price: 0,
+        weight: 0,
+        karatType: "22k",
         category: "",
         imageUrl: "",
         collectionId: collection.id,
@@ -139,6 +149,8 @@ export function ProductManager({ collection, onBack }: ProductManagerProps) {
         name: "",
         description: "",
         price: 0,
+        weight: 0,
+        karatType: "22k",
         category: "",
         imageUrl: "",
         collectionId: collection.id,
@@ -199,10 +211,18 @@ export function ProductManager({ collection, onBack }: ProductManagerProps) {
   // Handle edit button click
   const handleEdit = (product: Product) => {
     setCurrentProduct(product);
+    
+    // Convert karatType to match enum values
+    const karatType = (product.karatType === "18k" || product.karatType === "22k") 
+      ? product.karatType 
+      : "22k";
+      
     form.reset({
       name: product.name,
       description: product.description || "",
       price: product.price || 0,
+      weight: product.weight || 0,
+      karatType: karatType as "18k" | "22k",
       category: product.category || "",
       imageUrl: product.imageUrl || "",
       collectionId: product.collectionId,
@@ -226,6 +246,8 @@ export function ProductManager({ collection, onBack }: ProductManagerProps) {
       name: "",
       description: "",
       price: 0,
+      weight: 0,
+      karatType: "22k",
       category: "",
       imageUrl: "",
       collectionId: collection.id,
@@ -281,6 +303,8 @@ export function ProductManager({ collection, onBack }: ProductManagerProps) {
                 name: "",
                 description: "",
                 price: 0,
+                weight: 0,
+                karatType: "22k",
                 category: "",
                 imageUrl: "",
                 collectionId: collection.id,
@@ -391,12 +415,82 @@ export function ProductManager({ collection, onBack }: ProductManagerProps) {
                 />
               </div>
               
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="weight"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-amber-900">Weight (grams)</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-800/60">
+                            <Weight className="h-4 w-4" />
+                          </span>
+                          <Input 
+                            type="number"
+                            placeholder="0.00" 
+                            {...field}
+                            className="border-amber-200 focus-visible:ring-amber-500 pl-7"
+                            step="0.01"
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="karatType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-amber-900">Gold Type</FormLabel>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          className="flex gap-6"
+                        >
+                          <FormItem className="flex items-center space-x-2 space-y-0">
+                            <FormControl>
+                              <RadioGroupItem 
+                                value="18k" 
+                                checked={field.value === "18k"}
+                                className="text-amber-600 border-amber-300"
+                              />
+                            </FormControl>
+                            <FormLabel className="text-amber-800 font-medium cursor-pointer">
+                              18K Gold
+                            </FormLabel>
+                          </FormItem>
+                          <FormItem className="flex items-center space-x-2 space-y-0">
+                            <FormControl>
+                              <RadioGroupItem 
+                                value="22k" 
+                                checked={field.value === "22k"}
+                                className="text-amber-600 border-amber-300"
+                              />
+                            </FormControl>
+                            <FormLabel className="text-amber-800 font-medium cursor-pointer">
+                              22K Gold
+                            </FormLabel>
+                          </FormItem>
+                        </RadioGroup>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              
               <FormField
                 control={form.control}
                 name="imageUrl"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-amber-900">Image URL</FormLabel>
+                    <FormLabel className="text-amber-900">Product Image</FormLabel>
                     <FormControl>
                       <Input 
                         placeholder="https://example.com/image.jpg" 
@@ -404,6 +498,10 @@ export function ProductManager({ collection, onBack }: ProductManagerProps) {
                         className="border-amber-200 focus-visible:ring-amber-500"
                       />
                     </FormControl>
+                    <FormDescription className="text-amber-600/70 flex items-center gap-1 mt-1.5">
+                      <Upload className="h-3.5 w-3.5"/>
+                      Enter a URL for your product image
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}

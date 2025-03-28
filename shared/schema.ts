@@ -78,6 +78,7 @@ export const products = pgTable("products", {
   imageUrl: text("image_url").notNull(),
   price: real("price").notNull(),
   weight: real("weight").default(0).notNull(), // weight in grams
+  karatType: varchar("karat_type", { length: 10 }).default("22k").notNull(), // 18k or 22k
   category: varchar("category", { length: 50 }).notNull(),
   collectionId: integer("collection_id").notNull(), // foreign key to collection
   featured: integer("featured").default(0).notNull(),
@@ -96,6 +97,7 @@ export const updateProductSchema = createInsertSchema(products).pick({
   imageUrl: true,
   price: true,
   weight: true,
+  karatType: true,
   category: true,
   collectionId: true,
   featured: true,

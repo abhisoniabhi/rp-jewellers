@@ -1,9 +1,52 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import { updateRateSchema, insertCollectionSchema, updateCollectionSchema } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
+
+// Create WebSocket manager for real-time updates
+class WebSocketManager {
+  private wss: WebSocketServer | null = null;
+  private clients: Set<WebSocket> = new Set();
+
+  initialize(server: Server) {
+    // Use a specific path to avoid conflicts with Vite's HMR WebSocket
+    this.wss = new WebSocketServer({ 
+      server, 
+      path: '/ws'  // Match the path in the client
+    });
+    
+    this.wss.on("connection", (ws) => {
+      console.log("[express] WebSocket client connected");
+      this.clients.add(ws);
+      
+      ws.on("close", () => {
+        console.log("[express] WebSocket client disconnected");
+        this.clients.delete(ws);
+      });
+    });
+    
+    console.log("[express] WebSocket server initialized");
+  }
+
+  broadcast(event: string, data: any) {
+    if (!this.wss) return;
+    
+    const message = JSON.stringify({ event, data });
+    console.log(`[express] Broadcasting: ${event}`);
+    
+    this.clients.forEach(client => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(message);
+      }
+    });
+  }
+}
+
+// Create singleton instance
+export const wsManager = new WebSocketManager();
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication routes
@@ -64,6 +107,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Log update to console for debugging
         console.log(`[express] Updated rate: ${type} from ${existingRate.current} to ${current}`);
+        
+        // Broadcast the update via WebSockets
+        wsManager.broadcast('RATE_UPDATED', updatedRate);
         
         return res.json(updatedRate);
       } else {
@@ -185,5 +231,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const httpServer = createServer(app);
+  
+  // Initialize WebSocket server with the HTTP server
+  wsManager.initialize(httpServer);
+  
   return httpServer;
 }

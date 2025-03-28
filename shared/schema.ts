@@ -8,7 +8,7 @@ export const users = pgTable("users", {
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
   isAdmin: integer("is_admin").default(0).notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  createdAt: text("created_at").notNull(),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -25,7 +25,7 @@ export const rates = pgTable("rates", {
   low: integer("low").notNull(),
   icon: varchar("icon", { length: 50 }).notNull(),
   category: varchar("category", { length: 20 }).notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  updatedAt: text("updated_at").notNull(),
 });
 
 export const insertRateSchema = createInsertSchema(rates).omit({

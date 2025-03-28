@@ -748,24 +748,27 @@ export function ProductManager({ collection, onBack }: ProductManagerProps) {
                 )}
               />
               
-              <div className="flex justify-end space-x-2 pt-4">
+              <div className="flex items-center justify-between gap-4 pt-6 border-t border-amber-100 mt-6">
                 <Button 
                   type="button" 
                   variant="outline" 
                   onClick={handleCloseDialog}
-                  className="border-amber-300"
+                  className="border-amber-300 flex-1"
                 >
                   Cancel
                 </Button>
                 <Button 
                   type="submit" 
                   disabled={createMutation.isPending || updateMutation.isPending}
-                  className="bg-amber-600 hover:bg-amber-700 text-white"
+                  className="bg-amber-600 hover:bg-amber-700 text-white flex-1 py-6"
+                  size="lg"
                 >
-                  {(createMutation.isPending || updateMutation.isPending) && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {(createMutation.isPending || updateMutation.isPending) ? (
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  ) : (
+                    <Plus className="mr-2 h-5 w-5" />
                   )}
-                  {isEditing ? "Update Product" : "Create Product"}
+                  {isEditing ? "Save Changes" : "Save Product"}
                 </Button>
               </div>
             </form>

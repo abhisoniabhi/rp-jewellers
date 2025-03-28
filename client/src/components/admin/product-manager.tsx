@@ -43,6 +43,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -323,7 +324,7 @@ export function ProductManager({ collection, onBack }: ProductManagerProps) {
       </div>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[525px]">
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-amber-800 flex items-center gap-2">
               {isEditing ? (
@@ -338,6 +339,11 @@ export function ProductManager({ collection, onBack }: ProductManagerProps) {
                 </>
               )}
             </DialogTitle>
+            <DialogDescription className="text-amber-600/80">
+              {isEditing 
+                ? "Update the product information below." 
+                : "Fill in the details to add a new jewelry product to your collection."}
+            </DialogDescription>
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

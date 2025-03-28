@@ -1,12 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { Camera, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Header } from "@/components/layout/header";
 import { RateCard, RateInfo } from "@/components/ui/rate-card";
 import { ShareButton } from "@/components/ui/share-button";
 import { BottomNavigation } from "@/components/layout/bottom-navigation";
-import { AdminTrigger } from "@/components/admin/admin-trigger";
 import { ScreenshotGenerator } from "@/components/screenshot/screenshot-generator";
+import { Button } from "@/components/ui/button";
 
 export default function HomePage() {
   // Use try/catch to handle potential auth context errors
@@ -66,9 +66,29 @@ export default function HomePage() {
             ))}
           </div>
           
-          <div className="mt-4 flex justify-center gap-3">
-            <ShareButton />
-            <ScreenshotGenerator rates={rates} />
+          <div className="mt-4 flex flex-col items-center gap-3">
+            <div className="flex gap-3">
+              <ShareButton />
+            </div>
+            <div className="w-full max-w-sm">
+              <Button 
+                variant="default"
+                className="w-full bg-amber-600 hover:bg-amber-700 flex items-center justify-center gap-2 mt-2 py-6"
+                onClick={() => {
+                  // Find and click the screenshot generator button
+                  const screenshotButton = document.querySelector('[data-screenshot-trigger]');
+                  if (screenshotButton instanceof HTMLElement) {
+                    screenshotButton.click();
+                  }
+                }}
+              >
+                <Camera className="h-5 w-5" />
+                <span className="text-base font-medium">Create Shareable Image</span>
+              </Button>
+            </div>
+            <div className="hidden">
+              <ScreenshotGenerator rates={rates} />
+            </div>
           </div>
           
           <div className="mt-3 text-2xs text-gray-500 px-1">

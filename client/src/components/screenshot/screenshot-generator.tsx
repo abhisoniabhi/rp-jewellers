@@ -93,6 +93,7 @@ export function ScreenshotGenerator({ rates }: ScreenshotGeneratorProps) {
         <Button 
           variant="outline"
           className="flex items-center gap-2 bg-white text-amber-700 border-amber-200 hover:bg-amber-50"
+          data-screenshot-trigger
         >
           <Camera className="h-4 w-4" />
           <span>Create Shareable Image</span>

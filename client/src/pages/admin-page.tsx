@@ -174,16 +174,16 @@ export default function AdminPage() {
 
           {/* Main Admin Tabs */}
           <Tabs defaultValue="rates" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 rounded-md mb-6 shadow-sm bg-amber-50 p-1">
+            <TabsList className="grid w-full grid-cols-2 rounded-md mb-6 shadow-sm bg-amber-50 p-1.5">
               <TabsTrigger 
                 value="rates" 
-                className="data-[state=active]:bg-amber-600 data-[state=active]:text-white rounded-md py-2.5 transition-all"
+                className="data-[state=active]:bg-amber-600 data-[state=active]:text-white rounded-md py-2.5 transition-all font-medium"
               >
                 Rate Management
               </TabsTrigger>
               <TabsTrigger 
                 value="collections" 
-                className="data-[state=active]:bg-amber-600 data-[state=active]:text-white rounded-md py-2.5 transition-all"
+                className="data-[state=active]:bg-amber-600 data-[state=active]:text-white rounded-md py-2.5 transition-all font-medium"
               >
                 Collections
               </TabsTrigger>
@@ -203,13 +203,22 @@ export default function AdminPage() {
                 <CardContent className="p-0">
                   <Tabs defaultValue="gold" className="w-full" onValueChange={setActiveTab}>
                     <TabsList className="grid w-full grid-cols-3 rounded-none border-b">
-                      <TabsTrigger value="gold" className="data-[state=active]:bg-amber-100 data-[state=active]:border-b-2 data-[state=active]:border-amber-600 rounded-none">
+                      <TabsTrigger 
+                        value="gold" 
+                        className="data-[state=active]:bg-amber-100 data-[state=active]:border-b-2 data-[state=active]:border-amber-600 rounded-none text-sm px-2 py-1.5"
+                      >
                         Gold Rates
                       </TabsTrigger>
-                      <TabsTrigger value="silver" className="data-[state=active]:bg-gray-100 data-[state=active]:border-b-2 data-[state=active]:border-gray-500 rounded-none">
+                      <TabsTrigger 
+                        value="silver" 
+                        className="data-[state=active]:bg-gray-100 data-[state=active]:border-b-2 data-[state=active]:border-gray-500 rounded-none text-sm px-2 py-1.5"
+                      >
                         Silver Rates
                       </TabsTrigger>
-                      <TabsTrigger value="chains" className="data-[state=active]:bg-amber-50 data-[state=active]:border-b-2 data-[state=active]:border-amber-300 rounded-none">
+                      <TabsTrigger 
+                        value="chains" 
+                        className="data-[state=active]:bg-amber-50 data-[state=active]:border-b-2 data-[state=active]:border-amber-300 rounded-none text-sm px-2 py-1.5"
+                      >
                         Chain Rates
                       </TabsTrigger>
                     </TabsList>
@@ -217,7 +226,7 @@ export default function AdminPage() {
                     <div className="p-6">
                       <div className="mb-6">
                         <h3 className="text-sm font-medium mb-3 text-gray-700">Select rate to update:</h3>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                           {rates
                             .filter(rate => rate.category === activeTab)
                             .map(rate => (
@@ -227,10 +236,10 @@ export default function AdminPage() {
                                 size="sm"
                                 className={`${selectedRate?.id === rate.id 
                                   ? 'bg-amber-100 border-2 border-amber-500 text-amber-900' 
-                                  : 'hover:bg-amber-50'} justify-start overflow-hidden text-ellipsis`}
+                                  : 'hover:bg-amber-50'} justify-start text-xs whitespace-normal h-auto py-2 text-left`}
                                 onClick={() => handleSelectRate(rate)}
                               >
-                                {rate.type}
+                                <span className="line-clamp-2">{rate.type}</span>
                               </Button>
                             ))
                           }

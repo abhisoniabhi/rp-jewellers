@@ -47,8 +47,8 @@ export default function HomePage() {
       <FeaturedCollection />
       
       <main className="flex-grow bg-gray-100">
-        <div className="container mx-auto px-4 py-4">
-          <div className="grid grid-cols-2 gap-4">
+        <div className="container mx-auto px-3 py-3">
+          <div className="grid grid-cols-2 gap-3">
             {rates.map((rate) => (
               <RateCard key={rate.id} rate={rate} />
             ))}
@@ -58,7 +58,7 @@ export default function HomePage() {
             <ShareButton />
           </div>
           
-          <div className="mt-4 text-xs text-gray-500 px-2">
+          <div className="mt-3 text-2xs text-gray-500 px-1">
             <p className="text-center">
               *Above displayed data is for information purpose only and hence cannot be used for legal purposes or doing any sort of transaction. Transactions above 50,000 is deal only via Bank mode (RTGS/NEFT/UPI/IMPS). If found misusing of our data, will eventually land accused into legal consequences.
             </p>

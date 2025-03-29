@@ -15,7 +15,7 @@ export function BottomNavigation() {
   }
   
   return (
-    <nav className="bg-gradient-to-r from-amber-600 to-amber-700 text-white shadow-lg">
+    <nav className="bg-gradient-to-r from-amber-600 to-amber-700 text-white shadow-lg fixed bottom-0 left-0 right-0 z-50">
       <div className="container mx-auto">
         <div className="flex justify-around items-center">
           <Link href="/">

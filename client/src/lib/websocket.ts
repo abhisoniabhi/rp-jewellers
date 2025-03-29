@@ -19,51 +19,64 @@ class WebSocketClient {
   }
 
   connect() {
+    // Don't try to reconnect if already connected or connecting
     if (this.ws?.readyState === WebSocket.OPEN || this.isConnecting) return;
-    this.isConnecting = true;
+    
+    try {
+      this.isConnecting = true;
+      console.log(`[websocket] Connecting to ${this.url}`);
+      this.ws = new WebSocket(this.url);
+      const socket = this.ws; // Store reference to ensure it's the same throughout
 
-    console.log(`[websocket] Connecting to ${this.url}`);
-    this.ws = new WebSocket(this.url);
-
-    this.ws.onopen = () => {
-      console.log('[websocket] Connected');
-      this.reconnectTimeout = 2000; // Reset reconnect timeout on successful connection
-      this.isConnecting = false;
-    };
-
-    this.ws.onmessage = (event) => {
-      try {
-        const message = JSON.parse(event.data);
-        console.log(`[websocket] Received: ${message.event}`, message.data);
+      if (socket) {
+        socket.onopen = () => {
+          console.log('[websocket] Connected');
+          this.reconnectTimeout = 2000; // Reset reconnect timeout on successful connection
+          this.isConnecting = false;
+        };
         
-        // Dispatch to all handlers for this event
-        const eventHandlers = this.handlers.get(message.event);
-        if (eventHandlers) {
-          eventHandlers.forEach(handler => handler(message.data));
-        }
-      } catch (error) {
-        console.error('[websocket] Error parsing message:', error);
+        socket.onmessage = (event) => {
+          try {
+            const message = JSON.parse(event.data);
+            console.log(`[websocket] Received: ${message.event}`, message.data);
+            
+            // Dispatch to all handlers for this event
+            const eventHandlers = this.handlers.get(message.event);
+            if (eventHandlers) {
+              eventHandlers.forEach(handler => handler(message.data));
+            }
+          } catch (error) {
+            console.error('[websocket] Error parsing message:', error);
+          }
+        };
+
+        socket.onclose = () => {
+          console.log('[websocket] Connection closed');
+          this.ws = null;
+          this.isConnecting = false;
+
+          // Schedule reconnect
+          if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
+          this.reconnectTimer = setTimeout(() => {
+            console.log(`[websocket] Attempting to reconnect in ${this.reconnectTimeout / 1000}s...`);
+            this.connect();
+            // Exponential backoff with max limit
+            this.reconnectTimeout = Math.min(this.reconnectTimeout * 1.5, this.maxReconnectTimeout);
+          }, this.reconnectTimeout);
+        };
+
+        socket.onerror = (error) => {
+          console.error('[websocket] Error:', error);
+          // Mark as not connecting on error
+          this.isConnecting = false;
+        };
       }
-    };
-
-    this.ws.onclose = () => {
-      console.log('[websocket] Connection closed');
-      this.ws = null;
+      
+    } catch (error) {
+      console.error('[websocket] Connection error:', error);
       this.isConnecting = false;
-
-      // Schedule reconnect
-      if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
-      this.reconnectTimer = setTimeout(() => {
-        console.log(`[websocket] Attempting to reconnect in ${this.reconnectTimeout / 1000}s...`);
-        this.connect();
-        // Exponential backoff with max limit
-        this.reconnectTimeout = Math.min(this.reconnectTimeout * 1.5, this.maxReconnectTimeout);
-      }, this.reconnectTimeout);
-    };
-
-    this.ws.onerror = (error) => {
-      console.error('[websocket] Error:', error);
-    };
+      this.ws = null;
+    }
   }
 
   subscribe(event: string, handler: MessageHandler): () => void {

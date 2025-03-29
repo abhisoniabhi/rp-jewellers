@@ -1,9 +1,14 @@
-import { Bell, Bluetooth, Wifi, Battery } from "lucide-react";
+import { Bell, Bluetooth, Wifi, Battery, Shield } from "lucide-react";
 import { useState, useEffect } from "react";
+import { Link } from "wouter";
 import rpLogo from "../../assets/rp-logo.jpg";
+import { useAuth } from "@/hooks/use-auth";
+import { Button } from "@/components/ui/button";
 
 export function Header() {
   const [currentTime, setCurrentTime] = useState<string>("");
+  const auth = useAuth();
+  const user = auth?.user;
 
   useEffect(() => {
     const updateTime = () => {
@@ -33,20 +38,32 @@ export function Header() {
             </div>
             <span className="text-xs bg-yellow-300 text-amber-800 px-2 py-0.5 rounded font-medium">Today's Rates</span>
           </div>
-          <div className="flex items-center space-x-2">
-            <span id="current-time" className="text-sm">{currentTime}</span>
-            <Bell className="h-4 w-4" />
-            <Bluetooth className="h-4 w-4" />
-            <Wifi className="h-4 w-4" />
-            <div className="w-8 text-xs">
-              <div className="flex h-3 items-end space-x-0.5">
-                <div className="w-1 h-1 bg-white rounded-sm"></div>
-                <div className="w-1 h-1.5 bg-white rounded-sm"></div>
-                <div className="w-1 h-2 bg-white rounded-sm"></div>
-                <div className="w-1 h-2.5 bg-white rounded-sm"></div>
+          
+          <div className="flex items-center gap-2">
+            {user && (
+              <Link href="/admin">
+                <Button className="h-8 bg-amber-800 hover:bg-amber-900 px-2 mr-2 hidden md:flex">
+                  <Shield className="h-4 w-4 mr-1" />
+                  <span className="text-xs">Admin</span>
+                </Button>
+              </Link>
+            )}
+            
+            <div className="flex items-center space-x-2">
+              <span id="current-time" className="text-sm">{currentTime}</span>
+              <Bell className="h-4 w-4" />
+              <Bluetooth className="h-4 w-4" />
+              <Wifi className="h-4 w-4" />
+              <div className="w-8 text-xs">
+                <div className="flex h-3 items-end space-x-0.5">
+                  <div className="w-1 h-1 bg-white rounded-sm"></div>
+                  <div className="w-1 h-1.5 bg-white rounded-sm"></div>
+                  <div className="w-1 h-2 bg-white rounded-sm"></div>
+                  <div className="w-1 h-2.5 bg-white rounded-sm"></div>
+                </div>
               </div>
+              <Battery className="h-4 w-4" />
             </div>
-            <Battery className="h-4 w-4" />
           </div>
         </div>
       </div>

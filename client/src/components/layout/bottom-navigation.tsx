@@ -19,7 +19,7 @@ export function BottomNavigation() {
       <div className="container mx-auto">
         <div className="flex justify-around items-center">
           <Link href="/">
-            <div className="flex flex-col items-center py-3 w-1/5 text-center">
+            <div className="flex flex-col items-center py-3 w-1/4 text-center">
               <div className={`w-10 h-10 ${location === '/' ? 'bg-amber-500' : ''} rounded-full flex items-center justify-center mb-1`}>
                 <Home className="text-white h-5 w-5" />
               </div>
@@ -27,7 +27,7 @@ export function BottomNavigation() {
             </div>
           </Link>
           <Link href="/gallery">
-            <div className="flex flex-col items-center py-3 w-1/5 text-center">
+            <div className="flex flex-col items-center py-3 w-1/4 text-center">
               <div className={`w-10 h-10 ${location === '/gallery' ? 'bg-amber-500' : ''} rounded-full flex items-center justify-center mb-1`}>
                 <Image className="text-gray-300 h-5 w-5" />
               </div>
@@ -35,23 +35,15 @@ export function BottomNavigation() {
             </div>
           </Link>
           <Link href="/contact">
-            <div className="flex flex-col items-center py-3 w-1/5 text-center">
+            <div className="flex flex-col items-center py-3 w-1/4 text-center">
               <div className={`w-10 h-10 ${location === '/contact' ? 'bg-amber-500' : ''} rounded-full flex items-center justify-center mb-1`}>
                 <Phone className="text-gray-300 h-5 w-5" />
               </div>
               <span className="text-2xs">Contact</span>
             </div>
           </Link>
-          <Link href="/admin">
-            <div className="flex flex-col items-center py-3 w-1/5 text-center">
-              <div className={`w-10 h-10 ${location === '/admin' ? 'bg-amber-500' : ''} rounded-full flex items-center justify-center mb-1`}>
-                <Settings className={`${location === '/admin' ? 'text-white' : 'text-gray-300'} h-5 w-5`} />
-              </div>
-              <span className="text-2xs">Admin</span>
-            </div>
-          </Link>
           <Link href={user ? "/admin/account" : "/auth"}>
-            <div className="flex flex-col items-center py-3 w-1/5 text-center">
+            <div className="flex flex-col items-center py-3 w-1/4 text-center">
               <div className={`w-10 h-10 ${location === '/auth' || location === '/admin/account' ? 'bg-amber-500' : ''} rounded-full flex items-center justify-center mb-1`}>
                 <UserCircle className={`${location === '/auth' || location === '/admin/account' ? 'text-white' : 'text-gray-300'} h-5 w-5`} />
               </div>

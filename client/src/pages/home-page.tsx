@@ -14,36 +14,41 @@ import { wsClient, WS_EVENTS } from "@/lib/websocket";
 import rpLogo from "../assets/rp-logo.jpg";
 
 export default function HomePage() {
-  // Use try/catch to handle potential auth context errors
-  let user = null;
-  try {
-    const auth = useAuth();
-    user = auth.user;
-  } catch (err) {
-    console.log("Auth not available yet");
-  }
+  // Get auth safely using optional chaining
+  const auth = useAuth();
+  const user = auth?.user || null;
   
+  // Fetch rates data
   const { data: rates, isLoading, error } = useQuery<RateInfo[]>({
     queryKey: ["/api/rates"],
   });
   
   // Set up real-time WebSocket listener for rate updates
   useEffect(() => {
-    // Connect to WebSocket server
-    wsClient.connect();
-    
-    // Subscribe to rate update events
-    const unsubscribe = wsClient.subscribe(WS_EVENTS.RATE_UPDATED, (updatedRate) => {
-      console.log("Received real-time rate update via WebSocket:", updatedRate);
+    try {
+      // Connect to WebSocket server
+      wsClient.connect();
       
-      // Refetch all rates data
-      queryClient.invalidateQueries({ queryKey: ["/api/rates"] });
-    });
-    
-    // Cleanup subscription when component unmounts
-    return () => {
-      unsubscribe();
-    };
+      // Subscribe to rate update events
+      const unsubscribe = wsClient.subscribe(WS_EVENTS.RATE_UPDATED, (updatedRate) => {
+        console.log("Received real-time rate update via WebSocket:", updatedRate);
+        
+        // Refetch all rates data
+        queryClient.invalidateQueries({ queryKey: ["/api/rates"] });
+      });
+      
+      // Cleanup subscription when component unmounts
+      return () => {
+        try {
+          unsubscribe();
+        } catch (error) {
+          console.error("Error unsubscribing from WebSocket:", error);
+        }
+      };
+    } catch (error) {
+      console.error("Error setting up WebSocket connection:", error);
+      // Continue without real-time updates - app will still work with regular polling
+    }
   }, []);
 
   if (isLoading) {
@@ -101,6 +106,9 @@ export default function HomePage() {
           
           {/* Featured Collections */}
           <FeaturedCollections />
+          
+          {/* Admin quick-access floating button (for mobile) */}
+          {user && <AdminTrigger rates={rates} />}
           
           <div className="mt-3 text-2xs text-gray-500 px-1">
             <p className="text-center">

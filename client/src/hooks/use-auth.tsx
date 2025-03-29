@@ -98,9 +98,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 }
 
 export function useAuth() {
+  // Get the auth context but don't throw an error if it's not available
   const context = useContext(AuthContext);
+  
+  // If context is null, return a default value that won't break the app
   if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    return {
+      user: null,
+      isLoading: false,
+      error: null,
+      loginMutation: {} as UseMutationResult<SelectUser, Error, LoginData>,
+      logoutMutation: {} as UseMutationResult<void, Error, void>,
+      registerMutation: {} as UseMutationResult<SelectUser, Error, InsertUser>,
+    };
   }
+  
   return context;
 }

@@ -36,31 +36,12 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState("gold");
   const [selectedRate, setSelectedRate] = useState<RateInfo | null>(null);
   
-  // Use try/catch to handle potential auth context errors
-  let user = null;
-  let logoutMutation: any = { mutate: () => {} };
-  let authLoading = false;
-  
-  try {
-    const auth = useAuth();
-    user = auth.user;
-    logoutMutation = auth.logoutMutation;
-    authLoading = auth.isLoading;
-    
-    // Redirect if not authenticated but auth is loaded
-    if (!authLoading && !user) {
-      setLocation("/auth");
-      return null;
-    }
-  } catch (err) {
-    console.log("Auth not available yet in AdminPage");
-  }
+  // Since we're using ProtectedRoute, we know auth is available
+  const { user, logoutMutation } = useAuth();
 
-  const { data: rates, isLoading: ratesLoading } = useQuery<RateInfo[]>({
+  const { data: rates, isLoading } = useQuery<RateInfo[]>({
     queryKey: ["/api/rates"],
   });
-  
-  const isLoading = authLoading || ratesLoading;
 
   const form = useForm<RateFormData>({
     resolver: zodResolver(rateSchema),

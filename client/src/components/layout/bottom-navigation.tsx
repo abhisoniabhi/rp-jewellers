@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Home, Image, Info, Phone, Settings, UserCircle } from "lucide-react";
+import { Home, Image, Phone, Settings, UserCircle } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 
 export function BottomNavigation() {
@@ -42,26 +42,14 @@ export function BottomNavigation() {
               <span className="text-2xs">Contact</span>
             </div>
           </Link>
-          {user && user.isAdmin && (
-            <Link href="/admin">
-              <div className="flex flex-col items-center py-3 w-1/5 text-center">
-                <div className={`w-10 h-10 ${location === '/admin' ? 'bg-amber-500' : ''} rounded-full flex items-center justify-center mb-1`}>
-                  <Settings className={`${location === '/admin' ? 'text-white' : 'text-gray-300'} h-5 w-5`} />
-                </div>
-                <span className="text-2xs">Admin</span>
+          <Link href="/admin">
+            <div className="flex flex-col items-center py-3 w-1/5 text-center">
+              <div className={`w-10 h-10 ${location === '/admin' ? 'bg-amber-500' : ''} rounded-full flex items-center justify-center mb-1`}>
+                <Settings className={`${location === '/admin' ? 'text-white' : 'text-gray-300'} h-5 w-5`} />
               </div>
-            </Link>
-          )}
-          {!user?.isAdmin && (
-            <Link href="/about">
-              <div className="flex flex-col items-center py-3 w-1/5 text-center">
-                <div className={`w-10 h-10 ${location === '/about' ? 'bg-amber-500' : ''} rounded-full flex items-center justify-center mb-1`}>
-                  <Info className="text-gray-300 h-5 w-5" />
-                </div>
-                <span className="text-2xs">About</span>
-              </div>
-            </Link>
-          )}
+              <span className="text-2xs">Admin</span>
+            </div>
+          </Link>
           <Link href={user ? "/admin/account" : "/auth"}>
             <div className="flex flex-col items-center py-3 w-1/5 text-center">
               <div className={`w-10 h-10 ${location === '/auth' || location === '/admin/account' ? 'bg-amber-500' : ''} rounded-full flex items-center justify-center mb-1`}>

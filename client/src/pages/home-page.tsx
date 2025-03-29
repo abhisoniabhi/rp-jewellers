@@ -87,7 +87,7 @@ export default function HomePage() {
       </div>
       
       <main className="flex-grow bg-gray-100">
-        <div className="container mx-auto px-3 py-3">
+        <div className="container mx-auto px-3 py-3 pb-24">
           <div className="grid grid-cols-2 gap-3">
             {rates.map((rate) => (
               <RateCard key={rate.id} rate={rate} />

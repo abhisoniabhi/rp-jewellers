@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { BadgeCheck, Box, Coins, CircleDashed, Calculator, Award, Diamond } from "lucide-react";
+import { BadgeCheck, Box, ChevronUp, Circle, Calculator } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface RateInfo {
@@ -20,71 +20,69 @@ interface RateCardProps {
 
 export function RateCard({ rate, className }: RateCardProps) {
   const getIconColor = () => {
-    if (rate.category === "gold") {
-      return "bg-amber-100";
-    } else {
-      return "bg-gray-100";
+    switch (rate.icon) {
+      case "cube": return "bg-blue-100";
+      case "chevron-up": return "bg-yellow-100";
+      case "coin": return "bg-gray-100";
+      case "calculator": return "bg-teal-100";
+      default: return "bg-blue-100";
     }
   };
 
   const getIconTextColor = () => {
-    if (rate.category === "gold") {
-      return "text-amber-600";
-    } else {
-      return "text-gray-600";
+    switch (rate.icon) {
+      case "cube": return "text-blue-500";
+      case "chevron-up": return "text-yellow-500";
+      case "coin": return "text-gray-500";
+      case "calculator": return "text-teal-500";
+      default: return "text-blue-500";
     }
   };
 
   const renderIcon = () => {
-    const iconSize = rate.category === "gold" ? "h-4 w-4" : "h-3.5 w-3.5";
-    const iconColor = rate.category === "gold" ? "text-amber-600" : "text-gray-600";
-    const className = `${iconColor} ${iconSize}`;
+    const className = `${getIconTextColor()} h-3 w-3`;
     
     switch (rate.icon) {
-      case "cube": return <Diamond className={className} />;
-      case "chevron-up": return <Award className={className} />;
-      case "coin": return <Coins className={className} />;
+      case "cube": return <Box className={className} />;
+      case "chevron-up": return <ChevronUp className={className} />;
+      case "coin": return <Circle className={className} />;
       case "calculator": return <Calculator className={className} />;
-      default: return rate.category === "gold" ? <Diamond className={className} /> : <CircleDashed className={className} />;
+      default: return <Box className={className} />;
     }
   };
 
   return (
-    <Card className={cn("shadow-lg overflow-hidden border", 
-      rate.category === "gold" 
-        ? "border-amber-200 bg-gradient-to-br from-amber-50 to-yellow-50" 
-        : "border-gray-200 bg-gradient-to-br from-gray-50 to-slate-50", 
+    <Card className={cn("shadow-md overflow-hidden border-t-4", 
+      rate.category === "gold" ? "border-t-yellow-400" : "border-t-gray-400", 
       className)}>
-      <div className="h-1 w-full bg-gradient-to-r from-transparent via-amber-300 to-transparent opacity-80"></div>
-      <CardContent className="p-4">
-        <div className="flex items-start mb-2.5">
-          <div className={`w-7 h-7 rounded-full ${rate.category === "gold" ? "bg-amber-100" : "bg-gray-100"} 
-            flex items-center justify-center mr-2.5 shrink-0 mt-0.5 shadow-sm border ${rate.category === "gold" ? "border-amber-200" : "border-gray-200"}`}>
+      <CardContent className="p-3 bg-gradient-to-br from-white to-gray-50">
+        <div className="flex items-start mb-1.5">
+          <div className={`w-5 h-5 rounded-md ${getIconColor()} flex items-center justify-center mr-2 shrink-0 mt-0.5 shadow-sm`}>
             {renderIcon()}
           </div>
-          <h3 className="text-sm font-medium leading-tight text-gray-800" style={{ wordBreak: 'break-word' }}>{rate.type}</h3>
+          <h3 className="text-xs font-medium leading-tight" style={{ wordBreak: 'break-word' }}>{rate.type}</h3>
         </div>
         
-        <div className={`flex items-baseline mt-2 p-3 rounded-lg shadow-inner ${rate.category === "gold" ? "bg-amber-50 border border-amber-100" : "bg-gray-50 border border-gray-100"}`}>
-          <span className={`text-base mr-0.5 ${rate.category === "gold" ? "text-amber-700" : "text-gray-700"}`}>₹</span>
-          <span className={`text-xl font-bold ${rate.category === "gold" ? "text-amber-800" : "text-gray-800"}`}>{rate.current.toLocaleString()}</span>
-          <span className="ml-1.5 text-green-600">
-            <BadgeCheck className="h-4 w-4" />
+        <div className="flex items-baseline mt-1.5 bg-white p-1.5 rounded-md shadow-sm">
+          <span className="text-sm mr-0.5 text-gray-700">₹</span>
+          <span className="text-lg font-bold">{rate.current.toLocaleString()}</span>
+          <span className="ml-1 text-green-500">
+            <BadgeCheck className="h-3 w-3" />
           </span>
         </div>
         
-        <div className="flex justify-between text-xs mt-3 px-1">
-          <div className={`flex flex-col items-center p-1.5 rounded-md ${rate.category === "gold" ? "bg-amber-50" : "bg-gray-50"} border ${rate.category === "gold" ? "border-amber-100" : "border-gray-100"} w-[48%]`}>
-            <span className={`${rate.category === "gold" ? "text-amber-600" : "text-gray-600"} text-2xs`}>High</span>
-            <span className={`font-medium ${rate.category === "gold" ? "text-amber-800" : "text-gray-800"}`}>₹{rate.high.toLocaleString()}</span>
+        <div className="flex justify-between text-2xs text-gray-600 mt-2 px-0.5">
+          <div className="flex flex-col items-center">
+            <span className="text-gray-500">High</span>
+            <span className="font-medium">{rate.high.toLocaleString()}</span>
           </div>
-          <div className={`flex flex-col items-center p-1.5 rounded-md ${rate.category === "gold" ? "bg-amber-50" : "bg-gray-50"} border ${rate.category === "gold" ? "border-amber-100" : "border-gray-100"} w-[48%]`}>
-            <span className={`${rate.category === "gold" ? "text-amber-600" : "text-gray-600"} text-2xs`}>Low</span>
-            <span className={`font-medium ${rate.category === "gold" ? "text-amber-800" : "text-gray-800"}`}>₹{rate.low.toLocaleString()}</span>
+          <div className="flex flex-col items-center">
+            <span className="text-gray-500">Low</span>
+            <span className="font-medium">{rate.low.toLocaleString()}</span>
           </div>
         </div>
         
-        <div className={`text-2xs mt-2.5 text-center py-1 rounded-full border ${rate.category === "gold" ? "text-amber-700 border-amber-200 bg-amber-50" : "text-gray-600 border-gray-200 bg-gray-50"}`}>
+        <div className="text-2xs text-gray-500 mt-1.5 text-center bg-gray-50 py-0.5 rounded">
           Updated: {rate.updatedAt}
         </div>
       </CardContent>

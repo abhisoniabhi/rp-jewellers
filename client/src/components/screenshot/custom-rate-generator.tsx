@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Camera, Download, Share2, Image, FileImage, Edit } from "lucide-react";
 import { downloadScreenshot, shareScreenshot } from "@/lib/screenshot";
 import { RateInfo } from "@/components/ui/rate-card";
@@ -45,12 +46,15 @@ export function CustomRateGenerator({ rates }: CustomRateGeneratorProps) {
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [includeTimestamp, setIncludeTimestamp] = useState(true);
   const [borderWidth, setBorderWidth] = useState(4);
-  const [includeAllKarats, setIncludeAllKarats] = useState(false);
   const [selectedTab, setSelectedTab] = useState("preview");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const screenshotRef = useRef<HTMLDivElement>(null);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [useCustomRates, setUseCustomRates] = useState(false);
+  const [show24K, setShow24K] = useState(false);
+  const [show22K, setShow22K] = useState(true);
+  const [show18K, setShow18K] = useState(true);
+  const [show14K, setShow14K] = useState(false);
 
   // Find the 24K gold rate to use as the base for calculations
   const baseGoldRate = rates.find(rate => 
@@ -211,13 +215,42 @@ export function CustomRateGenerator({ rates }: CustomRateGeneratorProps) {
               />
             </div>
             
-            <div className="flex items-center justify-between">
-              <Label htmlFor="all-karats">Show All Karats</Label>
-              <Switch 
-                id="all-karats" 
-                checked={includeAllKarats}
-                onCheckedChange={setIncludeAllKarats}
-              />
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">Show Karats</Label>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="show-24k" 
+                    checked={show24K}
+                    onCheckedChange={(checked) => setShow24K(checked === true)}
+                  />
+                  <Label htmlFor="show-24k" className="text-sm">24K Gold</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="show-22k" 
+                    checked={show22K}
+                    onCheckedChange={(checked) => setShow22K(checked === true)}
+                  />
+                  <Label htmlFor="show-22k" className="text-sm">22K Gold</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="show-18k" 
+                    checked={show18K}
+                    onCheckedChange={(checked) => setShow18K(checked === true)}
+                  />
+                  <Label htmlFor="show-18k" className="text-sm">18K Gold</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="show-14k" 
+                    checked={show14K}
+                    onCheckedChange={(checked) => setShow14K(checked === true)}
+                  />
+                  <Label htmlFor="show-14k" className="text-sm">14K Gold</Label>
+                </div>
+              </div>
             </div>
             
             <div className="space-y-2">
@@ -324,28 +357,32 @@ export function CustomRateGenerator({ rates }: CustomRateGeneratorProps) {
                 </div>
                 
                 <div className="space-y-2">
-                  <div className="grid grid-cols-2 gap-1 bg-amber-50 p-2 rounded-md">
-                    <div className="font-semibold text-amber-900">22K Gold</div>
-                    <div className="text-right font-bold">₹{formatCurrency(derivedRates['22K'])}</div>
-                  </div>
+                  {show24K && (
+                    <div className="grid grid-cols-2 gap-1 bg-amber-50 p-2 rounded-md">
+                      <div className="font-semibold text-amber-900">24K Gold</div>
+                      <div className="text-right font-bold">₹{formatCurrency(derivedRates['24K'])}</div>
+                    </div>
+                  )}
                   
-                  <div className="grid grid-cols-2 gap-1 bg-amber-50 p-2 rounded-md">
-                    <div className="font-semibold text-amber-900">18K Gold</div>
-                    <div className="text-right font-bold">₹{formatCurrency(derivedRates['18K'])}</div>
-                  </div>
+                  {show22K && (
+                    <div className="grid grid-cols-2 gap-1 bg-amber-50 p-2 rounded-md">
+                      <div className="font-semibold text-amber-900">22K Gold</div>
+                      <div className="text-right font-bold">₹{formatCurrency(derivedRates['22K'])}</div>
+                    </div>
+                  )}
                   
-                  {includeAllKarats && (
-                    <>
-                      <div className="grid grid-cols-2 gap-1 bg-amber-50 p-2 rounded-md">
-                        <div className="font-semibold text-amber-900">24K Gold</div>
-                        <div className="text-right font-bold">₹{formatCurrency(derivedRates['24K'])}</div>
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-1 bg-amber-50 p-2 rounded-md">
-                        <div className="font-semibold text-amber-900">14K Gold</div>
-                        <div className="text-right font-bold">₹{formatCurrency(derivedRates['14K'])}</div>
-                      </div>
-                    </>
+                  {show18K && (
+                    <div className="grid grid-cols-2 gap-1 bg-amber-50 p-2 rounded-md">
+                      <div className="font-semibold text-amber-900">18K Gold</div>
+                      <div className="text-right font-bold">₹{formatCurrency(derivedRates['18K'])}</div>
+                    </div>
+                  )}
+                  
+                  {show14K && (
+                    <div className="grid grid-cols-2 gap-1 bg-amber-50 p-2 rounded-md">
+                      <div className="font-semibold text-amber-900">14K Gold</div>
+                      <div className="text-right font-bold">₹{formatCurrency(derivedRates['14K'])}</div>
+                    </div>
                   )}
                 </div>
                 

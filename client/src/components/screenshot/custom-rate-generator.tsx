@@ -9,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   Tabs,
@@ -18,9 +19,10 @@ import {
 } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
-import { Camera, Download, Share2, Image, FileImage } from "lucide-react";
+import { Camera, Download, Share2, Image, FileImage, Edit } from "lucide-react";
 import { downloadScreenshot, shareScreenshot } from "@/lib/screenshot";
 import { RateInfo } from "@/components/ui/rate-card";
+import { Separator } from "@/components/ui/separator";
 
 // Helper function to calculate derived gold rates
 function calculateDerivedRates(baseRate: number): { [key: string]: number } {
@@ -48,14 +50,19 @@ export function CustomRateGenerator({ rates }: CustomRateGeneratorProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const screenshotRef = useRef<HTMLDivElement>(null);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+  const [useCustomRates, setUseCustomRates] = useState(false);
 
   // Find the 24K gold rate to use as the base for calculations
   const baseGoldRate = rates.find(rate => 
     rate.type.toLowerCase().includes("99.99") || 
     rate.type.toLowerCase().includes("24k"))?.current || 0;
 
-  // Calculate rates for different karats
-  const derivedRates = calculateDerivedRates(baseGoldRate);
+  // State for custom rates
+  const [customBaseRate, setCustomBaseRate] = useState(baseGoldRate);
+  
+  // Calculate rates using either custom or actual base rate
+  const actualBaseRate = useCustomRates ? customBaseRate : baseGoldRate;
+  const derivedRates = calculateDerivedRates(actualBaseRate);
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -132,6 +139,9 @@ export function CustomRateGenerator({ rates }: CustomRateGeneratorProps) {
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Create Custom Rate List</DialogTitle>
+          <DialogDescription className="text-xs text-gray-500 mt-1">
+            Create a branded rate list with your shop name, logo, and even set your own custom rates.
+          </DialogDescription>
         </DialogHeader>
         
         <Tabs value={selectedTab} onValueChange={setSelectedTab}>
@@ -220,6 +230,52 @@ export function CustomRateGenerator({ rates }: CustomRateGeneratorProps) {
                 onValueChange={(value) => setBorderWidth(value[0])}
               />
             </div>
+            
+            <Separator className="my-4" />
+            
+            <div className="space-y-3 bg-amber-50 p-3 rounded-md">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1">
+                  <Edit className="h-4 w-4 text-amber-600" />
+                  <Label htmlFor="custom-rates" className="font-medium">Use Custom Rates</Label>
+                </div>
+                <Switch 
+                  id="custom-rates" 
+                  checked={useCustomRates}
+                  onCheckedChange={setUseCustomRates}
+                />
+              </div>
+              
+              {useCustomRates && (
+                <div className="space-y-2">
+                  <Label htmlFor="base-rate">
+                    24K Gold Rate (₹)
+                  </Label>
+                  <Input
+                    id="base-rate"
+                    type="number"
+                    value={customBaseRate}
+                    onChange={(e) => setCustomBaseRate(Number(e.target.value))}
+                    className="bg-white"
+                  />
+                  
+                  <div className="grid grid-cols-2 gap-2 mt-2">
+                    <div className="bg-white px-2 py-1 rounded text-sm">
+                      <span className="text-amber-800">22K: </span>
+                      <span className="font-semibold">₹{formatCurrency(derivedRates['22K'])}</span>
+                    </div>
+                    <div className="bg-white px-2 py-1 rounded text-sm">
+                      <span className="text-amber-800">18K: </span>
+                      <span className="font-semibold">₹{formatCurrency(derivedRates['18K'])}</span>
+                    </div>
+                  </div>
+                  
+                  <p className="text-xs text-amber-700 mt-1">
+                    Other karats are calculated automatically based on the 24K rate
+                  </p>
+                </div>
+              )}
+            </div>
           </TabsContent>
           
           <TabsContent value="preview">
@@ -253,11 +309,18 @@ export function CustomRateGenerator({ rates }: CustomRateGeneratorProps) {
                   <h2 className="text-lg font-bold bg-amber-500 text-white py-1 rounded">
                     Today's Gold Rates
                   </h2>
-                  {includeTimestamp && (
-                    <p className="text-xs text-gray-600 mt-1">
-                      {currentDate} at {currentTime}
-                    </p>
-                  )}
+                  <div className="flex flex-col items-center">
+                    {includeTimestamp && (
+                      <p className="text-xs text-gray-600 mt-1">
+                        {currentDate} at {currentTime}
+                      </p>
+                    )}
+                    {useCustomRates && (
+                      <span className="text-2xs font-medium text-amber-600 bg-amber-100 px-2 py-0.5 rounded-sm mt-1">
+                        Custom Rates
+                      </span>
+                    )}
+                  </div>
                 </div>
                 
                 <div className="space-y-2">

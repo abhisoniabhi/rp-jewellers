@@ -41,7 +41,7 @@ interface CustomRateGeneratorProps {
 
 export function CustomRateGenerator({ rates }: CustomRateGeneratorProps) {
   const [open, setOpen] = useState(false);
-  const [shopName, setShopName] = useState("");
+  const shopName = "RP Jewellers"; // Fixed shop name
   const [shopContact, setShopContact] = useState("");
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [includeTimestamp, setIncludeTimestamp] = useState(true);
@@ -173,16 +173,6 @@ export function CustomRateGenerator({ rates }: CustomRateGeneratorProps) {
           </TabsList>
           
           <TabsContent value="settings" className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="shop-name">Shop Name</Label>
-              <Input 
-                id="shop-name" 
-                value={shopName}
-                onChange={(e) => setShopName(e.target.value)}
-                placeholder="Your Jewellery Shop" 
-              />
-            </div>
-            
             <div className="space-y-2">
               <Label htmlFor="shop-contact">Contact Info</Label>
               <Input 

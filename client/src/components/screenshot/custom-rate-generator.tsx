@@ -62,11 +62,28 @@ export function CustomRateGenerator({ rates }: CustomRateGeneratorProps) {
     rate.type.toLowerCase().includes("24k"))?.current || 0;
 
   // State for custom rates
-  const [customBaseRate, setCustomBaseRate] = useState(baseGoldRate);
+  const [custom24kRate, setCustom24kRate] = useState(baseGoldRate);
+  const [custom22kRate, setCustom22kRate] = useState(Math.round(baseGoldRate * 22 / 24));
+  const [custom18kRate, setCustom18kRate] = useState(Math.round(baseGoldRate * 18 / 24));
+  const [custom14kRate, setCustom14kRate] = useState(Math.round(baseGoldRate * 14 / 24));
   
-  // Calculate rates using either custom or actual base rate
-  const actualBaseRate = useCustomRates ? customBaseRate : baseGoldRate;
-  const derivedRates = calculateDerivedRates(actualBaseRate);
+  // Function to update all rates based on 24K
+  const updateAllRatesFrom24K = (base24kRate: number) => {
+    setCustom24kRate(base24kRate);
+    setCustom22kRate(Math.round(base24kRate * 22 / 24));
+    setCustom18kRate(Math.round(base24kRate * 18 / 24));
+    setCustom14kRate(Math.round(base24kRate * 14 / 24));
+  };
+  
+  // Calculate or use direct custom rates
+  const derivedRates = useCustomRates 
+    ? {
+        '24K': custom24kRate,
+        '22K': custom22kRate,
+        '18K': custom18kRate,
+        '14K': custom14kRate
+      }
+    : calculateDerivedRates(baseGoldRate);
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -280,32 +297,90 @@ export function CustomRateGenerator({ rates }: CustomRateGeneratorProps) {
               </div>
               
               {useCustomRates && (
-                <div className="space-y-2">
-                  <Label htmlFor="base-rate">
-                    24K Gold Rate (₹)
-                  </Label>
-                  <Input
-                    id="base-rate"
-                    type="number"
-                    value={customBaseRate}
-                    onChange={(e) => setCustomBaseRate(Number(e.target.value))}
-                    className="bg-white"
-                  />
-                  
-                  <div className="grid grid-cols-2 gap-2 mt-2">
-                    <div className="bg-white px-2 py-1 rounded text-sm">
-                      <span className="text-amber-800">22K: </span>
-                      <span className="font-semibold">₹{formatCurrency(derivedRates['22K'])}</span>
-                    </div>
-                    <div className="bg-white px-2 py-1 rounded text-sm">
-                      <span className="text-amber-800">18K: </span>
-                      <span className="font-semibold">₹{formatCurrency(derivedRates['18K'])}</span>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="custom-24k-rate" className="flex items-center gap-1">
+                      <span>24K Gold Rate (₹)</span>
+                      {show24K && <span className="text-2xs font-medium text-green-600 bg-green-50 px-1 rounded">Visible</span>}
+                    </Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="custom-24k-rate"
+                        type="number"
+                        value={custom24kRate}
+                        onChange={(e) => setCustom24kRate(Number(e.target.value))}
+                        className="bg-white flex-1"
+                      />
+                      <Button 
+                        onClick={() => updateAllRatesFrom24K(custom24kRate)}
+                        size="sm"
+                        variant="outline"
+                        className="text-xs whitespace-nowrap"
+                      >
+                        Recalculate All
+                      </Button>
                     </div>
                   </div>
                   
-                  <p className="text-xs text-amber-700 mt-1">
-                    Other karats are calculated automatically based on the 24K rate
-                  </p>
+                  <div className="space-y-2">
+                    <Label htmlFor="custom-22k-rate" className="flex items-center gap-1">
+                      <span>22K Gold Rate (₹)</span>
+                      {show22K && <span className="text-2xs font-medium text-green-600 bg-green-50 px-1 rounded">Visible</span>}
+                    </Label>
+                    <Input
+                      id="custom-22k-rate"
+                      type="number"
+                      value={custom22kRate}
+                      onChange={(e) => setCustom22kRate(Number(e.target.value))}
+                      className="bg-white"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="custom-18k-rate" className="flex items-center gap-1">
+                      <span>18K Gold Rate (₹)</span>
+                      {show18K && <span className="text-2xs font-medium text-green-600 bg-green-50 px-1 rounded">Visible</span>}
+                    </Label>
+                    <Input
+                      id="custom-18k-rate"
+                      type="number"
+                      value={custom18kRate}
+                      onChange={(e) => setCustom18kRate(Number(e.target.value))}
+                      className="bg-white"
+                    />
+                  </div>
+                  
+                  {show14K && (
+                    <div className="space-y-2">
+                      <Label htmlFor="custom-14k-rate" className="flex items-center gap-1">
+                        <span>14K Gold Rate (₹)</span>
+                        <span className="text-2xs font-medium text-green-600 bg-green-50 px-1 rounded">Visible</span>
+                      </Label>
+                      <Input
+                        id="custom-14k-rate"
+                        type="number"
+                        value={custom14kRate}
+                        onChange={(e) => setCustom14kRate(Number(e.target.value))}
+                        className="bg-white"
+                      />
+                    </div>
+                  )}
+                  
+                  <div className="flex justify-between items-center pt-2">
+                    <p className="text-xs text-amber-700">
+                      Customize each karat's rate individually
+                    </p>
+                    <Button
+                      variant="secondary" 
+                      size="sm"
+                      className="text-xs"
+                      onClick={() => {
+                        updateAllRatesFrom24K(baseGoldRate);
+                      }}
+                    >
+                      Use Market Rates
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>

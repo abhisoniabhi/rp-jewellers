@@ -393,23 +393,25 @@ export function CustomRateGenerator({ rates }: CustomRateGeneratorProps) {
                 className="w-full max-w-[320px] bg-white p-4 rounded-lg shadow-lg"
                 style={{ border: `${borderWidth}px solid #F59E0B` }}
               >
-                <div className="flex justify-between items-center mb-3">
-                  {logoUrl && (
-                    <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-amber-300">
-                      <img 
-                        src={logoUrl} 
-                        alt="Shop Logo" 
-                        className="w-full h-full object-contain" 
-                      />
-                    </div>
-                  )}
-                  <div className="text-right flex-1 ml-1">
-                    <h3 className="text-xl font-bold text-amber-800 -mt-1">
-                      {shopName || "Your Jewellery Shop"}
-                    </h3>
-                    {shopContact && (
-                      <p className="text-xs text-gray-600">{shopContact}</p>
+                <div className="mb-3">
+                  <div className="flex justify-center items-center gap-3 mb-2">
+                    {logoUrl && (
+                      <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-amber-300 flex-shrink-0">
+                        <img 
+                          src={logoUrl} 
+                          alt="Shop Logo" 
+                          className="w-full h-full object-contain" 
+                        />
+                      </div>
                     )}
+                    <div className="flex-1">
+                      <h3 className="text-2xl font-bold text-amber-800 leading-tight">
+                        {shopName || "Your Jewellery Shop"}
+                      </h3>
+                      {shopContact && (
+                        <p className="text-sm text-gray-600">{shopContact}</p>
+                      )}
+                    </div>
                   </div>
                 </div>
                 

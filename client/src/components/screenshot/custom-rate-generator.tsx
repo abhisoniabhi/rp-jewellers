@@ -41,7 +41,7 @@ interface CustomRateGeneratorProps {
 
 export function CustomRateGenerator({ rates }: CustomRateGeneratorProps) {
   const [open, setOpen] = useState(false);
-  const [shopName, setShopName] = useState("");
+  const shopName = "RP Jewellers"; // Fixed shop name
   const [shopContact, setShopContact] = useState("");
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [includeTimestamp, setIncludeTimestamp] = useState(true);
@@ -115,7 +115,7 @@ export function CustomRateGenerator({ rates }: CustomRateGeneratorProps) {
 
   const handleDownload = () => {
     if (generatedImage) {
-      downloadScreenshot(generatedImage, `${shopName || 'custom'}-gold-rates.png`);
+      downloadScreenshot(generatedImage, `${shopName}-gold-rates.png`);
     }
   };
 
@@ -124,7 +124,7 @@ export function CustomRateGenerator({ rates }: CustomRateGeneratorProps) {
       try {
         await shareScreenshot(
           generatedImage, 
-          `Gold Rates - ${shopName || 'Today'}`
+          `Gold Rates - ${shopName}`
         );
       } catch (error) {
         console.error("Error sharing image:", error);
@@ -173,16 +173,6 @@ export function CustomRateGenerator({ rates }: CustomRateGeneratorProps) {
           </TabsList>
           
           <TabsContent value="settings" className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="shop-name">Shop Name</Label>
-              <Input 
-                id="shop-name" 
-                value={shopName}
-                onChange={(e) => setShopName(e.target.value)}
-                placeholder="Your Jewellery Shop" 
-              />
-            </div>
-            
             <div className="space-y-2">
               <Label htmlFor="shop-contact">Contact Info</Label>
               <Input 
@@ -405,7 +395,7 @@ export function CustomRateGenerator({ rates }: CustomRateGeneratorProps) {
                   )}
                   <div className="text-right flex-1 ml-1">
                     <h3 className="text-xl font-bold text-amber-800 -mt-1">
-                      {shopName || "Your Jewellery Shop"}
+                      {shopName}
                     </h3>
                     {shopContact && (
                       <p className="text-xs text-gray-600">{shopContact}</p>

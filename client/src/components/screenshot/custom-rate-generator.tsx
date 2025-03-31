@@ -403,8 +403,8 @@ export function CustomRateGenerator({ rates }: CustomRateGeneratorProps) {
                       />
                     </div>
                   )}
-                  <div className="text-right flex-1 ml-2">
-                    <h3 className="text-lg font-bold text-amber-800">
+                  <div className="text-right flex-1 ml-1">
+                    <h3 className="text-xl font-bold text-amber-800 -mt-1">
                       {shopName || "Your Jewellery Shop"}
                     </h3>
                     {shopContact && (

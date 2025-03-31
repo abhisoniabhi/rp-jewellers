@@ -7,6 +7,7 @@ import { ShareButton } from "@/components/ui/share-button";
 import { BottomNavigation } from "@/components/layout/bottom-navigation";
 import { AdminTrigger } from "@/components/admin/admin-trigger";
 import { ScreenshotGenerator } from "@/components/screenshot/screenshot-generator";
+import { CustomRateGenerator } from "@/components/screenshot/custom-rate-generator";
 import { FeaturedCollections } from "@/components/layout/featured-collections";
 import { useEffect } from "react";
 import { queryClient } from "@/lib/queryClient";
@@ -99,9 +100,10 @@ export default function HomePage() {
             ))}
           </div>
           
-          <div className="mt-4 flex justify-center gap-3">
+          <div className="mt-4 flex justify-center gap-3 flex-wrap">
             <ShareButton />
             <ScreenshotGenerator rates={rates} />
+            <CustomRateGenerator rates={rates} />
           </div>
           
           {/* Featured Collections */}

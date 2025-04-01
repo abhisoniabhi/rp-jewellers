@@ -615,12 +615,12 @@ export default function AdminPage() {
                       No products found. Click the "Add Product" button to create your first product.
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                       {products.map(product => {
                         const collection = collections.find(c => c.id === product.collectionId);
                         return (
-                          <div key={product.id} className="rounded-lg border bg-card overflow-hidden shadow-sm">
-                            <div className="aspect-video w-full overflow-hidden bg-gray-100">
+                          <div key={product.id} className="rounded-lg border bg-card overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                            <div className="aspect-square w-full overflow-hidden bg-gray-100">
                               {product.imageUrl ? (
                                 <img 
                                   src={product.imageUrl} 
@@ -629,58 +629,50 @@ export default function AdminPage() {
                                 />
                               ) : (
                                 <div className="flex h-full items-center justify-center bg-gray-100">
-                                  <ImageIcon className="h-10 w-10 text-gray-400" />
+                                  <ImageIcon className="h-8 w-8 text-gray-400" />
                                 </div>
                               )}
                             </div>
-                            <div className="p-4">
-                              <div className="flex items-start justify-between">
-                                <div>
-                                  <h3 className="font-semibold text-lg line-clamp-1">{product.name}</h3>
-                                  <p className="text-sm text-gray-500 line-clamp-2 mt-1">{product.description}</p>
+                            <div className="p-2.5">
+                              <h3 className="font-semibold text-sm line-clamp-1 mb-1">{product.name}</h3>
+                              
+                              <div className="flex items-center justify-between mb-1.5">
+                                <div className="flex gap-1.5 items-center">
+                                  <Badge variant={product.inStock ? "default" : "outline"} className="text-xs px-1.5 py-0">
+                                    {product.inStock ? "In Stock" : "Out"}
+                                  </Badge>
+                                  <span className="text-xs text-gray-500">{product.karatType}</span>
                                 </div>
-                                <div className="flex gap-1">
+                                <div className="flex gap-0.5">
                                   <Button 
                                     size="icon" 
                                     variant="ghost" 
-                                    className="h-7 w-7 bg-amber-50 text-amber-700 hover:bg-amber-100"
+                                    className="h-6 w-6 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-full p-0"
                                     onClick={() => handleEditProduct(product)}
                                   >
-                                    <Pencil className="h-3.5 w-3.5" />
+                                    <Pencil className="h-3 w-3" />
                                   </Button>
                                   <Button 
                                     size="icon" 
                                     variant="ghost" 
-                                    className="h-7 w-7 bg-red-50 text-red-700 hover:bg-red-100"
+                                    className="h-6 w-6 bg-red-50 text-red-700 hover:bg-red-100 rounded-full p-0"
                                     onClick={() => handleDeleteProduct(product)}
                                   >
-                                    <Trash2 className="h-3.5 w-3.5" />
+                                    <Trash2 className="h-3 w-3" />
                                   </Button>
                                 </div>
                               </div>
                               
-                              <div className="grid grid-cols-2 gap-2 mt-3 text-xs">
-                                <div className="bg-amber-50 p-2 rounded">
-                                  <span className="text-amber-700 block">Taunch:</span>
-                                  <span className="font-semibold">{product.price.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}%</span>
+                              <div className="flex justify-between mt-1 text-xs">
+                                <div className="flex items-center text-amber-700">
+                                  <span>Taunch: </span>
+                                  <span className="font-semibold ml-1">{product.price.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}%</span>
                                 </div>
                                 
-                                <div className="bg-blue-50 p-2 rounded">
-                                  <span className="text-blue-700 block">Weight:</span>
-                                  <span className="font-semibold">{product.weight}g</span>
+                                <div className="flex items-center text-blue-700">
+                                  <span>Weight: </span>
+                                  <span className="font-semibold ml-1">{product.weight}g</span>
                                 </div>
-                              </div>
-                              
-                              <div className="flex justify-between items-center mt-3">
-                                <Badge variant={product.inStock ? "default" : "outline"} className={product.inStock ? "bg-green-100 text-green-800 hover:bg-green-100" : "border-gray-400 text-gray-600"}>
-                                  {product.inStock ? "In Stock" : "Out of Stock"}
-                                </Badge>
-                                
-                                {collection && (
-                                  <Badge variant="outline" className="border-amber-200 text-amber-800 bg-amber-50">
-                                    {collection.name}
-                                  </Badge>
-                                )}
                               </div>
                             </div>
                           </div>

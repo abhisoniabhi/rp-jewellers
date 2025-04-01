@@ -1,6 +1,9 @@
-import type { Express } from "express";
+import express, { type Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
+import path from "path";
+import fs from "fs";
+import multer from "multer";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import { updateRateSchema, insertCollectionSchema, updateCollectionSchema, insertProductSchema, updateProductSchema } from "@shared/schema";
@@ -51,6 +54,37 @@ export const wsManager = new WebSocketManager();
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication routes
   setupAuth(app);
+  
+  // Setup uploads directory
+  const uploadsDir = path.join(process.cwd(), 'client', 'attached_assets');
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+  
+  // Configure multer for handling multipart/form-data
+  const multerStorage = multer.diskStorage({
+    destination: (_req, _file, cb) => {
+      cb(null, uploadsDir);
+    },
+    filename: (_req, file, cb) => {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+      const ext = path.extname(file.originalname);
+      cb(null, file.fieldname + '-' + uniqueSuffix + ext);
+    },
+  });
+  
+  const upload = multer({ 
+    storage: multerStorage,
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+    fileFilter: (_req, file, cb) => {
+      // Accept images only
+      if (!file.originalname.match(/\.(jpg|jpeg|png|gif|webp)$/)) {
+        cb(null, false);
+        return;
+      }
+      cb(null, true);
+    }
+  });
   
   // Get all rates
   app.get("/api/rates", async (req, res) => {
@@ -392,6 +426,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to delete product" });
     }
   });
+  
+  // Image upload endpoint
+  app.post("/api/upload/image", upload.single('image'), (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+      
+      // Return the URL to the uploaded file
+      const filePath = `/attached_assets/${req.file.filename}`;
+      
+      // Log the file upload
+      console.log(`[express] File uploaded: ${filePath}`);
+      
+      return res.json({ 
+        url: filePath,
+        message: "File uploaded successfully" 
+      });
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      res.status(500).json({ message: error instanceof Error ? error.message : "Failed to upload file" });
+    }
+  });
+  
+  // Serve uploaded files statically
+  app.use('/attached_assets', express.static(path.join(process.cwd(), 'client', 'attached_assets')));
 
   const httpServer = createServer(app);
   

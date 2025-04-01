@@ -19,6 +19,14 @@ export function SearchBar() {
   // Fetch search results
   const { data: searchResults, isLoading } = useQuery<Product[]>({
     queryKey: ["/api/products/search", searchTerm],
+    queryFn: async () => {
+      if (!shouldSearch) return [];
+      const res = await fetch(`/api/products/search?q=${encodeURIComponent(searchTerm)}`);
+      if (!res.ok) {
+        throw new Error("Failed to search products");
+      }
+      return res.json();
+    },
     enabled: shouldSearch,
     retry: false, // Don't retry on failure
   });

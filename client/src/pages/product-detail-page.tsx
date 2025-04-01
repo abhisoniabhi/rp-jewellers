@@ -1,13 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { useParams, Link, useLocation } from "wouter";
-import { Product, Collection } from "@shared/schema";
+import { Product, Collection, Rate } from "@shared/schema";
 import { Header } from "@/components/layout/header";
 import { BottomNavigation } from "@/components/layout/bottom-navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Star, ShoppingCart, Heart, Award, Package, Shield, Share2 } from "lucide-react";
+import { ArrowLeft, Star, ShoppingCart, Heart, Award, Package, Shield, Share2, Receipt } from "lucide-react";
+import { InvoiceGenerator } from "@/components/invoice/invoice-generator";
 
 export default function ProductDetailPage() {
   const [, setLocation] = useLocation();
@@ -41,7 +42,15 @@ export default function ProductDetailPage() {
     }
   });
   
-  const isLoading = productLoading || collectionLoading;
+  // Fetch rates for invoice calculation
+  const {
+    data: rates,
+    isLoading: ratesLoading
+  } = useQuery<Rate[]>({
+    queryKey: ["/api/rates"],
+  });
+  
+  const isLoading = productLoading || collectionLoading || ratesLoading;
   
   // Handle loading state
   if (isLoading) {
@@ -242,6 +251,22 @@ export default function ProductDetailPage() {
                   </Link>
                 </div>
               </div>
+            </div>
+          )}
+          
+          {/* Invoice Generator */}
+          {rates && rates.length > 0 && (
+            <div className="bg-white rounded-lg shadow-md overflow-hidden p-4 mb-4">
+              <h2 className="text-lg font-semibold text-amber-800 mb-2">
+                <div className="flex items-center gap-2">
+                  <Receipt className="h-5 w-5 text-amber-600" />
+                  <span>For Jewellers</span>
+                </div>
+              </h2>
+              <p className="text-gray-700 mb-3">
+                Generate a professional invoice for this product with your shop details and current gold rates.
+              </p>
+              <InvoiceGenerator product={product} collection={collection} rates={rates} />
             </div>
           )}
           

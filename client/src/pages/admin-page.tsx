@@ -1,7 +1,7 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { 
   Loader2, Save, ArrowLeft, CreditCard, UserCircle, ShoppingBag, Plus, 
-  Pencil, Trash2, Image as ImageIcon, Weight, Tag 
+  Pencil, Trash2, Image as ImageIcon, Weight, Tag, Camera
 } from "lucide-react";
 import { useState } from "react";
 import { useLocation } from "wouter";
@@ -43,7 +43,10 @@ const productSchema = z.object({
   weight: z.coerce.number().min(0, "Weight cannot be negative"),
   karatType: z.enum(["18k", "22k"]),
   category: z.string().min(1, "Category is required"),
-  imageUrl: z.string().url("Please enter a valid URL"),
+  imageUrl: z.string().refine(
+    (val) => val.startsWith('http') || val.startsWith('data:image'),
+    { message: "Please enter a valid URL or upload an image" }
+  ),
   collectionId: z.coerce.number(),
   inStock: z.boolean().default(true)
 });
@@ -58,6 +61,7 @@ export default function AdminPage() {
   const [selectedRate, setSelectedRate] = useState<RateInfo | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
   
   // No longer using authentication
   const user = { username: "Admin" };
@@ -304,10 +308,76 @@ export default function AdminPage() {
     setIsDialogOpen(true);
   };
   
+  // Handle image upload from various sources
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target?.result as string;
+      setPreviewImage(dataUrl);
+      productForm.setValue("imageUrl", dataUrl);
+    };
+    reader.readAsDataURL(file);
+  };
+  
+  // Handle camera capture
+  const handleCameraCapture = async () => {
+    try {
+      // Check if the browser supports getUserMedia
+      if (!navigator.mediaDevices?.getUserMedia) {
+        toast({
+          title: "Error",
+          description: "Your browser doesn't support camera access",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // Create video and canvas elements for camera capture
+      const videoElement = document.createElement('video');
+      const canvasElement = document.createElement('canvas');
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      
+      videoElement.srcObject = stream;
+      videoElement.play();
+      
+      // Wait for video to be ready
+      setTimeout(() => {
+        // Set canvas dimensions and draw the video frame
+        canvasElement.width = videoElement.videoWidth;
+        canvasElement.height = videoElement.videoHeight;
+        const context = canvasElement.getContext('2d');
+        context?.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+        
+        // Convert to data URL and stop the stream
+        const dataUrl = canvasElement.toDataURL('image/jpeg');
+        stream.getTracks().forEach(track => track.stop());
+        
+        // Set the captured image
+        setPreviewImage(dataUrl);
+        productForm.setValue("imageUrl", dataUrl);
+        
+        toast({
+          title: "Success",
+          description: "Image captured successfully",
+        });
+      }, 500);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to access camera: " + (error as Error).message,
+        variant: "destructive"
+      });
+    }
+  };
+  
   // Reset form when closing dialog
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
     setEditingProduct(null);
+    setPreviewImage(null);
     productForm.reset();
   };
 
@@ -776,12 +846,69 @@ export default function AdminPage() {
                     name="imageUrl"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Image URL</FormLabel>
-                        <FormControl>
-                          <Input {...field} placeholder="Enter image URL" />
-                        </FormControl>
+                        <FormLabel>Product Image</FormLabel>
+                        
+                        {/* Image preview if available */}
+                        {(field.value || previewImage) && (
+                          <div className="mb-3 border rounded-md overflow-hidden">
+                            <img 
+                              src={previewImage || field.value} 
+                              alt="Product preview" 
+                              className="w-full h-48 object-contain bg-gray-50"
+                            />
+                          </div>
+                        )}
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {/* URL Input */}
+                          <FormControl>
+                            <Input 
+                              {...field} 
+                              placeholder="Enter image URL" 
+                              className="mb-2"
+                              onChange={(e) => {
+                                field.onChange(e);
+                                if (e.target.value && e.target.value.startsWith('http')) {
+                                  setPreviewImage(null);
+                                }
+                              }}
+                            />
+                          </FormControl>
+                          
+                          {/* Upload options */}
+                          <div className="flex flex-col md:flex-row gap-2">
+                            <div className="relative">
+                              <Input
+                                type="file"
+                                accept="image/*"
+                                id="image-upload"
+                                className="absolute inset-0 opacity-0 w-full cursor-pointer z-10"
+                                onChange={handleImageUpload}
+                              />
+                              <Button 
+                                type="button" 
+                                variant="outline"
+                                className="w-full md:w-auto"
+                              >
+                                <ImageIcon className="h-4 w-4 mr-2" />
+                                Gallery
+                              </Button>
+                            </div>
+                            
+                            <Button 
+                              type="button" 
+                              variant="outline"
+                              onClick={handleCameraCapture}
+                              className="w-full md:w-auto"
+                            >
+                              <Camera className="h-4 w-4 mr-2" />
+                              Camera
+                            </Button>
+                          </div>
+                        </div>
+                        
                         <FormDescription>
-                          Enter a valid image URL (e.g., https://example.com/image.jpg)
+                          Enter an image URL or upload an image from your device
                         </FormDescription>
                         <FormMessage />
                       </FormItem>

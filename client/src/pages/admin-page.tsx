@@ -39,7 +39,7 @@ const rateSchema = z.object({
 const productSchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters"),
   description: z.string().nullable().optional(),
-  price: z.coerce.number().min(0, "Price cannot be negative"),
+  taunch: z.coerce.number().min(0, "Taunch cannot be negative"),
   weight: z.coerce.number().min(0, "Weight cannot be negative"),
   karatType: z.enum(["18k", "22k"]),
   category: z.string().min(1, "Category is required"),
@@ -153,7 +153,7 @@ export default function AdminPage() {
     defaultValues: {
       name: "",
       description: "",
-      price: 0,
+      taunch: 0,
       weight: 0,
       karatType: "22k",
       category: "",
@@ -245,8 +245,10 @@ export default function AdminPage() {
   
   // Handle product form submission
   const onProductSubmit = (data: ProductFormData) => {
+    // Map taunch field to price for backend compatibility
     const productData = {
       ...data,
+      price: data.taunch, // Map taunch to price for backend
       inStock: data.inStock ? 1 : 0
     };
     
@@ -272,7 +274,7 @@ export default function AdminPage() {
     productForm.reset({
       name: product.name,
       description: product.description || "",
-      price: product.price || 0,
+      taunch: product.price || 0, // Using price field from DB but naming it taunch in the UI
       weight: product.weight || 0,
       karatType: karatType as "18k" | "22k",
       category: product.category || "",
@@ -297,7 +299,7 @@ export default function AdminPage() {
     productForm.reset({
       name: "",
       description: "",
-      price: 0,
+      taunch: 0,
       weight: 0,
       karatType: "22k",
       category: "",
@@ -656,7 +658,7 @@ export default function AdminPage() {
                               
                               <div className="grid grid-cols-2 gap-2 mt-3 text-xs">
                                 <div className="bg-amber-50 p-2 rounded">
-                                  <span className="text-amber-700 block">Price:</span>
+                                  <span className="text-amber-700 block">Taunch:</span>
                                   <span className="font-semibold">₹{product.price.toLocaleString()}</span>
                                 </div>
                                 
@@ -731,10 +733,10 @@ export default function AdminPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
                       control={productForm.control}
-                      name="price"
+                      name="taunch"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Price (₹)</FormLabel>
+                          <FormLabel>Taunch (₹)</FormLabel>
                           <FormControl>
                             <Input {...field} type="number" min="0" step="100" />
                           </FormControl>

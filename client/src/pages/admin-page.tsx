@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAuth } from "@/hooks/use-auth";
+
 import { RateInfo } from "@/components/ui/rate-card";
 import { Header } from "@/components/layout/header";
 import { BottomNavigation } from "@/components/layout/bottom-navigation";
@@ -35,8 +35,8 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState("gold");
   const [selectedRate, setSelectedRate] = useState<RateInfo | null>(null);
   
-  // Since we're using ProtectedRoute, we know auth is available
-  const { user, logoutMutation } = useAuth();
+  // No longer using authentication
+  const user = { username: "Admin" };
 
   const { data: rates, isLoading } = useQuery<RateInfo[]>({
     queryKey: ["/api/rates"],
@@ -110,11 +110,7 @@ export default function AdminPage() {
   };
 
   const handleLogout = () => {
-    logoutMutation.mutate(undefined, {
-      onSuccess: () => {
-        setLocation("/");
-      }
-    });
+    setLocation("/");
   };
 
   if (isLoading || !rates) {

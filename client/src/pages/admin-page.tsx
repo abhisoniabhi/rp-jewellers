@@ -1,5 +1,5 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Loader2, Save, ArrowLeft, CreditCard, LayoutGrid, UserCircle } from "lucide-react";
+import { Loader2, Save, ArrowLeft, CreditCard, UserCircle } from "lucide-react";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,6 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { CollectionManager } from "@/components/admin/collection-manager";
 import { eventBus, EVENTS } from "@/lib/events";
 
 const rateSchema = z.object({
@@ -168,18 +167,12 @@ export default function AdminPage() {
 
           {/* Main Admin Tabs */}
           <Tabs defaultValue="rates" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 rounded-md mb-6 shadow-sm bg-amber-50 p-1.5">
+            <TabsList className="grid w-full grid-cols-1 rounded-md mb-6 shadow-sm bg-amber-50 p-1.5">
               <TabsTrigger 
                 value="rates" 
                 className="data-[state=active]:bg-amber-600 data-[state=active]:text-white rounded-md py-2.5 transition-all font-medium"
               >
                 Rate Management
-              </TabsTrigger>
-              <TabsTrigger 
-                value="collections" 
-                className="data-[state=active]:bg-amber-600 data-[state=active]:text-white rounded-md py-2.5 transition-all font-medium"
-              >
-                Collections
               </TabsTrigger>
             </TabsList>
 
@@ -314,22 +307,7 @@ export default function AdminPage() {
               </Card>
             </TabsContent>
 
-            {/* Collections Tab Content */}
-            <TabsContent value="collections" className="animate-in fade-in-50 slide-in-from-right-5">
-              <Card className="shadow-md border-amber-100">
-                <CardHeader className="bg-gradient-to-r from-amber-50 to-yellow-50 border-b">
-                  <CardTitle className="text-amber-800 flex items-center">
-                    <span className="bg-amber-100 rounded-full p-1.5 mr-2">
-                      <LayoutGrid className="h-5 w-5 text-amber-700" />
-                    </span>
-                    Collection Management
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-6">
-                  <CollectionManager />
-                </CardContent>
-              </Card>
-            </TabsContent>
+
           </Tabs>
         </div>
       </main>

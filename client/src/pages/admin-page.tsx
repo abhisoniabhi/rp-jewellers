@@ -4,7 +4,7 @@ import {
   Pencil, Trash2, Image as ImageIcon, Weight, Tag as TagIcon, Camera,
   Grid as LayoutGrid
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -84,6 +84,51 @@ export default function AdminPage() {
   const { data: products, isLoading: productsLoading } = useQuery<Product[]>({
     queryKey: ["/api/products"],
   });
+  
+  // Local state for products to allow immediate UI updates
+  const [localProducts, setLocalProducts] = useState<Product[]>([]);
+  const [localCategoryInfo, setLocalCategoryInfo] = useState<Record<string, { 
+    min: number, 
+    max: number, 
+    avg: number, 
+    total: number, 
+    count: number 
+  }>>({});
+  
+  // Keep local state in sync with fetched data
+  useEffect(() => {
+    if (products && products.length > 0) {
+      setLocalProducts([...products]);
+      
+      // Calculate category taunch info and initialize local state
+      const taunchInfo: Record<string, { min: number, max: number, avg: number, total: number, count: number }> = {};
+      
+      products.forEach(product => {
+        if (product.category) {
+          if (!taunchInfo[product.category]) {
+            taunchInfo[product.category] = {
+              min: Infinity,
+              max: -Infinity,
+              avg: 0,
+              total: 0,
+              count: 0
+            };
+          }
+          
+          const taunch = product.price || 0;
+          const info = taunchInfo[product.category];
+          
+          info.min = Math.min(info.min, taunch);
+          info.max = Math.max(info.max, taunch);
+          info.total = (info.total || 0) + taunch;
+          info.count = (info.count || 0) + 1;
+          info.avg = info.total / info.count;
+        }
+      });
+      
+      setLocalCategoryInfo(taunchInfo);
+    }
+  }, [products]);
 
   const { data: rates, isLoading: ratesLoading } = useQuery<RateInfo[]>({
     queryKey: ["/api/rates"],
@@ -459,7 +504,35 @@ export default function AdminPage() {
         setIsCategoryDialogOpen(false);
         setSelectedCategory(null);
         setCategoryTaunchValue(0);
+        
+        // Force immediate refresh of all products data
         queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+        
+        // Update local state immediately as well for instant UI feedback
+        const updatedProducts = [...products];
+        productsInCategory.forEach(product => {
+          const index = updatedProducts.findIndex(p => p.id === product.id);
+          if (index !== -1) {
+            updatedProducts[index] = {
+              ...updatedProducts[index],
+              price: categoryTaunchValue
+            };
+          }
+        });
+        setLocalProducts(updatedProducts);
+        
+        // Re-calculate category taunch info with updated values
+        const updatedCategoryTaunchInfo = { ...categoryTaunchInfo };
+        if (selectedCategory && updatedCategoryTaunchInfo[selectedCategory]) {
+          updatedCategoryTaunchInfo[selectedCategory] = {
+            min: categoryTaunchValue,
+            max: categoryTaunchValue,
+            avg: categoryTaunchValue,
+            total: categoryTaunchValue * (categoryCounts[selectedCategory] || 0),
+            count: categoryCounts[selectedCategory] || 0
+          };
+        }
+        setLocalCategoryInfo(updatedCategoryTaunchInfo);
       })
       .catch(error => {
         toast({
@@ -756,7 +829,7 @@ export default function AdminPage() {
                     </div>
                   ) : (
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                      {products.map(product => {
+                      {(localProducts.length > 0 ? localProducts : products).map(product => {
                         const collection = collections.find(c => c.id === product.collectionId);
                         return (
                           <div key={product.id} className="rounded-lg border bg-card overflow-hidden shadow-sm hover:shadow-md transition-shadow">
@@ -991,14 +1064,14 @@ export default function AdminPage() {
                           <div>
                             <h3 className="font-medium capitalize">{category}</h3>
                             <p className="text-sm text-gray-500">{count} products</p>
-                            {categoryTaunchInfo[category] && (
+                            {(localCategoryInfo[category] || categoryTaunchInfo[category]) && (
                               <div className="mt-1 text-xs text-blue-700">
                                 <div className="flex items-center">
                                   <span>Taunch: </span>
                                   <span className="font-medium ml-1">
-                                    {categoryTaunchInfo[category].avg.toFixed(2)}% 
+                                    {(localCategoryInfo[category] || categoryTaunchInfo[category]).avg.toFixed(2)}% 
                                     <span className="text-gray-500 ml-1">
-                                      (range: {categoryTaunchInfo[category].min}-{categoryTaunchInfo[category].max}%)
+                                      (range: {(localCategoryInfo[category] || categoryTaunchInfo[category]).min}-{(localCategoryInfo[category] || categoryTaunchInfo[category]).max}%)
                                     </span>
                                   </span>
                                 </div>
@@ -1065,21 +1138,21 @@ export default function AdminPage() {
                     <br />Total products affected: {selectedCategory ? categoryCounts[selectedCategory] || 0 : 0}
                   </p>
                   
-                  {selectedCategory && categoryTaunchInfo[selectedCategory] && (
+                  {selectedCategory && (localCategoryInfo[selectedCategory] || categoryTaunchInfo[selectedCategory]) && (
                     <div className="mt-2 pt-2 border-t border-blue-200 text-xs">
                       <p className="font-medium">Current taunch values:</p>
                       <div className="grid grid-cols-3 gap-2 mt-1">
                         <div>
                           <span className="text-blue-600">Average:</span>
-                          <span className="font-medium ml-1">{categoryTaunchInfo[selectedCategory].avg.toFixed(2)}%</span>
+                          <span className="font-medium ml-1">{(localCategoryInfo[selectedCategory] || categoryTaunchInfo[selectedCategory]).avg.toFixed(2)}%</span>
                         </div>
                         <div>
                           <span className="text-blue-600">Min:</span>
-                          <span className="font-medium ml-1">{categoryTaunchInfo[selectedCategory].min}%</span>
+                          <span className="font-medium ml-1">{(localCategoryInfo[selectedCategory] || categoryTaunchInfo[selectedCategory]).min}%</span>
                         </div>
                         <div>
                           <span className="text-blue-600">Max:</span>
-                          <span className="font-medium ml-1">{categoryTaunchInfo[selectedCategory].max}%</span>
+                          <span className="font-medium ml-1">{(localCategoryInfo[selectedCategory] || categoryTaunchInfo[selectedCategory]).max}%</span>
                         </div>
                       </div>
                     </div>

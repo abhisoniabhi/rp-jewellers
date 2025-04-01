@@ -82,6 +82,15 @@ export function InvoiceGenerator({ product, collection, rates }: InvoiceGenerato
   const invoiceRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
+  // Find default gold rate
+  const defaultGoldRate = React.useMemo(() => {
+    if (rates && rates.length > 0) {
+      const goldRate = rates.find(r => r.category === "gold");
+      return goldRate ? goldRate.current : 0;
+    }
+    return 0;
+  }, [rates]);
+
   // Default values for the form
   const defaultValues: Partial<InvoiceFormValues> = {
     shopName: "RP Jewellers",
@@ -93,7 +102,7 @@ export function InvoiceGenerator({ product, collection, rates }: InvoiceGenerato
     includeProductImage: true,
     includeMakingCharges: true,
     makingChargesPercentage: 8,
-    customRate: rates.find(r => r.category === "gold")?.current || 0,
+    customRate: defaultGoldRate,
     additionalCharges: 0,
     discount: 0,
     discountType: "percentage"
@@ -185,7 +194,17 @@ export function InvoiceGenerator({ product, collection, rates }: InvoiceGenerato
 
   // Calculate total price based on form data
   const calculateTotalPrice = (values: InvoiceFormValues) => {
-    const goldRate = values.customRate || rates.find(r => r.category === "gold")?.current || 0;
+    // Find gold rate from the array of rates
+    let goldRate = 0;
+    if (values.customRate) {
+      goldRate = values.customRate;
+    } else if (rates && rates.length > 0) {
+      const goldRateObj = rates.find(r => r.category === "gold");
+      if (goldRateObj) {
+        goldRate = goldRateObj.current;
+      }
+    }
+    
     const weight = product.weight || 0;
     const productPrice = (goldRate * weight) / 10; // Price per gram
     
@@ -417,7 +436,7 @@ export function InvoiceGenerator({ product, collection, rates }: InvoiceGenerato
                           />
                         </FormControl>
                         <FormDescription>
-                          Default: ₹{rates.find(r => r.category === "gold")?.current || 0}
+                          Default: ₹{defaultGoldRate}
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -731,9 +750,9 @@ export function InvoiceGenerator({ product, collection, rates }: InvoiceGenerato
                     </div>
                   </div>
                   <div>{product.weight}g</div>
-                  <div>₹{form.watch("customRate") || rates.find(r => r.category === "gold")?.current || 0}/10g</div>
+                  <div>₹{form.watch("customRate") || defaultGoldRate}/10g</div>
                   <div>
-                    ₹{((form.watch("customRate") || rates.find(r => r.category === "gold")?.current || 0) * (product.weight || 0) / 10).toFixed(2)}
+                    ₹{((form.watch("customRate") || defaultGoldRate) * (product.weight || 0) / 10).toFixed(2)}
                   </div>
                 </div>
                 
@@ -743,7 +762,7 @@ export function InvoiceGenerator({ product, collection, rates }: InvoiceGenerato
                     <div></div>
                     <div></div>
                     <div>
-                      ₹{(((form.watch("customRate") || rates.find(r => r.category === "gold")?.current || 0) * (product.weight || 0) / 10) * (form.watch("makingChargesPercentage") / 100)).toFixed(2)}
+                      ₹{(((form.watch("customRate") || defaultGoldRate) * (product.weight || 0) / 10) * (form.watch("makingChargesPercentage") / 100)).toFixed(2)}
                     </div>
                   </div>
                 )}

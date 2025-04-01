@@ -244,6 +244,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Get product categories
+  app.get("/api/product-categories", async (req, res) => {
+    try {
+      const categories = await storage.getProductCategories();
+      res.json(categories);
+    } catch (error) {
+      console.error("Error fetching product categories:", error);
+      res.status(500).json({ message: "Failed to fetch product categories" });
+    }
+  });
+  
+  // Search products
+  app.get("/api/products/search", async (req, res) => {
+    try {
+      const query = req.query.q as string || '';
+      const products = await storage.searchProducts(query);
+      res.json(products);
+    } catch (error) {
+      console.error("Error searching products:", error);
+      res.status(500).json({ message: "Failed to search products" });
+    }
+  });
+  
   // Get a specific product by ID
   app.get("/api/products/:id", async (req, res) => {
     try {

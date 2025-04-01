@@ -28,6 +28,8 @@ export interface IStorage {
   getProducts(): Promise<Product[]>;
   getProductById(id: number): Promise<Product | undefined>;
   getProductsByCollectionId(collectionId: number): Promise<Product[]>;
+  searchProducts(query: string): Promise<Product[]>;
+  getProductCategories(): Promise<string[]>;
   createProduct(product: InsertProduct): Promise<Product>;
   updateProduct(id: number, product: Partial<UpdateProduct>): Promise<Product>;
   deleteProduct(id: number): Promise<boolean>;
@@ -393,6 +395,7 @@ export class MemStorage implements IStorage {
         imageUrl: product.imageUrl,
         price: product.price,
         weight: product.weight || 0,
+        karatType: product.karatType || "22k",
         category: product.category,
         collectionId: product.collectionId,
         featured: product.featured || 0,
@@ -429,6 +432,7 @@ export class MemStorage implements IStorage {
       imageUrl: insertProduct.imageUrl,
       price: insertProduct.price,
       weight: insertProduct.weight || 0,
+      karatType: insertProduct.karatType || "22k",
       category: insertProduct.category,
       collectionId: insertProduct.collectionId,
       featured: insertProduct.featured || 0,
@@ -454,6 +458,7 @@ export class MemStorage implements IStorage {
       imageUrl: updateData.imageUrl || existingProduct.imageUrl,
       price: updateData.price ?? existingProduct.price,
       weight: updateData.weight ?? existingProduct.weight,
+      karatType: updateData.karatType || existingProduct.karatType,
       category: updateData.category || existingProduct.category,
       collectionId: updateData.collectionId || existingProduct.collectionId,
       featured: typeof updateData.featured === 'number' ? updateData.featured : existingProduct.featured,
@@ -471,6 +476,35 @@ export class MemStorage implements IStorage {
     
     this.products.delete(id);
     return true;
+  }
+  
+  async searchProducts(query: string): Promise<Product[]> {
+    if (!query || query.trim() === '') {
+      return this.getProducts();
+    }
+    
+    const lowercaseQuery = query.toLowerCase().trim();
+    
+    return Array.from(this.products.values()).filter(product => {
+      return (
+        product.name.toLowerCase().includes(lowercaseQuery) ||
+        (product.description && product.description.toLowerCase().includes(lowercaseQuery)) ||
+        product.category.toLowerCase().includes(lowercaseQuery)
+      );
+    });
+  }
+  
+  async getProductCategories(): Promise<string[]> {
+    const products = await this.getProducts();
+    const categoriesSet = new Set<string>();
+    
+    products.forEach(product => {
+      if (product.category) {
+        categoriesSet.add(product.category);
+      }
+    });
+    
+    return Array.from(categoriesSet);
   }
 }
 

@@ -659,7 +659,7 @@ export default function AdminPage() {
                               <div className="grid grid-cols-2 gap-2 mt-3 text-xs">
                                 <div className="bg-amber-50 p-2 rounded">
                                   <span className="text-amber-700 block">Taunch:</span>
-                                  <span className="font-semibold">₹{product.price.toLocaleString()}</span>
+                                  <span className="font-semibold">{product.price.toLocaleString()}%</span>
                                 </div>
                                 
                                 <div className="bg-blue-50 p-2 rounded">
@@ -736,7 +736,7 @@ export default function AdminPage() {
                       name="taunch"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Taunch (₹)</FormLabel>
+                          <FormLabel>Taunch (%)</FormLabel>
                           <FormControl>
                             <Input {...field} type="number" min="0" step="100" />
                           </FormControl>

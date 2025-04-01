@@ -39,7 +39,10 @@ const rateSchema = z.object({
 const productSchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters"),
   description: z.string().nullable().optional(),
-  taunch: z.coerce.number().min(0, "Taunch cannot be negative"),
+  taunch: z.coerce.number().min(0, "Taunch cannot be negative").refine(
+    val => Number.isFinite(val),
+    { message: "Taunch must be a valid number" }
+  ),
   weight: z.coerce.number().min(0, "Weight cannot be negative"),
   karatType: z.enum(["18k", "22k"]),
   category: z.string().min(1, "Category is required"),
@@ -659,7 +662,7 @@ export default function AdminPage() {
                               <div className="grid grid-cols-2 gap-2 mt-3 text-xs">
                                 <div className="bg-amber-50 p-2 rounded">
                                   <span className="text-amber-700 block">Taunch:</span>
-                                  <span className="font-semibold">{product.price.toLocaleString()}%</span>
+                                  <span className="font-semibold">{product.price.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}%</span>
                                 </div>
                                 
                                 <div className="bg-blue-50 p-2 rounded">
@@ -738,7 +741,7 @@ export default function AdminPage() {
                         <FormItem>
                           <FormLabel>Taunch (%)</FormLabel>
                           <FormControl>
-                            <Input {...field} type="number" min="0" step="100" />
+                            <Input {...field} type="number" min="0" step="0.01" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

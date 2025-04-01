@@ -636,34 +636,14 @@ export default function AdminPage() {
                             <div className="p-2.5">
                               <h3 className="font-semibold text-sm line-clamp-1 mb-1">{product.name}</h3>
                               
-                              <div className="flex items-center justify-between mb-1.5">
-                                <div className="flex gap-1.5 items-center">
-                                  <Badge variant={product.inStock ? "default" : "outline"} className="text-xs px-1.5 py-0">
-                                    {product.inStock ? "In Stock" : "Out"}
-                                  </Badge>
-                                  <span className="text-xs text-gray-500">{product.karatType}</span>
-                                </div>
-                                <div className="flex gap-0.5">
-                                  <Button 
-                                    size="icon" 
-                                    variant="ghost" 
-                                    className="h-6 w-6 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-full p-0"
-                                    onClick={() => handleEditProduct(product)}
-                                  >
-                                    <Pencil className="h-3 w-3" />
-                                  </Button>
-                                  <Button 
-                                    size="icon" 
-                                    variant="ghost" 
-                                    className="h-6 w-6 bg-red-50 text-red-700 hover:bg-red-100 rounded-full p-0"
-                                    onClick={() => handleDeleteProduct(product)}
-                                  >
-                                    <Trash2 className="h-3 w-3" />
-                                  </Button>
-                                </div>
+                              <div className="flex gap-1.5 items-center mb-1">
+                                <Badge variant={product.inStock ? "default" : "outline"} className="text-xs px-1.5 py-0">
+                                  {product.inStock ? "In Stock" : "Out"}
+                                </Badge>
+                                <span className="text-xs text-gray-500">{product.karatType}</span>
                               </div>
                               
-                              <div className="flex justify-between mt-1 text-xs">
+                              <div className="flex justify-between mb-1 text-xs">
                                 <div className="flex items-center text-amber-700">
                                   <span>Taunch: </span>
                                   <span className="font-semibold ml-1">{product.price.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}%</span>
@@ -673,6 +653,36 @@ export default function AdminPage() {
                                   <span>Weight: </span>
                                   <span className="font-semibold ml-1">{product.weight}g</span>
                                 </div>
+                              </div>
+                              
+                              <div className="flex flex-wrap gap-1 mb-1.5">
+                                {collection && (
+                                  <Badge variant="outline" className="text-xs px-1.5 py-0 border-amber-200 text-amber-800 bg-amber-50">
+                                    {collection.name}
+                                  </Badge>
+                                )}
+                                <Badge variant="outline" className="text-xs px-1.5 py-0 border-blue-200 text-blue-800 bg-blue-50 capitalize">
+                                  {product.category}
+                                </Badge>
+                              </div>
+                              
+                              <div className="flex justify-end gap-0.5">
+                                <Button 
+                                  size="icon" 
+                                  variant="ghost" 
+                                  className="h-6 w-6 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-full p-0"
+                                  onClick={() => handleEditProduct(product)}
+                                >
+                                  <Pencil className="h-3 w-3" />
+                                </Button>
+                                <Button 
+                                  size="icon" 
+                                  variant="ghost" 
+                                  className="h-6 w-6 bg-red-50 text-red-700 hover:bg-red-100 rounded-full p-0"
+                                  onClick={() => handleDeleteProduct(product)}
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
                               </div>
                             </div>
                           </div>

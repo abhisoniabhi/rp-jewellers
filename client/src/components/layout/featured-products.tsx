@@ -109,7 +109,7 @@ function ProductCard({ product }: ProductCardProps) {
   const [isHovered, setIsHovered] = React.useState(false);
 
   return (
-    <Link href={`/collections/${product.collectionId}`}>
+    <Link href={`/products/${product.id}`}>
       <motion.div
         initial={{ opacity: 1 }}
         whileHover={{ 

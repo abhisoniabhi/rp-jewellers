@@ -1,14 +1,12 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import { Product, Collection, Rate } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -38,10 +36,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarIcon, FileText, Receipt, Printer } from "lucide-react";
 import { format } from "date-fns";
-import { Card, CardContent } from "@/components/ui/card";
-import html2canvas from "html2canvas";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 
 // Define the form schema for invoice
@@ -113,210 +108,246 @@ export function InvoiceGenerator({ product, collection, rates }: InvoiceGenerato
     defaultValues,
   });
 
-  // Generate a sample invoice image for preview
-  const previewInvoice = async (data: InvoiceFormValues) => {
-    // Generate a simple preview image without html2canvas
-    // This is a fallback approach since html2canvas is having issues
-    const totalAmount = calculateTotalPrice(data).toFixed(2);
+  // Calculate total price based on form data
+  const calculateTotalPrice = (values: InvoiceFormValues) => {
+    // Find gold rate from the array of rates
+    let goldRate = 0;
+    if (values.customRate) {
+      goldRate = values.customRate;
+    } else if (rates && rates.length > 0) {
+      const goldRateObj = rates.find(r => r.category === "gold");
+      if (goldRateObj) {
+        goldRate = goldRateObj.current;
+      }
+    }
     
-    // Create a canvas to draw the invoice preview
-    const canvas = document.createElement('canvas');
-    canvas.width = 800;
-    canvas.height = 900;
-    const ctx = canvas.getContext('2d');
+    const weight = product.weight || 0;
+    const productPrice = (goldRate * weight) / 10; // Price per gram
     
-    if (ctx) {
-      try {
-        // Background
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, 800, 900);
-        
-        // Header
-        ctx.fillStyle = '#FDF2E3';
-        ctx.fillRect(0, 0, 800, 80);
-        
-        // Shop name and invoice title
-        ctx.fillStyle = '#B45309'; // amber-800
-        ctx.font = 'bold 24px Arial';
-        ctx.fillText(data.shopName, 20, 40);
-        
-        ctx.textAlign = 'right';
-        ctx.fillText('INVOICE', 780, 40);
-        
-        // Reset text align
-        ctx.textAlign = 'left';
-        
-        // Invoice details
-        ctx.fillStyle = '#4B5563'; // gray-600
-        ctx.font = '16px Arial';
-        ctx.fillText(`#${data.invoiceNumber}`, 20, 70);
-        ctx.textAlign = 'right';
-        ctx.fillText(`Date: ${format(data.invoiceDate, 'dd/MM/yyyy')}`, 780, 70);
-        ctx.textAlign = 'left';
-        
-        // Customer details
-        ctx.fillStyle = '#1F2937'; // gray-800
-        ctx.font = 'bold 18px Arial';
-        ctx.fillText('Bill To:', 20, 120);
-        
-        ctx.fillStyle = '#4B5563'; // gray-600
-        ctx.font = '16px Arial';
-        ctx.fillText(data.customerName, 20, 150);
-        if (data.customerAddress) {
-          ctx.fillText(data.customerAddress, 20, 175);
-        }
-        if (data.customerContact) {
-          ctx.fillText(`Contact: ${data.customerContact}`, 20, 200);
-        }
-        
-        // Product details
-        ctx.fillStyle = '#1F2937'; // gray-800
-        ctx.font = 'bold 18px Arial';
-        ctx.fillText('Product Details:', 20, 250);
+    // Add making charges if enabled
+    let totalPrice = productPrice;
+    if (values.includeMakingCharges) {
+      totalPrice += (productPrice * (values.makingChargesPercentage / 100));
+    }
+    
+    // Add additional charges
+    totalPrice += values.additionalCharges || 0;
+    
+    // Apply discount
+    if (values.discount && values.discount > 0) {
+      if (values.discountType === "percentage") {
+        totalPrice = totalPrice * (1 - (values.discount / 100));
+      } else {
+        totalPrice = totalPrice - (values.discount || 0);
+      }
+    }
+    
+    return totalPrice > 0 ? totalPrice : 0;
+  };
 
-        let currentY = 270;
-        
-        // Add product image if it exists and is requested
-        if (data.includeProductImage && product.imageUrl) {
-          try {
-            // Create a temporary image element to load the product image
-            const img = new Image();
-            img.crossOrigin = "anonymous"; // Enable CORS
-            
-            // Wait for the image to load
-            await new Promise((resolve, reject) => {
-              img.onload = resolve;
-              img.onerror = reject;
-              img.src = product.imageUrl;
-            });
-            
-            // Draw image with a border
-            const imgSize = 120;
-            ctx.strokeStyle = '#E5E7EB'; // gray-200
-            ctx.lineWidth = 1;
-            
-            // Draw the image
-            ctx.drawImage(img, 20, currentY, imgSize, imgSize);
-            
-            // Draw border around the image
-            ctx.strokeRect(20, currentY, imgSize, imgSize);
-            
-            // Add product name and details next to the image
-            ctx.fillStyle = '#4B5563'; // gray-600
-            ctx.font = 'bold 16px Arial';
-            ctx.fillText(product.name, 160, currentY + 25);
-            
-            ctx.font = '14px Arial';
-            ctx.fillText(`Category: ${product.category || 'N/A'}`, 160, currentY + 50);
-            ctx.fillText(`Type: ${product.karatType || 'N/A'}`, 160, currentY + 75);
-            if (collection) {
-              ctx.fillText(`Collection: ${collection.name}`, 160, currentY + 100);
-            }
-            
-            // Update Y position to continue after the image
-            currentY += imgSize + 30;
-          } catch (err) {
-            console.error('Error loading product image:', err);
-            // If image fails to load, just show text
-            currentY += 30;
-          }
-        } else {
-          // If no image, just add some spacing
-          currentY += 30;
-        }
-        
-        // Table header
-        ctx.fillStyle = '#FEF3C7'; // amber-100
-        ctx.fillRect(20, currentY, 760, 40);
-        
-        ctx.fillStyle = '#92400E'; // amber-800
-        ctx.font = 'bold 16px Arial';
-        ctx.fillText('Item', 30, currentY + 25);
-        ctx.fillText('Weight', 300, currentY + 25);
-        ctx.fillText('Rate', 450, currentY + 25);
-        ctx.fillText('Amount', 600, currentY + 25);
-        
-        currentY += 40;
-        
-        // Product row
-        ctx.fillStyle = '#4B5563'; // gray-600
-        ctx.font = '16px Arial';
-        ctx.fillText(product.name, 30, currentY + 25);
-        ctx.fillText(`${product.weight}g`, 300, currentY + 25);
-        ctx.fillText(`₹${data.customRate || defaultGoldRate}/10g`, 450, currentY + 25);
-        
-        const baseAmount = ((data.customRate || defaultGoldRate) * (product.weight || 0) / 10).toFixed(2);
-        ctx.fillText(`₹${baseAmount}`, 600, currentY + 25);
-        
-        currentY += 40;
-        let yPos = currentY + 30;
-        
-        // Making charges row
-        if (data.includeMakingCharges) {
-          ctx.fillText(`Making Charges (${data.makingChargesPercentage}%)`, 30, yPos);
-          const makingCharges = (((data.customRate || defaultGoldRate) * (product.weight || 0) / 10) * (data.makingChargesPercentage / 100)).toFixed(2);
-          ctx.fillText(`₹${makingCharges}`, 600, yPos);
-          yPos += 35;
-        }
-        
-        // Additional charges row
-        if (data.additionalCharges > 0) {
-          ctx.fillText('Additional Charges', 30, yPos);
-          ctx.fillText(`₹${data.additionalCharges.toFixed(2)}`, 600, yPos);
-          yPos += 35;
-        }
-        
-        // Discount row
-        if (data.discount > 0) {
-          ctx.fillStyle = '#EF4444'; // red-500
-          ctx.fillText(
-            `Discount ${data.discountType === 'percentage' ? `(${data.discount}%)` : ''}`, 
-            30, 
-            yPos
-          );
-          
-          const discountAmount = data.discountType === 'percentage' 
-            ? (calculateTotalPrice({ ...data, discount: 0 }) * (data.discount / 100)).toFixed(2)
-            : data.discount.toFixed(2);
-          
-          ctx.fillText(`- ₹${discountAmount}`, 600, yPos);
-          yPos += 35;
-        }
-        
-        // Total
-        yPos = currentY + 150;
-        ctx.fillStyle = '#FEF3C7'; // amber-100
-        ctx.fillRect(500, yPos, 280, 40);
-        
-        ctx.fillStyle = '#92400E'; // amber-800
-        ctx.font = 'bold 16px Arial';
-        ctx.fillText('Total Amount', 520, yPos + 25);
-        
-        ctx.font = 'bold 20px Arial';
-        ctx.fillText(`₹${totalAmount}`, 650, yPos + 25);
-        
-        // Footer
-        ctx.fillStyle = '#6B7280'; // gray-500
-        ctx.font = '14px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText('Thank you for your business!', 400, 800);
-        ctx.fillText(`${data.shopName} - ${data.shopContact}`, 400, 825);
-        
-        // Convert canvas to data URL
-        const dataUrl = canvas.toDataURL('image/png');
-        setInvoicePreview(dataUrl);
-      } catch (error) {
-        console.error("Error generating invoice:", error);
+  // Generate invoice preview using canvas API
+  const previewInvoice = async (data: InvoiceFormValues) => {
+    try {
+      const totalAmount = calculateTotalPrice(data).toFixed(2);
+      
+      // Create a canvas to draw the invoice preview
+      const canvas = document.createElement('canvas');
+      canvas.width = 800;
+      canvas.height = 900;
+      const ctx = canvas.getContext('2d');
+      
+      if (!ctx) {
         toast({
-          title: "Error",
-          description: "Failed to generate invoice preview",
+          title: "Preview Error",
+          description: "Could not generate invoice preview. Browser may not support canvas.",
           variant: "destructive"
         });
+        return;
       }
-    } else {
+      
+      // Background
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, 800, 900);
+      
+      // Header
+      ctx.fillStyle = '#FDF2E3';
+      ctx.fillRect(0, 0, 800, 80);
+      
+      // Shop name and invoice title
+      ctx.fillStyle = '#B45309'; // amber-800
+      ctx.font = 'bold 24px Arial';
+      ctx.fillText(data.shopName, 20, 40);
+      
+      ctx.textAlign = 'right';
+      ctx.fillText('INVOICE', 780, 40);
+      
+      // Reset text align
+      ctx.textAlign = 'left';
+      
+      // Invoice details
+      ctx.fillStyle = '#4B5563'; // gray-600
+      ctx.font = '16px Arial';
+      ctx.fillText(`#${data.invoiceNumber}`, 20, 70);
+      ctx.textAlign = 'right';
+      ctx.fillText(`Date: ${format(data.invoiceDate, 'dd/MM/yyyy')}`, 780, 70);
+      ctx.textAlign = 'left';
+      
+      // Customer details
+      ctx.fillStyle = '#1F2937'; // gray-800
+      ctx.font = 'bold 18px Arial';
+      ctx.fillText('Bill To:', 20, 120);
+      
+      ctx.fillStyle = '#4B5563'; // gray-600
+      ctx.font = '16px Arial';
+      ctx.fillText(data.customerName, 20, 150);
+      if (data.customerAddress) {
+        ctx.fillText(data.customerAddress, 20, 175);
+      }
+      if (data.customerContact) {
+        ctx.fillText(`Contact: ${data.customerContact}`, 20, 200);
+      }
+      
+      // Product details
+      ctx.fillStyle = '#1F2937'; // gray-800
+      ctx.font = 'bold 18px Arial';
+      ctx.fillText('Product Details:', 20, 250);
+
+      let currentY = 270;
+      
+      // Add product image if it exists and is requested
+      if (data.includeProductImage && product.imageUrl) {
+        try {
+          // Create a temporary image element to load the product image
+          const img = new Image();
+          img.crossOrigin = "anonymous"; // Enable CORS
+          
+          // Wait for the image to load
+          await new Promise((resolve, reject) => {
+            img.onload = resolve;
+            img.onerror = reject;
+            img.src = product.imageUrl;
+          });
+          
+          // Draw image with a border
+          const imgSize = 120;
+          ctx.strokeStyle = '#E5E7EB'; // gray-200
+          ctx.lineWidth = 1;
+          
+          // Draw the image
+          ctx.drawImage(img, 20, currentY, imgSize, imgSize);
+          
+          // Draw border around the image
+          ctx.strokeRect(20, currentY, imgSize, imgSize);
+          
+          // Add product name and details next to the image
+          ctx.fillStyle = '#4B5563'; // gray-600
+          ctx.font = 'bold 16px Arial';
+          ctx.fillText(product.name, 160, currentY + 25);
+          
+          ctx.font = '14px Arial';
+          ctx.fillText(`Category: ${product.category || 'N/A'}`, 160, currentY + 50);
+          ctx.fillText(`Type: ${product.karatType || 'N/A'}`, 160, currentY + 75);
+          if (collection) {
+            ctx.fillText(`Collection: ${collection.name}`, 160, currentY + 100);
+          }
+          
+          // Update Y position to continue after the image
+          currentY += imgSize + 30;
+        } catch (err) {
+          console.error('Error loading product image:', err);
+          // If image fails to load, just show text
+          currentY += 30;
+        }
+      } else {
+        // If no image, just add some spacing
+        currentY += 30;
+      }
+      
+      // Table header
+      ctx.fillStyle = '#FEF3C7'; // amber-100
+      ctx.fillRect(20, currentY, 760, 40);
+      
+      ctx.fillStyle = '#92400E'; // amber-800
+      ctx.font = 'bold 16px Arial';
+      ctx.fillText('Item', 30, currentY + 25);
+      ctx.fillText('Weight', 300, currentY + 25);
+      ctx.fillText('Rate', 450, currentY + 25);
+      ctx.fillText('Amount', 600, currentY + 25);
+      
+      currentY += 40;
+      
+      // Product row
+      ctx.fillStyle = '#4B5563'; // gray-600
+      ctx.font = '16px Arial';
+      ctx.fillText(product.name, 30, currentY + 25);
+      ctx.fillText(`${product.weight}g`, 300, currentY + 25);
+      ctx.fillText(`₹${data.customRate || defaultGoldRate}/10g`, 450, currentY + 25);
+      
+      const baseAmount = ((data.customRate || defaultGoldRate) * (product.weight || 0) / 10).toFixed(2);
+      ctx.fillText(`₹${baseAmount}`, 600, currentY + 25);
+      
+      currentY += 40;
+      let yPos = currentY + 30;
+      
+      // Making charges row
+      if (data.includeMakingCharges) {
+        ctx.fillText(`Making Charges (${data.makingChargesPercentage}%)`, 30, yPos);
+        const makingCharges = (((data.customRate || defaultGoldRate) * (product.weight || 0) / 10) * (data.makingChargesPercentage / 100)).toFixed(2);
+        ctx.fillText(`₹${makingCharges}`, 600, yPos);
+        yPos += 35;
+      }
+      
+      // Additional charges row
+      if (data.additionalCharges > 0) {
+        ctx.fillText('Additional Charges', 30, yPos);
+        ctx.fillText(`₹${data.additionalCharges.toFixed(2)}`, 600, yPos);
+        yPos += 35;
+      }
+      
+      // Discount row
+      if (data.discount > 0) {
+        ctx.fillStyle = '#EF4444'; // red-500
+        ctx.fillText(
+          `Discount ${data.discountType === 'percentage' ? `(${data.discount}%)` : ''}`, 
+          30, 
+          yPos
+        );
+        
+        const discountAmount = data.discountType === 'percentage' 
+          ? (calculateTotalPrice({ ...data, discount: 0 }) * (data.discount / 100)).toFixed(2)
+          : data.discount.toFixed(2);
+        
+        ctx.fillText(`- ₹${discountAmount}`, 600, yPos);
+        yPos += 35;
+      }
+      
+      // Total
+      yPos = currentY + 150;
+      ctx.fillStyle = '#FEF3C7'; // amber-100
+      ctx.fillRect(500, yPos, 280, 40);
+      
+      ctx.fillStyle = '#92400E'; // amber-800
+      ctx.font = 'bold 16px Arial';
+      ctx.fillText('Total Amount', 520, yPos + 25);
+      
+      ctx.font = 'bold 20px Arial';
+      ctx.fillText(`₹${totalAmount}`, 650, yPos + 25);
+      
+      // Footer
+      ctx.fillStyle = '#6B7280'; // gray-500
+      ctx.font = '14px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('Thank you for your business!', 400, 800);
+      ctx.fillText(`${data.shopName} - ${data.shopContact}`, 400, 825);
+      
+      // Convert canvas to data URL
+      const dataUrl = canvas.toDataURL('image/png');
+      setInvoicePreview(dataUrl);
+    } catch (error) {
+      console.error("Error generating invoice:", error);
       toast({
-        title: "Preview Error",
-        description: "Could not generate invoice preview. Please try again.",
+        title: "Error",
+        description: "Failed to generate invoice preview",
         variant: "destructive"
       });
     }
@@ -372,43 +403,6 @@ export function InvoiceGenerator({ product, collection, rates }: InvoiceGenerato
         });
       }
     }
-  };
-
-  // Calculate total price based on form data
-  const calculateTotalPrice = (values: InvoiceFormValues) => {
-    // Find gold rate from the array of rates
-    let goldRate = 0;
-    if (values.customRate) {
-      goldRate = values.customRate;
-    } else if (rates && rates.length > 0) {
-      const goldRateObj = rates.find(r => r.category === "gold");
-      if (goldRateObj) {
-        goldRate = goldRateObj.current;
-      }
-    }
-    
-    const weight = product.weight || 0;
-    const productPrice = (goldRate * weight) / 10; // Price per gram
-    
-    // Add making charges if enabled
-    let totalPrice = productPrice;
-    if (values.includeMakingCharges) {
-      totalPrice += (productPrice * (values.makingChargesPercentage / 100));
-    }
-    
-    // Add additional charges
-    totalPrice += values.additionalCharges || 0;
-    
-    // Apply discount
-    if (values.discount && values.discount > 0) {
-      if (values.discountType === "percentage") {
-        totalPrice = totalPrice * (1 - (values.discount / 100));
-      } else {
-        totalPrice = totalPrice - (values.discount || 0);
-      }
-    }
-    
-    return totalPrice > 0 ? totalPrice : 0;
   };
 
   return (
@@ -722,7 +716,7 @@ export function InvoiceGenerator({ product, collection, rates }: InvoiceGenerato
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Discount Type</FormLabel>
-                          <Select 
+                          <Select
                             onValueChange={(value) => {
                               field.onChange(value);
                               setTimeout(() => form.trigger(), 100);
@@ -731,7 +725,7 @@ export function InvoiceGenerator({ product, collection, rates }: InvoiceGenerato
                           >
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Select discount type" />
+                                <SelectValue placeholder="Select type" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
@@ -744,10 +738,7 @@ export function InvoiceGenerator({ product, collection, rates }: InvoiceGenerato
                       )}
                     />
                   </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <h3 className="text-lg font-medium">Additional Options</h3>
+                  
                   <FormField
                     control={form.control}
                     name="notes"
@@ -755,10 +746,10 @@ export function InvoiceGenerator({ product, collection, rates }: InvoiceGenerato
                       <FormItem>
                         <FormLabel>Notes (Optional)</FormLabel>
                         <FormControl>
-                          <Textarea
-                            placeholder="Additional notes, terms, or conditions"
-                            className="resize-none"
+                          <Textarea 
+                            placeholder="Additional notes or terms..." 
                             {...field}
+                            rows={3}
                           />
                         </FormControl>
                         <FormMessage />
@@ -803,39 +794,41 @@ export function InvoiceGenerator({ product, collection, rates }: InvoiceGenerato
                       )}
                     />
                   </div>
+                  
+                  <div className="pt-4">
+                    <Button type="submit" className="w-full">
+                      <FileText className="mr-2 h-4 w-4" />
+                      Generate Preview
+                    </Button>
+                  </div>
                 </div>
-
-                <Button type="submit" className="w-full">
-                  Preview Invoice
-                </Button>
               </form>
             </Form>
           </div>
           
           {/* Preview Section */}
-          <div className="border rounded-lg p-4 bg-gray-50 flex flex-col">
+          <div className="border rounded-lg p-4 flex flex-col">
+            <h3 className="text-lg font-medium mb-4">Preview</h3>
             {invoicePreview ? (
               <div className="space-y-4 flex-1 flex flex-col">
-                <h3 className="text-lg font-medium">Invoice Preview</h3>
-                <div className="flex-1 overflow-hidden rounded border bg-white">
+                <div className="flex-1 overflow-auto border rounded">
                   <img 
                     src={invoicePreview} 
                     alt="Invoice Preview" 
-                    className="w-full object-contain"
+                    className="w-full h-auto"
                   />
                 </div>
                 <div className="flex gap-2">
                   <Button 
-                    type="button" 
-                    className="flex-1" 
+                    variant="outline" 
+                    className="flex-1"
                     onClick={handleDownload}
                   >
                     <FileText className="mr-2 h-4 w-4" />
                     Download
                   </Button>
                   <Button 
-                    type="button" 
-                    variant="outline" 
+                    variant="outline"
                     className="flex-1"
                     onClick={handlePrint}
                   >
@@ -845,18 +838,15 @@ export function InvoiceGenerator({ product, collection, rates }: InvoiceGenerato
                 </div>
               </div>
             ) : (
-              <div className="flex-1 flex flex-col items-center justify-center space-y-4 text-center text-gray-500">
+              <div className="flex-1 flex flex-col items-center justify-center text-gray-500 space-y-4 border rounded-md p-8">
                 <Receipt className="h-16 w-16 opacity-20" />
-                <div>
-                  <h3 className="text-lg font-medium">No Preview Available</h3>
-                  <p>Fill out the form and click "Preview Invoice" to see your invoice here.</p>
-                </div>
+                <p>Fill the form and generate a preview to see your invoice here</p>
+                <p className="text-sm">The preview will show a professional invoice with your details and the product information</p>
               </div>
             )}
           </div>
         </div>
         
-
       </DialogContent>
     </Dialog>
   );

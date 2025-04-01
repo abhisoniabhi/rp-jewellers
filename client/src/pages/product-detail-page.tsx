@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, Star, ShoppingCart, Heart, Award, Package, Shield, Share2, Receipt } from "lucide-react";
-import { InvoiceGenerator } from "@/components/invoice/invoice-generator";
+import { InvoiceGenerator } from "@/components/invoice/invoice-generator-new";
 
 export default function ProductDetailPage() {
   const [, setLocation] = useLocation();

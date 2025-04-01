@@ -432,8 +432,19 @@ export default function AdminPage() {
     }
     
     // Create a Promise for each product update
+    // We need to include all required fields from the original product
     const updatePromises = productsInCategory.map(product => 
-      apiRequest("PATCH", `/api/products/${product.id}`, { price: categoryTaunchValue })
+      apiRequest("PATCH", `/api/products/${product.id}`, { 
+        name: product.name,
+        description: product.description || "",
+        imageUrl: product.imageUrl || "",
+        collectionId: product.collectionId,
+        price: categoryTaunchValue, // This is our taunch value
+        category: product.category,
+        karatType: product.karatType || "22k",
+        weight: product.weight || 0,
+        inStock: product.inStock
+      })
     );
     
     // Execute all updates

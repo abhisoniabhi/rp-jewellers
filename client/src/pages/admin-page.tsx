@@ -491,13 +491,42 @@ export default function AdminPage() {
     return acc;
   }, {} as Record<number, number>);
   
-  // Calculate products in each category
-  const categoryCounts = products.reduce((acc, product) => {
+  // Calculate products in each category and taunch values
+  const categoryCounts = {} as Record<string, number>;
+  const categoryTaunchInfo = {} as Record<string, { 
+    min: number, 
+    max: number, 
+    avg: number, 
+    total: number, 
+    count: number 
+  }>;
+  
+  products.forEach(product => {
     if (product.category) {
-      acc[product.category] = (acc[product.category] || 0) + 1;
+      // Count products in category
+      categoryCounts[product.category] = (categoryCounts[product.category] || 0) + 1;
+      
+      // Track taunch values
+      if (!categoryTaunchInfo[product.category]) {
+        categoryTaunchInfo[product.category] = {
+          min: Infinity,
+          max: -Infinity,
+          avg: 0,
+          total: 0,
+          count: 0
+        };
+      }
+      
+      const taunch = product.price || 0;
+      const info = categoryTaunchInfo[product.category];
+      
+      info.min = Math.min(info.min, taunch);
+      info.max = Math.max(info.max, taunch);
+      info.total = (info.total || 0) + taunch;
+      info.count = (info.count || 0) + 1;
+      info.avg = info.total / info.count;
     }
-    return acc;
-  }, {} as Record<string, number>);
+  });
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -962,6 +991,19 @@ export default function AdminPage() {
                           <div>
                             <h3 className="font-medium capitalize">{category}</h3>
                             <p className="text-sm text-gray-500">{count} products</p>
+                            {categoryTaunchInfo[category] && (
+                              <div className="mt-1 text-xs text-blue-700">
+                                <div className="flex items-center">
+                                  <span>Taunch: </span>
+                                  <span className="font-medium ml-1">
+                                    {categoryTaunchInfo[category].avg.toFixed(2)}% 
+                                    <span className="text-gray-500 ml-1">
+                                      (range: {categoryTaunchInfo[category].min}-{categoryTaunchInfo[category].max}%)
+                                    </span>
+                                  </span>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </div>
                         <div className="flex flex-col space-y-2">
@@ -1022,6 +1064,26 @@ export default function AdminPage() {
                     This will update the taunch value for all products in this category.
                     <br />Total products affected: {selectedCategory ? categoryCounts[selectedCategory] || 0 : 0}
                   </p>
+                  
+                  {selectedCategory && categoryTaunchInfo[selectedCategory] && (
+                    <div className="mt-2 pt-2 border-t border-blue-200 text-xs">
+                      <p className="font-medium">Current taunch values:</p>
+                      <div className="grid grid-cols-3 gap-2 mt-1">
+                        <div>
+                          <span className="text-blue-600">Average:</span>
+                          <span className="font-medium ml-1">{categoryTaunchInfo[selectedCategory].avg.toFixed(2)}%</span>
+                        </div>
+                        <div>
+                          <span className="text-blue-600">Min:</span>
+                          <span className="font-medium ml-1">{categoryTaunchInfo[selectedCategory].min}%</span>
+                        </div>
+                        <div>
+                          <span className="text-blue-600">Max:</span>
+                          <span className="font-medium ml-1">{categoryTaunchInfo[selectedCategory].max}%</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="space-y-2">

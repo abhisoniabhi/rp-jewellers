@@ -10,6 +10,7 @@ import { AdminTrigger } from "@/components/admin/admin-trigger";
 import { ScreenshotGenerator } from "@/components/screenshot/screenshot-generator";
 import { CustomRateGenerator } from "@/components/screenshot/custom-rate-generator";
 import { FeaturedCollections } from "@/components/layout/featured-collections";
+import { FeaturedProducts } from "@/components/layout/featured-products";
 import { useEffect } from "react";
 import { queryClient } from "@/lib/queryClient";
 import { wsClient, WS_EVENTS } from "@/lib/websocket";
@@ -116,6 +117,9 @@ export default function HomePage() {
           
           {/* Featured Collections */}
           <FeaturedCollections />
+          
+          {/* Featured Products */}
+          <FeaturedProducts />
           
           {/* Admin quick-access floating button (for mobile) */}
           {user && <AdminTrigger rates={rates} />}

@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Header } from "@/components/layout/header";
+import { SearchBar } from "@/components/layout/search-bar";
 import { RateCard, RateInfo } from "@/components/ui/rate-card";
 import { ShareButton } from "@/components/ui/share-button";
 import { BottomNavigation } from "@/components/layout/bottom-navigation";
@@ -72,6 +73,7 @@ export default function HomePage() {
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
+      <SearchBar />
       
       {/* Poster area with improved styles */}
       <div className="bg-gradient-to-r from-amber-50 to-yellow-50 p-3 border-b border-amber-100">

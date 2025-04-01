@@ -28,6 +28,7 @@ export interface IStorage {
   getProducts(): Promise<Product[]>;
   getProductById(id: number): Promise<Product | undefined>;
   getProductsByCollectionId(collectionId: number): Promise<Product[]>;
+  searchProducts(query: string): Promise<Product[]>; // Search products by name or description
   createProduct(product: InsertProduct): Promise<Product>;
   updateProduct(id: number, product: Partial<UpdateProduct>): Promise<Product>;
   deleteProduct(id: number): Promise<boolean>;
@@ -393,6 +394,7 @@ export class MemStorage implements IStorage {
         imageUrl: product.imageUrl,
         price: product.price,
         weight: product.weight || 0,
+        karatType: product.karatType || "22k",
         category: product.category,
         collectionId: product.collectionId,
         featured: product.featured || 0,
@@ -417,6 +419,20 @@ export class MemStorage implements IStorage {
       .filter(product => product.collectionId === collectionId);
   }
   
+  async searchProducts(query: string): Promise<Product[]> {
+    if (!query || query.trim() === '') {
+      return [];
+    }
+    
+    const searchTerm = query.toLowerCase().trim();
+    return Array.from(this.products.values())
+      .filter(product => 
+        product.name.toLowerCase().includes(searchTerm) || 
+        (product.description && product.description.toLowerCase().includes(searchTerm)) ||
+        product.category.toLowerCase().includes(searchTerm)
+      );
+  }
+  
   async createProduct(insertProduct: InsertProduct): Promise<Product> {
     const id = this.productIdCounter++;
     const now = new Date().toISOString();
@@ -429,6 +445,7 @@ export class MemStorage implements IStorage {
       imageUrl: insertProduct.imageUrl,
       price: insertProduct.price,
       weight: insertProduct.weight || 0,
+      karatType: insertProduct.karatType || "22k",
       category: insertProduct.category,
       collectionId: insertProduct.collectionId,
       featured: insertProduct.featured || 0,
@@ -454,6 +471,7 @@ export class MemStorage implements IStorage {
       imageUrl: updateData.imageUrl || existingProduct.imageUrl,
       price: updateData.price ?? existingProduct.price,
       weight: updateData.weight ?? existingProduct.weight,
+      karatType: updateData.karatType || existingProduct.karatType,
       category: updateData.category || existingProduct.category,
       collectionId: updateData.collectionId || existingProduct.collectionId,
       featured: typeof updateData.featured === 'number' ? updateData.featured : existingProduct.featured,

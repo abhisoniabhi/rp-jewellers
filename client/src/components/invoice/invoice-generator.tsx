@@ -79,7 +79,6 @@ interface InvoiceGeneratorProps {
 export function InvoiceGenerator({ product, collection, rates }: InvoiceGeneratorProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [invoicePreview, setInvoicePreview] = useState<string | null>(null);
-  const invoiceRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
   // Find default gold rate
@@ -114,30 +113,150 @@ export function InvoiceGenerator({ product, collection, rates }: InvoiceGenerato
     defaultValues,
   });
 
-  // Preview invoice
+  // Generate a sample invoice image for preview
   const previewInvoice = async (data: InvoiceFormValues) => {
-    setInvoicePreview(null);
+    // Generate a simple preview image without html2canvas
+    // This is a fallback approach since html2canvas is having issues
+    const totalAmount = calculateTotalPrice(data).toFixed(2);
     
-    // Process the form after a small delay to let the component render with the latest values
-    setTimeout(() => {
-      if (invoiceRef.current) {
-        html2canvas(invoiceRef.current, {
-          scale: 2,
-          logging: false,
-          backgroundColor: "#ffffff"
-        }).then((canvas) => {
-          const dataUrl = canvas.toDataURL("image/png");
-          setInvoicePreview(dataUrl);
-        }).catch(err => {
-          console.error("Error generating invoice preview:", err);
-          toast({
-            title: "Error",
-            description: "Failed to generate invoice preview",
-            variant: "destructive"
-          });
-        });
+    // Create a canvas to draw the invoice preview
+    const canvas = document.createElement('canvas');
+    canvas.width = 800;
+    canvas.height = 800;
+    const ctx = canvas.getContext('2d');
+    
+    if (ctx) {
+      // Background
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, 800, 800);
+      
+      // Header
+      ctx.fillStyle = '#FDF2E3';
+      ctx.fillRect(0, 0, 800, 80);
+      
+      // Shop name and invoice title
+      ctx.fillStyle = '#B45309'; // amber-800
+      ctx.font = 'bold 24px Arial';
+      ctx.fillText(data.shopName, 20, 40);
+      
+      ctx.textAlign = 'right';
+      ctx.fillText('INVOICE', 780, 40);
+      
+      // Reset text align
+      ctx.textAlign = 'left';
+      
+      // Invoice details
+      ctx.fillStyle = '#4B5563'; // gray-600
+      ctx.font = '16px Arial';
+      ctx.fillText(`#${data.invoiceNumber}`, 20, 70);
+      ctx.textAlign = 'right';
+      ctx.fillText(`Date: ${format(data.invoiceDate, 'dd/MM/yyyy')}`, 780, 70);
+      ctx.textAlign = 'left';
+      
+      // Customer details
+      ctx.fillStyle = '#1F2937'; // gray-800
+      ctx.font = 'bold 18px Arial';
+      ctx.fillText('Bill To:', 20, 120);
+      
+      ctx.fillStyle = '#4B5563'; // gray-600
+      ctx.font = '16px Arial';
+      ctx.fillText(data.customerName, 20, 150);
+      if (data.customerAddress) {
+        ctx.fillText(data.customerAddress, 20, 175);
       }
-    }, 100);
+      if (data.customerContact) {
+        ctx.fillText(`Contact: ${data.customerContact}`, 20, 200);
+      }
+      
+      // Product details
+      ctx.fillStyle = '#1F2937'; // gray-800
+      ctx.font = 'bold 18px Arial';
+      ctx.fillText('Product Details:', 20, 250);
+      
+      // Table header
+      ctx.fillStyle = '#FEF3C7'; // amber-100
+      ctx.fillRect(20, 270, 760, 40);
+      
+      ctx.fillStyle = '#92400E'; // amber-800
+      ctx.font = 'bold 16px Arial';
+      ctx.fillText('Item', 30, 295);
+      ctx.fillText('Weight', 300, 295);
+      ctx.fillText('Rate', 450, 295);
+      ctx.fillText('Amount', 600, 295);
+      
+      // Product row
+      ctx.fillStyle = '#4B5563'; // gray-600
+      ctx.font = '16px Arial';
+      ctx.fillText(product.name, 30, 335);
+      ctx.fillText(`${product.weight}g`, 300, 335);
+      ctx.fillText(`₹${data.customRate || defaultGoldRate}/10g`, 450, 335);
+      
+      const baseAmount = ((data.customRate || defaultGoldRate) * (product.weight || 0) / 10).toFixed(2);
+      ctx.fillText(`₹${baseAmount}`, 600, 335);
+      
+      let yPos = 370;
+      
+      // Making charges row
+      if (data.includeMakingCharges) {
+        ctx.fillText(`Making Charges (${data.makingChargesPercentage}%)`, 30, yPos);
+        const makingCharges = (((data.customRate || defaultGoldRate) * (product.weight || 0) / 10) * (data.makingChargesPercentage / 100)).toFixed(2);
+        ctx.fillText(`₹${makingCharges}`, 600, yPos);
+        yPos += 35;
+      }
+      
+      // Additional charges row
+      if (data.additionalCharges > 0) {
+        ctx.fillText('Additional Charges', 30, yPos);
+        ctx.fillText(`₹${data.additionalCharges.toFixed(2)}`, 600, yPos);
+        yPos += 35;
+      }
+      
+      // Discount row
+      if (data.discount > 0) {
+        ctx.fillStyle = '#EF4444'; // red-500
+        ctx.fillText(
+          `Discount ${data.discountType === 'percentage' ? `(${data.discount}%)` : ''}`, 
+          30, 
+          yPos
+        );
+        
+        const discountAmount = data.discountType === 'percentage' 
+          ? (calculateTotalPrice({ ...data, discount: 0 }) * (data.discount / 100)).toFixed(2)
+          : data.discount.toFixed(2);
+        
+        ctx.fillText(`- ₹${discountAmount}`, 600, yPos);
+        yPos += 35;
+      }
+      
+      // Total
+      yPos = 500;
+      ctx.fillStyle = '#FEF3C7'; // amber-100
+      ctx.fillRect(500, yPos, 280, 40);
+      
+      ctx.fillStyle = '#92400E'; // amber-800
+      ctx.font = 'bold 16px Arial';
+      ctx.fillText('Total Amount', 520, yPos + 25);
+      
+      ctx.font = 'bold 20px Arial';
+      ctx.fillText(`₹${totalAmount}`, 650, yPos + 25);
+      
+      // Footer
+      ctx.fillStyle = '#6B7280'; // gray-500
+      ctx.font = '14px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('Thank you for your business!', 400, 700);
+      ctx.fillText(`${data.shopName} - ${data.shopContact}`, 400, 725);
+      
+      // Convert canvas to data URL
+      const dataUrl = canvas.toDataURL('image/png');
+      setInvoicePreview(dataUrl);
+    } else {
+      toast({
+        title: "Preview Error",
+        description: "Could not generate invoice preview. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   // Handle form submission
@@ -674,149 +793,7 @@ export function InvoiceGenerator({ product, collection, rates }: InvoiceGenerato
           </div>
         </div>
         
-        {/* Hidden invoice template for capturing */}
-        <div className="hidden">
-          <div
-            ref={invoiceRef}
-            className="p-8 bg-white"
-            style={{ width: "800px", minHeight: "1000px" }}
-          >
-            {/* Invoice Header */}
-            <div className="border-b pb-4 mb-6 flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                {form.watch("includeShopLogo") && (
-                  <div className="w-20 h-20 rounded-full border flex items-center justify-center bg-amber-50 text-amber-800 font-bold text-xl">
-                    {form.watch("shopName").substring(0, 2).toUpperCase()}
-                  </div>
-                )}
-                <div>
-                  <h1 className="text-2xl font-bold text-amber-800">{form.watch("shopName")}</h1>
-                  <p className="text-gray-600">{form.watch("shopAddress")}</p>
-                  <p className="text-gray-600">Contact: {form.watch("shopContact")}</p>
-                  {form.watch("gstNumber") && (
-                    <p className="text-gray-600">GST: {form.watch("gstNumber")}</p>
-                  )}
-                </div>
-              </div>
-              <div className="text-right">
-                <h2 className="text-xl font-bold text-amber-800">INVOICE</h2>
-                <p className="text-gray-600">#{form.watch("invoiceNumber")}</p>
-                <p className="text-gray-600">
-                  Date: {format(form.watch("invoiceDate") || new Date(), "dd/MM/yyyy")}
-                </p>
-              </div>
-            </div>
-            
-            {/* Customer Details */}
-            <div className="mb-6">
-              <h3 className="font-bold text-lg text-gray-800 mb-2">Bill To:</h3>
-              <p className="font-medium">{form.watch("customerName")}</p>
-              {form.watch("customerAddress") && (
-                <p className="text-gray-600">{form.watch("customerAddress")}</p>
-              )}
-              {form.watch("customerContact") && (
-                <p className="text-gray-600">Contact: {form.watch("customerContact")}</p>
-              )}
-            </div>
-            
-            {/* Product Details */}
-            <div className="mb-6">
-              <h3 className="font-bold text-lg text-gray-800 mb-2">Product Details:</h3>
-              <div className="border rounded-lg overflow-hidden">
-                <div className="grid grid-cols-5 bg-amber-50 text-amber-800 font-bold p-3">
-                  <div className="col-span-2">Item</div>
-                  <div>Weight</div>
-                  <div>Rate</div>
-                  <div>Amount</div>
-                </div>
-                
-                <div className="grid grid-cols-5 p-3 border-b items-center">
-                  <div className="col-span-2 flex gap-3">
-                    {form.watch("includeProductImage") && product.imageUrl && (
-                      <div className="w-16 h-16 rounded border overflow-hidden">
-                        <img
-                          src={product.imageUrl}
-                          alt={product.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    )}
-                    <div>
-                      <p className="font-medium">{product.name}</p>
-                      <p className="text-sm text-gray-500">{product.category} - {product.karatType}</p>
-                      {collection && (
-                        <p className="text-xs text-gray-500">Collection: {collection.name}</p>
-                      )}
-                    </div>
-                  </div>
-                  <div>{product.weight}g</div>
-                  <div>₹{form.watch("customRate") || defaultGoldRate}/10g</div>
-                  <div>
-                    ₹{((form.watch("customRate") || defaultGoldRate) * (product.weight || 0) / 10).toFixed(2)}
-                  </div>
-                </div>
-                
-                {form.watch("includeMakingCharges") && (
-                  <div className="grid grid-cols-5 p-3 border-b">
-                    <div className="col-span-2">Making Charges ({form.watch("makingChargesPercentage")}%)</div>
-                    <div></div>
-                    <div></div>
-                    <div>
-                      ₹{(((form.watch("customRate") || defaultGoldRate) * (product.weight || 0) / 10) * (form.watch("makingChargesPercentage") / 100)).toFixed(2)}
-                    </div>
-                  </div>
-                )}
-                
-                {form.watch("additionalCharges") > 0 && (
-                  <div className="grid grid-cols-5 p-3 border-b">
-                    <div className="col-span-2">Additional Charges</div>
-                    <div></div>
-                    <div></div>
-                    <div>₹{form.watch("additionalCharges").toFixed(2)}</div>
-                  </div>
-                )}
-                
-                {form.watch("discount") > 0 && (
-                  <div className="grid grid-cols-5 p-3 border-b text-red-600">
-                    <div className="col-span-2">
-                      Discount {form.watch("discountType") === "percentage" ? `(${form.watch("discount")}%)` : ""}
-                    </div>
-                    <div></div>
-                    <div></div>
-                    <div>
-                      {form.watch("discountType") === "percentage" 
-                        ? `- ₹${(calculateTotalPrice({ ...form.getValues(), discount: 0 }) * (form.watch("discount") / 100)).toFixed(2)}`
-                        : `- ₹${form.watch("discount").toFixed(2)}`
-                      }
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-            
-            {/* Total Amount */}
-            <div className="flex justify-end mb-8">
-              <div className="w-1/3 border rounded-lg overflow-hidden">
-                <div className="bg-amber-50 p-3 font-bold text-amber-800">Total Amount</div>
-                <div className="p-3 text-xl font-bold">₹{calculateTotalPrice(form.getValues()).toFixed(2)}</div>
-              </div>
-            </div>
-            
-            {/* Notes */}
-            {form.watch("notes") && (
-              <div className="mb-6">
-                <h3 className="font-bold text-lg text-gray-800 mb-2">Notes:</h3>
-                <p className="text-gray-600 whitespace-pre-line">{form.watch("notes")}</p>
-              </div>
-            )}
-            
-            {/* Footer */}
-            <div className="mt-auto pt-6 border-t text-center text-gray-500 text-sm">
-              <p>Thank you for your business!</p>
-              <p>{form.watch("shopName")} - {form.watch("shopContact")}</p>
-            </div>
-          </div>
-        </div>
+
       </DialogContent>
     </Dialog>
   );

@@ -76,7 +76,7 @@ export const products = pgTable("products", {
   name: varchar("name", { length: 100 }).notNull(),
   description: text("description"),
   imageUrl: text("image_url").notNull(),
-  price: real("price").notNull(),
+  taunch: real("taunch").notNull(), // price in rupees
   weight: real("weight").default(0).notNull(), // weight in grams
   karatType: varchar("karat_type", { length: 10 }).default("22k").notNull(), // 18k or 22k
   category: varchar("category", { length: 50 }).notNull(),
@@ -95,7 +95,7 @@ export const updateProductSchema = createInsertSchema(products).pick({
   name: true,
   description: true,
   imageUrl: true,
-  price: true,
+  taunch: true,
   weight: true,
   karatType: true,
   category: true,

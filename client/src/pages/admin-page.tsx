@@ -1,7 +1,8 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { 
   Loader2, Save, ArrowLeft, CreditCard, UserCircle, ShoppingBag, Plus, 
-  Pencil, Trash2, Image as ImageIcon, Weight, Tag, Camera
+  Pencil, Trash2, Image as ImageIcon, Weight, Tag as TagIcon, Camera,
+  Grid as LayoutGrid
 } from "lucide-react";
 import { useState } from "react";
 import { useLocation } from "wouter";
@@ -65,6 +66,10 @@ export default function AdminPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [isCollectionDialogOpen, setIsCollectionDialogOpen] = useState(false);
+  const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
+  const [editingCollection, setEditingCollection] = useState<Collection | null>(null);
+  const [selectedCollectionForProduct, setSelectedCollectionForProduct] = useState<Collection | null>(null);
   
   // No longer using authentication
   const user = { username: "Admin" };
@@ -399,6 +404,21 @@ export default function AdminPage() {
       </div>
     );
   }
+  
+  // Now that products is loaded, calculate products in each collection
+  const productsInCollection = products.reduce((acc, product) => {
+    const collectionId = product.collectionId;
+    acc[collectionId] = (acc[collectionId] || 0) + 1;
+    return acc;
+  }, {} as Record<number, number>);
+  
+  // Calculate products in each category
+  const categoryCounts = products.reduce((acc, product) => {
+    if (product.category) {
+      acc[product.category] = (acc[product.category] || 0) + 1;
+    }
+    return acc;
+  }, {} as Record<string, number>);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -442,18 +462,30 @@ export default function AdminPage() {
 
           {/* Main Admin Tabs */}
           <Tabs defaultValue="rates" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 rounded-md mb-6 shadow-sm bg-amber-50 p-1.5">
+            <TabsList className="grid w-full grid-cols-4 rounded-md mb-6 shadow-sm bg-amber-50 p-1.5">
               <TabsTrigger 
                 value="rates" 
-                className="data-[state=active]:bg-amber-600 data-[state=active]:text-white rounded-md py-2.5 transition-all font-medium"
+                className="data-[state=active]:bg-amber-600 data-[state=active]:text-white rounded-md py-2.5 transition-all font-medium text-sm"
               >
-                Rate Management
+                Rates
+              </TabsTrigger>
+              <TabsTrigger 
+                value="collections" 
+                className="data-[state=active]:bg-amber-600 data-[state=active]:text-white rounded-md py-2.5 transition-all font-medium text-sm"
+              >
+                Collections
+              </TabsTrigger>
+              <TabsTrigger 
+                value="categories" 
+                className="data-[state=active]:bg-amber-600 data-[state=active]:text-white rounded-md py-2.5 transition-all font-medium text-sm"
+              >
+                Categories
               </TabsTrigger>
               <TabsTrigger 
                 value="products" 
-                className="data-[state=active]:bg-amber-600 data-[state=active]:text-white rounded-md py-2.5 transition-all font-medium"
+                className="data-[state=active]:bg-amber-600 data-[state=active]:text-white rounded-md py-2.5 transition-all font-medium text-sm"
               >
-                Product Management
+                Products
               </TabsTrigger>
             </TabsList>
 
@@ -690,6 +722,185 @@ export default function AdminPage() {
                       })}
                     </div>
                   )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Collections Tab Content */}
+            <TabsContent value="collections" className="space-y-4 animate-in fade-in-50 slide-in-from-left-5">
+              <Card className="shadow-md border-amber-100">
+                <CardHeader className="bg-gradient-to-r from-amber-50 to-yellow-50 border-b">
+                  <CardTitle className="text-amber-800 flex items-center justify-between">
+                    <div className="flex items-center">
+                      <span className="bg-amber-100 rounded-full p-1.5 mr-2">
+                        <LayoutGrid className="h-5 w-5 text-amber-700" />
+                      </span>
+                      Collection Management
+                    </div>
+                    <Button 
+                      onClick={() => {
+                        setEditingCollection(null);
+                        setIsCollectionDialogOpen(true);
+                      }}
+                      className="bg-amber-600 hover:bg-amber-700 text-white"
+                      size="sm"
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      Add Collection
+                    </Button>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-6">
+                  {collections.length === 0 ? (
+                    <div className="text-center py-8 border rounded-md bg-gray-50/80 text-gray-500">
+                      No collections found. Click the "Add Collection" button to create your first collection.
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {collections.map(collection => (
+                        <div key={collection.id} className="rounded-lg border bg-card overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                          <div className="aspect-video w-full overflow-hidden bg-amber-50">
+                            {collection.imageUrl ? (
+                              <img 
+                                src={collection.imageUrl} 
+                                alt={collection.name} 
+                                className="h-full w-full object-cover transition-all hover:scale-105"
+                              />
+                            ) : (
+                              <div className="flex h-full items-center justify-center bg-amber-50">
+                                <LayoutGrid className="h-10 w-10 text-amber-300" />
+                              </div>
+                            )}
+                          </div>
+                          <div className="p-4">
+                            <div className="flex items-start justify-between mb-2">
+                              <div>
+                                <h3 className="font-semibold text-lg">{collection.name}</h3>
+                                <p className="text-sm text-gray-500 line-clamp-2">{collection.description}</p>
+                              </div>
+                              <div className="flex gap-1">
+                                <Button 
+                                  size="icon" 
+                                  variant="ghost" 
+                                  className="h-7 w-7 bg-amber-50 text-amber-700 hover:bg-amber-100"
+                                  onClick={() => {
+                                    setEditingCollection(collection);
+                                    setIsCollectionDialogOpen(true);
+                                  }}
+                                >
+                                  <Pencil className="h-3.5 w-3.5" />
+                                </Button>
+                                <Button 
+                                  size="icon" 
+                                  variant="ghost" 
+                                  className="h-7 w-7 bg-red-50 text-red-700 hover:bg-red-100"
+                                  onClick={() => {
+                                    // Confirm before deleting
+                                    if (window.confirm(`Are you sure you want to delete the collection "${collection.name}"?`)) {
+                                      // Delete the collection
+                                      apiRequest("DELETE", `/api/collections/${collection.id}`)
+                                        .then(() => {
+                                          toast({
+                                            title: "Collection deleted",
+                                            description: "Collection has been successfully deleted.",
+                                          });
+                                          queryClient.invalidateQueries({ queryKey: ['/api/collections'] });
+                                        })
+                                        .catch((error: Error) => {
+                                          toast({
+                                            title: "Error",
+                                            description: error.message,
+                                            variant: "destructive",
+                                          });
+                                        });
+                                    }
+                                  }}
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
+                              </div>
+                            </div>
+                            
+                            <div className="flex justify-between items-center mt-4">
+                              <Badge variant="outline" className="border-amber-200 text-amber-800 bg-amber-50">
+                                {productsInCollection[collection.id] || 0} products
+                              </Badge>
+                              
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                className="text-xs h-8"
+                                onClick={() => {
+                                  // Logic to add product to this collection
+                                  setSelectedCollectionForProduct(collection);
+                                  handleAddProduct();
+                                }}
+                              >
+                                <Plus className="h-3 w-3 mr-1" />
+                                Add Product
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Categories Tab Content */}
+            <TabsContent value="categories" className="space-y-4 animate-in fade-in-50 slide-in-from-left-5">
+              <Card className="shadow-md border-amber-100">
+                <CardHeader className="bg-gradient-to-r from-amber-50 to-yellow-50 border-b">
+                  <CardTitle className="text-amber-800 flex items-center justify-between">
+                    <div className="flex items-center">
+                      <span className="bg-amber-100 rounded-full p-1.5 mr-2">
+                        <TagIcon className="h-5 w-5 text-amber-700" />
+                      </span>
+                      Category Management
+                    </div>
+                    <Button 
+                      onClick={() => {
+                        setIsCategoryDialogOpen(true);
+                      }}
+                      className="bg-amber-600 hover:bg-amber-700 text-white"
+                      size="sm"
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      Add Category
+                    </Button>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {Object.entries(categoryCounts).map(([category, count]: [string, number]) => (
+                      <div key={category} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <div className="bg-blue-100 text-blue-700 p-2 rounded-full">
+                            <TagIcon className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <h3 className="font-medium capitalize">{category}</h3>
+                            <p className="text-sm text-gray-500">{count} products</p>
+                          </div>
+                        </div>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          className="text-xs h-8"
+                          onClick={() => {
+                            // Logic to add product to this category
+                            productForm.setValue('category', category);
+                            handleAddProduct();
+                          }}
+                        >
+                          <Plus className="h-3 w-3 mr-1" />
+                          Add Product
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>

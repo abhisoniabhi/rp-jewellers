@@ -42,6 +42,7 @@ export default function CollectionDetailPage() {
     // Set up WebSocket event listeners for product updates
     const onProductCreated = (product: Product) => {
       if (product.collectionId === collectionId) {
+        console.log("[WebSocket] Product created in this collection:", product);
         queryClient.invalidateQueries({
           queryKey: ["/api/collections", collectionId, "products"]
         });
@@ -50,9 +51,15 @@ export default function CollectionDetailPage() {
     
     const onProductUpdated = (product: Product) => {
       if (product.collectionId === collectionId) {
-        queryClient.invalidateQueries({
-          queryKey: ["/api/collections", collectionId, "products"]
-        });
+        console.log("[WebSocket] Product updated in this collection:", product);
+        // Use setQueryData to update the cache immediately without waiting for a refetch
+        queryClient.setQueryData(
+          ["/api/collections", collectionId, "products"],
+          (oldData: Product[] | undefined) => {
+            if (!oldData) return [product];
+            return oldData.map(p => p.id === product.id ? product : p);
+          }
+        );
       }
     };
     
@@ -194,9 +201,9 @@ export default function CollectionDetailPage() {
                       </div>
                       
                       <div className="flex items-center justify-between mt-2">
-                        {product.price && (
+                        {product.price !== undefined && (
                           <p className="text-amber-600 font-bold">
-                            ₹{product.price.toLocaleString()}
+                            {product.price}%
                           </p>
                         )}
                         <div className="flex flex-wrap gap-1">

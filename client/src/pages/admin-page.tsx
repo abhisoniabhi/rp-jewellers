@@ -27,6 +27,7 @@ import { z } from "zod";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { eventBus, EVENTS } from "@/lib/events";
+import { wsClient, WS_EVENTS } from "@/lib/websocket";
 import { Product, Collection, InsertProduct } from "@shared/schema";
 
 const rateSchema = z.object({
@@ -129,6 +130,126 @@ export default function AdminPage() {
       setLocalCategoryInfo(taunchInfo);
     }
   }, [products]);
+  
+  // Function to calculate category taunch info
+  const calculateCategoryTaunchInfo = (productsList: Product[]) => {
+    const taunchInfo: Record<string, { min: number, max: number, avg: number, total: number, count: number }> = {};
+    
+    productsList.forEach(product => {
+      if (product.category) {
+        if (!taunchInfo[product.category]) {
+          taunchInfo[product.category] = {
+            min: Infinity,
+            max: -Infinity,
+            avg: 0,
+            total: 0,
+            count: 0
+          };
+        }
+        
+        const taunch = product.price || 0;
+        const info = taunchInfo[product.category];
+        
+        info.min = Math.min(info.min, taunch);
+        info.max = Math.max(info.max, taunch);
+        info.total = (info.total || 0) + taunch;
+        info.count = (info.count || 0) + 1;
+        info.avg = info.total / info.count;
+      }
+    });
+    
+    // For categories with no products, prevent Infinity values
+    Object.keys(taunchInfo).forEach(category => {
+      const info = taunchInfo[category];
+      if (info.min === Infinity) info.min = 0;
+      if (info.max === -Infinity) info.max = 0;
+    });
+    
+    console.log("[Debug] Calculated category taunch info:", taunchInfo);
+    return taunchInfo;
+  };
+  
+  // Subscribe to real-time updates via WebSocket
+  useEffect(() => {
+    // Handle product creation events
+    const handleProductCreated = (newProduct: Product) => {
+      console.log("[WebSocket] Product created:", newProduct);
+      
+      // Update local products state by adding the new product
+      setLocalProducts(prevProducts => {
+        const newProducts = [...prevProducts, newProduct];
+        
+        // Recalculate category taunch info with the updated products
+        const updatedCategoryInfo = calculateCategoryTaunchInfo(newProducts);
+        setLocalCategoryInfo(updatedCategoryInfo);
+        
+        return newProducts;
+      });
+    };
+    
+    // Handle product update events
+    const handleProductUpdated = (updatedProduct: Product) => {
+      console.log("[WebSocket] Product updated:", updatedProduct);
+      
+      // Update local products state
+      setLocalProducts(prevProducts => {
+        const newProducts = [...prevProducts];
+        const index = newProducts.findIndex(p => p.id === updatedProduct.id);
+        
+        if (index !== -1) {
+          newProducts[index] = updatedProduct;
+        }
+        
+        // Recalculate category taunch info with the updated product
+        const updatedCategoryInfo = calculateCategoryTaunchInfo(newProducts);
+        setLocalCategoryInfo(updatedCategoryInfo);
+        
+        return newProducts;
+      });
+    };
+    
+    // Handle product deletion events
+    const handleProductDeleted = (data: { id: number }) => {
+      console.log("[WebSocket] Product deleted:", data);
+      
+      // Update local products state by removing the deleted product
+      setLocalProducts(prevProducts => {
+        const newProducts = prevProducts.filter(p => p.id !== data.id);
+        
+        // Recalculate category taunch info after deletion
+        const updatedCategoryInfo = calculateCategoryTaunchInfo(newProducts);
+        setLocalCategoryInfo(updatedCategoryInfo);
+        
+        return newProducts;
+      });
+    };
+    
+    // Subscribe to WebSocket events
+    const unsubscribeProductCreated = wsClient.subscribe(
+      WS_EVENTS.PRODUCT_CREATED, 
+      handleProductCreated
+    );
+    
+    const unsubscribeProductUpdated = wsClient.subscribe(
+      WS_EVENTS.PRODUCT_UPDATED, 
+      handleProductUpdated
+    );
+    
+    const unsubscribeProductDeleted = wsClient.subscribe(
+      WS_EVENTS.PRODUCT_DELETED, 
+      handleProductDeleted
+    );
+    
+    // Connect to WebSocket
+    wsClient.connect();
+    
+    // Cleanup on unmount
+    return () => {
+      unsubscribeProductCreated();
+      unsubscribeProductUpdated();
+      unsubscribeProductDeleted();
+    };
+  }, []);
 
   const { data: rates, isLoading: ratesLoading } = useQuery<RateInfo[]>({
     queryKey: ["/api/rates"],

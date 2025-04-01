@@ -70,6 +70,8 @@ export default function AdminPage() {
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
   const [editingCollection, setEditingCollection] = useState<Collection | null>(null);
   const [selectedCollectionForProduct, setSelectedCollectionForProduct] = useState<Collection | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [categoryTaunchValue, setCategoryTaunchValue] = useState<number>(0);
   
   // No longer using authentication
   const user = { username: "Admin" };
@@ -389,6 +391,72 @@ export default function AdminPage() {
     setEditingProduct(null);
     setPreviewImage(null);
     productForm.reset();
+  };
+  
+  // Handle updating taunch for all products in a category
+  const handleCategoryTaunchUpdate = () => {
+    if (!selectedCategory || categoryTaunchValue <= 0) {
+      toast({
+        title: "Error",
+        description: "Please select a category and enter a valid taunch value",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // If products aren't loaded yet, show an error
+    if (!products) {
+      toast({
+        title: "Error",
+        description: "Unable to load products. Please try again later.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Get all products in the selected category
+    const productsInCategory = products.filter(p => p.category === selectedCategory);
+    
+    if (productsInCategory.length === 0) {
+      toast({
+        title: "Error",
+        description: "No products found in this category",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Confirm before updating
+    if (!window.confirm(`Are you sure you want to set the taunch value to ${categoryTaunchValue}% for all ${productsInCategory.length} products in the "${selectedCategory}" category?`)) {
+      return;
+    }
+    
+    // Create a Promise for each product update
+    const updatePromises = productsInCategory.map(product => 
+      apiRequest("PATCH", `/api/products/${product.id}`, { price: categoryTaunchValue })
+    );
+    
+    // Execute all updates
+    Promise.all(updatePromises)
+      .then(() => {
+        toast({
+          title: "Success",
+          description: `Updated taunch value for all ${productsInCategory.length} products in the "${selectedCategory}" category`,
+        });
+        
+        // Close the dialog and refresh the products list
+        setIsCategoryDialogOpen(false);
+        setSelectedCategory(null);
+        setCategoryTaunchValue(0);
+        queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      })
+      .catch(error => {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to update products",
+          variant: "destructive"
+        });
+      });
   };
 
   const handleLogout = () => {
@@ -885,19 +953,36 @@ export default function AdminPage() {
                             <p className="text-sm text-gray-500">{count} products</p>
                           </div>
                         </div>
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          className="text-xs h-8"
-                          onClick={() => {
-                            // Logic to add product to this category
-                            productForm.setValue('category', category);
-                            handleAddProduct();
-                          }}
-                        >
-                          <Plus className="h-3 w-3 mr-1" />
-                          Add Product
-                        </Button>
+                        <div className="flex flex-col space-y-2">
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            className="text-xs h-8"
+                            onClick={() => {
+                              // Logic to add product to this category
+                              productForm.setValue('category', category);
+                              handleAddProduct();
+                            }}
+                          >
+                            <Plus className="h-3 w-3 mr-1" />
+                            Add Product
+                          </Button>
+                          
+                          <Button 
+                            size="sm" 
+                            variant="secondary"
+                            className="text-xs h-8 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200"
+                            onClick={() => {
+                              // Open dialog to set taunch for all products in this category
+                              setSelectedCategory(category);
+                              setCategoryTaunchValue(0);
+                              setIsCategoryDialogOpen(true);
+                            }}
+                          >
+                            <TagIcon className="h-3 w-3 mr-1" />
+                            Set Taunch
+                          </Button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -906,6 +991,63 @@ export default function AdminPage() {
             </TabsContent>
           </Tabs>
           
+          {/* Product Dialog */}
+          {/* Category Taunch Update Dialog */}
+          <Dialog open={isCategoryDialogOpen} onOpenChange={(open) => {
+            if (!open) {
+              setIsCategoryDialogOpen(false);
+              setSelectedCategory(null);
+              setCategoryTaunchValue(0);
+            }
+          }}>
+            <DialogContent className="sm:max-w-[450px]">
+              <DialogHeader>
+                <DialogTitle>Set Taunch Value for Category</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-2">
+                <div className="bg-blue-50 border border-blue-200 rounded-md p-4 text-blue-800">
+                  <h4 className="font-medium mb-1 capitalize">Category: {selectedCategory}</h4>
+                  <p className="text-sm text-blue-700">
+                    This will update the taunch value for all products in this category.
+                    <br />Total products affected: {selectedCategory ? categoryCounts[selectedCategory] || 0 : 0}
+                  </p>
+                </div>
+                
+                <div className="space-y-2">
+                  <label htmlFor="categoryTaunchValue" className="text-sm font-medium">
+                    Taunch Value (%):
+                  </label>
+                  <Input 
+                    id="categoryTaunchValue"
+                    type="number" 
+                    min="0" 
+                    step="0.01"
+                    value={categoryTaunchValue}
+                    onChange={(e) => setCategoryTaunchValue(parseFloat(e.target.value))}
+                    placeholder="Enter taunch value"
+                    className="focus-visible:ring-blue-500"
+                  />
+                </div>
+                
+                <div className="flex justify-end space-x-2 pt-4">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setIsCategoryDialogOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                    onClick={handleCategoryTaunchUpdate}
+                  >
+                    <Save className="h-4 w-4 mr-2" />
+                    Update Taunch
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+
           {/* Product Dialog */}
           <Dialog open={isDialogOpen} onOpenChange={handleCloseDialog}>
             <DialogContent className="sm:max-w-[600px]">

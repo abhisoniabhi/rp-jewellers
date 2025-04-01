@@ -234,17 +234,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Product routes
-  // Get all products
-  app.get("/api/products", async (req, res) => {
-    try {
-      const products = await storage.getProducts();
-      res.json(products);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch products" });
-    }
-  });
-  
-  // Search for products
+  // Search for products - This needs to come before other product routes to avoid conflict
   app.get("/api/products/search", async (req, res) => {
     try {
       const query = req.query.q as string;
@@ -257,6 +247,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error searching products:", error);
       res.status(500).json({ message: "Failed to search products" });
+    }
+  });
+  
+  // Get all products
+  app.get("/api/products", async (req, res) => {
+    try {
+      const products = await storage.getProducts();
+      res.json(products);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch products" });
     }
   });
   

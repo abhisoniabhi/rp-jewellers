@@ -35,8 +35,14 @@ export default function HomePage() {
       const unsubscribe = wsClient.subscribe(WS_EVENTS.RATE_UPDATED, (updatedRate) => {
         console.log("Received real-time rate update via WebSocket:", updatedRate);
         
-        // Refetch all rates data
-        queryClient.invalidateQueries({ queryKey: ["/api/rates"] });
+        // Update the cache immediately without waiting for refetch
+        queryClient.setQueryData(
+          ["/api/rates"],
+          (oldData: RateInfo[] | undefined) => {
+            if (!oldData) return [updatedRate];
+            return oldData.map(rate => rate.id === updatedRate.id ? updatedRate : rate);
+          }
+        );
       });
       
       // Cleanup subscription when component unmounts

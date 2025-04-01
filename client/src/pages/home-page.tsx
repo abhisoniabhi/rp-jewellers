@@ -9,7 +9,10 @@ import { AdminTrigger } from "@/components/admin/admin-trigger";
 import { ScreenshotGenerator } from "@/components/screenshot/screenshot-generator";
 import { CustomRateGenerator } from "@/components/screenshot/custom-rate-generator";
 import { FeaturedCollections } from "@/components/layout/featured-collections";
-import { useEffect } from "react";
+import { CategoryTabs } from "@/components/layout/category-tabs";
+import { ProductSearch } from "@/components/product/product-search";
+import { ProductList } from "@/components/product/product-list";
+import { useState, useEffect } from "react";
 import { queryClient } from "@/lib/queryClient";
 import { wsClient, WS_EVENTS } from "@/lib/websocket";
 import rpLogo from "../assets/rp-logo.jpg";
@@ -18,6 +21,10 @@ export default function HomePage() {
   // Get auth safely using optional chaining
   const auth = useAuth();
   const user = auth?.user || null;
+  
+  // State for product search and filtering
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
   
   // Fetch rates data
   const { data: rates, isLoading, error } = useQuery<RateInfo[]>({
@@ -51,6 +58,22 @@ export default function HomePage() {
       // Continue without real-time updates - app will still work with regular polling
     }
   }, []);
+
+  // Handle search query changes
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    // Reset category filter when searching
+    if (query) {
+      setSelectedCategory("all");
+    }
+  };
+
+  // Handle category selection
+  const handleCategorySelect = (category: string) => {
+    setSelectedCategory(category);
+    // Clear search query when selecting a category
+    setSearchQuery("");
+  };
 
   if (isLoading) {
     return (
@@ -104,6 +127,17 @@ export default function HomePage() {
             <ShareButton />
             <ScreenshotGenerator rates={rates} />
             <CustomRateGenerator rates={rates} />
+          </div>
+          
+          {/* Product Search Section */}
+          <div className="mt-6 bg-white rounded-lg shadow-md overflow-hidden">
+            <h2 className="text-lg font-semibold text-burgundy-default p-4 border-b">
+              Our Products
+            </h2>
+            
+            <ProductSearch onSearch={handleSearch} />
+            <CategoryTabs onSelectCategory={handleCategorySelect} />
+            <ProductList searchQuery={searchQuery} selectedCategory={selectedCategory} />
           </div>
           
           {/* Featured Collections */}

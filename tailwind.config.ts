@@ -29,6 +29,16 @@ export default {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
         },
+        burgundy: {
+          default: "#800020",
+          light: "#9a0026",
+          dark: "#60001a",
+        },
+        gold: {
+          default: "#FFD700",
+          light: "#FFECB3",
+          dark: "#B7950B",
+        },
         muted: {
           DEFAULT: "hsl(var(--muted))",
           foreground: "hsl(var(--muted-foreground))",

@@ -368,6 +368,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // PATCH endpoint for product update (admin only)
+  app.patch("/api/products/:id", async (req, res) => {
+    // Authentication check temporarily disabled for demo purposes
+    // if (!req.isAuthenticated()) {
+    //   return res.status(401).json({ message: "Not authenticated" });
+    // }
+    
+    try {
+      const id = parseInt(req.params.id);
+      
+      // We'll handle floats for taunch/price specifically
+      if (req.body.price !== undefined && typeof req.body.price === 'number') {
+        req.body.price = parseFloat(req.body.price.toString());
+      }
+      if (req.body.taunch !== undefined && typeof req.body.taunch === 'number') {
+        req.body.price = parseFloat(req.body.taunch.toString());
+        delete req.body.taunch; // Map taunch to price field in DB
+      }
+      
+      const result = updateProductSchema.safeParse(req.body);
+      
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        console.error("Validation error:", result.error);
+        return res.status(400).json({ message: validationError.message });
+      }
+      
+      // If collection ID is provided, verify it exists
+      if (result.data.collectionId) {
+        const collection = await storage.getCollectionById(result.data.collectionId);
+        if (!collection) {
+          return res.status(400).json({ message: "Collection does not exist" });
+        }
+      }
+      
+      const existingProduct = await storage.getProductById(id);
+      
+      if (!existingProduct) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+      
+      const updatedProduct = await storage.updateProduct(id, result.data);
+      
+      // Broadcast the update via WebSockets
+      wsManager.broadcast('PRODUCT_UPDATED', updatedProduct);
+      
+      return res.json(updatedProduct);
+    } catch (error) {
+      console.error("Error updating product:", error);
+      res.status(500).json({ message: "Failed to update product" });
+    }
+  });
+  
   // Delete a product (admin only)
   app.delete("/api/products/:id", async (req, res) => {
     // Authentication check temporarily disabled for demo purposes

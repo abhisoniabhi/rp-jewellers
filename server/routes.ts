@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
-import { updateRateSchema, insertCollectionSchema, updateCollectionSchema, insertProductSchema, updateProductSchema } from "@shared/schema";
+import { updateRateSchema, insertCollectionSchema, updateCollectionSchema, insertProductSchema, updateProductSchema, insertSettingSchema, updateSettingSchema } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 
 // Create WebSocket manager for real-time updates
@@ -443,6 +443,100 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting product:", error);
       res.status(500).json({ message: "Failed to delete product" });
+    }
+  });
+
+  // Settings routes
+  // Get all settings
+  app.get("/api/settings", async (req, res) => {
+    try {
+      const settings = await storage.getSettings();
+      res.json(settings);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch settings" });
+    }
+  });
+  
+  // Get setting by key
+  app.get("/api/settings/:key", async (req, res) => {
+    try {
+      const key = req.params.key;
+      const setting = await storage.getSettingByKey(key);
+      
+      if (!setting) {
+        return res.status(404).json({ message: "Setting not found" });
+      }
+      
+      res.json(setting);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch setting" });
+    }
+  });
+  
+  // Create a new setting (admin only)
+  app.post("/api/settings", async (req, res) => {
+    // Authentication check temporarily disabled for demo purposes
+    // if (!req.isAuthenticated()) {
+    //   return res.status(401).json({ message: "Not authenticated" });
+    // }
+    
+    try {
+      const result = insertSettingSchema.safeParse(req.body);
+      
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({ message: validationError.message });
+      }
+      
+      // Check if setting with key already exists
+      const existingSetting = await storage.getSettingByKey(result.data.key);
+      if (existingSetting) {
+        return res.status(400).json({ message: "Setting with this key already exists" });
+      }
+      
+      const newSetting = await storage.createSetting(result.data);
+      
+      // Broadcast the update via WebSockets
+      wsManager.broadcast('SETTING_CREATED', newSetting);
+      
+      return res.status(201).json(newSetting);
+    } catch (error) {
+      console.error("Error creating setting:", error);
+      res.status(500).json({ message: "Failed to create setting" });
+    }
+  });
+  
+  // Update a setting (admin only)
+  app.put("/api/settings/:key", async (req, res) => {
+    // Authentication check temporarily disabled for demo purposes
+    // if (!req.isAuthenticated()) {
+    //   return res.status(401).json({ message: "Not authenticated" });
+    // }
+    
+    try {
+      const key = req.params.key;
+      const result = updateSettingSchema.safeParse(req.body);
+      
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({ message: validationError.message });
+      }
+      
+      // Check if setting exists
+      const existingSetting = await storage.getSettingByKey(key);
+      if (!existingSetting) {
+        return res.status(404).json({ message: "Setting not found" });
+      }
+      
+      const updatedSetting = await storage.updateSetting(key, result.data.value);
+      
+      // Broadcast the update via WebSockets
+      wsManager.broadcast('SETTING_UPDATED', updatedSetting);
+      
+      return res.json(updatedSetting);
+    } catch (error) {
+      console.error("Error updating setting:", error);
+      res.status(500).json({ message: "Failed to update setting" });
     }
   });
 

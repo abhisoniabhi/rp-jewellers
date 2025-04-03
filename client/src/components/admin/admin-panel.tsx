@@ -7,11 +7,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { RateInfo } from "@/components/ui/rate-card";
+import { Textarea } from "@/components/ui/textarea";
 
 const rateSchema = z.object({
   type: z.string(),
@@ -21,7 +22,15 @@ const rateSchema = z.object({
   category: z.string()
 });
 
+const settingsSchema = z.object({
+  whatsappNumber: z.string().min(10, "WhatsApp number must be at least 10 digits"),
+  storeLocation: z.string(),
+  storeAddress: z.string(),
+  storeName: z.string()
+});
+
 type RateFormData = z.infer<typeof rateSchema>;
+type SettingsFormData = z.infer<typeof settingsSchema>;
 
 interface AdminPanelProps {
   rates: RateInfo[];
@@ -33,14 +42,34 @@ export function AdminPanel({ rates, isOpen, onOpenChange }: AdminPanelProps) {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("gold");
   
+  // Fetch settings data
+  const { data: settings, isLoading: isLoadingSettings } = useQuery({
+    queryKey: ["/api/settings"],
+    queryFn: async () => {
+      const res = await fetch("/api/settings");
+      if (!res.ok) throw new Error("Failed to fetch settings");
+      return res.json();
+    }
+  });
+  
   const form = useForm<RateFormData>({
     resolver: zodResolver(rateSchema),
     defaultValues: {
       type: "नंबर 99.99 Retail",
-      current: "91700",
-      high: "92000",
-      low: "91650",
+      current: 91700,
+      high: 92000,
+      low: 91650,
       category: "gold"
+    },
+  });
+  
+  const settingsForm = useForm<SettingsFormData>({
+    resolver: zodResolver(settingsSchema),
+    defaultValues: {
+      whatsappNumber: "",
+      storeLocation: "",
+      storeAddress: "",
+      storeName: ""
     },
   });
 
@@ -71,12 +100,57 @@ export function AdminPanel({ rates, isOpen, onOpenChange }: AdminPanelProps) {
     updateRateMutation.mutate(data);
   };
 
+  const updateSettingsMutation = useMutation({
+    mutationFn: async (data: SettingsFormData) => {
+      // Update each setting one by one
+      const promises = Object.entries(data).map(async ([key, value]) => {
+        const res = await apiRequest("PUT", `/api/settings/${key}`, { value });
+        return res.json();
+      });
+      return Promise.all(promises);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success!",
+        description: "Settings updated successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/settings"] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error updating settings",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+  
+  // Set settings form values when data is loaded
+  useEffect(() => {
+    if (settings && settings.length > 0) {
+      // Convert settings array to an object by key
+      const settingsMap = settings.reduce((acc: Record<string, string>, s: {key: string, value: string}) => {
+        acc[s.key] = s.value;
+        return acc;
+      }, {} as Record<string, string>);
+      
+      if (settingsMap.whatsappNumber) settingsForm.setValue("whatsappNumber", settingsMap.whatsappNumber);
+      if (settingsMap.storeLocation) settingsForm.setValue("storeLocation", settingsMap.storeLocation);
+      if (settingsMap.storeAddress) settingsForm.setValue("storeAddress", settingsMap.storeAddress);
+      if (settingsMap.storeName) settingsForm.setValue("storeName", settingsMap.storeName);
+    }
+  }, [settings, settingsForm]);
+  
   const handleSelectRate = (rate: RateInfo) => {
     form.setValue("type", rate.type);
-    form.setValue("current", String(rate.current));
-    form.setValue("high", String(rate.high));
-    form.setValue("low", String(rate.low));
+    form.setValue("current", rate.current);
+    form.setValue("high", rate.high);
+    form.setValue("low", rate.low);
     form.setValue("category", rate.category);
+  };
+  
+  const onSettingsSubmit = (data: SettingsFormData) => {
+    updateSettingsMutation.mutate(data);
   };
 
   return (
@@ -87,9 +161,10 @@ export function AdminPanel({ rates, isOpen, onOpenChange }: AdminPanelProps) {
         </DialogHeader>
         
         <Tabs defaultValue="gold" className="w-full" onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-2 mb-4">
+          <TabsList className="grid w-full grid-cols-3 mb-4">
             <TabsTrigger value="gold">Gold Rates</TabsTrigger>
             <TabsTrigger value="silver">Silver Rates</TabsTrigger>
+            <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
           
           <TabsContent value="gold">
@@ -260,6 +335,73 @@ export function AdminPanel({ rates, isOpen, onOpenChange }: AdminPanelProps) {
                   </Button>
                   <Button type="submit" className="bg-burgundy-default text-white" disabled={updateRateMutation.isPending}>
                     {updateRateMutation.isPending ? "Updating..." : "Update Rate"}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </TabsContent>
+          
+          <TabsContent value="settings">
+            <Form {...settingsForm}>
+              <form onSubmit={settingsForm.handleSubmit(onSettingsSubmit)} className="space-y-4">
+                <FormField
+                  control={settingsForm.control}
+                  name="storeName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Store Name</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="Enter your store name" />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={settingsForm.control}
+                  name="whatsappNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>WhatsApp Number</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="Enter WhatsApp number with country code" />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={settingsForm.control}
+                  name="storeAddress"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Store Address</FormLabel>
+                      <FormControl>
+                        <Textarea {...field} placeholder="Enter your full store address" />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={settingsForm.control}
+                  name="storeLocation"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Google Maps Location URL</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="Enter Google Maps share URL" />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                
+                <div className="flex justify-end">
+                  <Button type="button" variant="outline" className="mr-2" onClick={() => onOpenChange(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" className="bg-burgundy-default text-white" disabled={updateSettingsMutation.isPending}>
+                    {updateSettingsMutation.isPending ? "Updating..." : "Save Settings"}
                   </Button>
                 </div>
               </form>

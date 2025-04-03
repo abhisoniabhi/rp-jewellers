@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useParams, Link, useLocation } from "wouter";
-import { Product, Collection, Rate } from "@shared/schema";
+import { Product, Collection, Rate, Setting } from "@shared/schema";
 import { Header } from "@/components/layout/header";
 import { BottomNavigation } from "@/components/layout/bottom-navigation";
 import { Button } from "@/components/ui/button";
@@ -285,7 +285,7 @@ export default function ProductDetailPage() {
                   let whatsappNumber = "919876543210"; // Default fallback
                   
                   if (settings && settings.length > 0) {
-                    const whatsappSetting = settings.find(s => s.key === "whatsappNumber");
+                    const whatsappSetting = settings.find((s: Setting) => s.key === "whatsappNumber");
                     if (whatsappSetting) {
                       whatsappNumber = whatsappSetting.value.replace(/\+/g, ''); // Remove + if present
                     }
@@ -294,7 +294,7 @@ export default function ProductDetailPage() {
                   // Get store name if available from settings
                   let storeName = "the jeweler";
                   if (settings && settings.length > 0) {
-                    const storeNameSetting = settings.find(s => s.key === "storeName");
+                    const storeNameSetting = settings.find((s: Setting) => s.key === "storeName");
                     if (storeNameSetting) {
                       storeName = storeNameSetting.value;
                     }
@@ -317,7 +317,7 @@ export default function ProductDetailPage() {
                 onClick={() => {
                   // Get the store location from settings, or use fallback
                   if (settings && settings.length > 0) {
-                    const locationSetting = settings.find(s => s.key === "storeLocation");
+                    const locationSetting = settings.find((s: Setting) => s.key === "storeLocation");
                     
                     if (locationSetting && locationSetting.value) {
                       // Check if it's a Google Maps URL
@@ -330,7 +330,7 @@ export default function ProductDetailPage() {
                       }
                       // Otherwise search by address
                       else {
-                        const addressSetting = settings.find(s => s.key === "storeAddress");
+                        const addressSetting = settings.find((s: Setting) => s.key === "storeAddress");
                         const searchQuery = addressSetting ? addressSetting.value : "jewelry shop";
                         window.open(`https://www.google.com/maps/search/${encodeURIComponent(searchQuery)}`, '_blank');
                       }

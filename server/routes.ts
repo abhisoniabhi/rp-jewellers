@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
-import { updateRateSchema, insertCollectionSchema, updateCollectionSchema, insertProductSchema, updateProductSchema, insertSettingSchema, updateSettingSchema } from "@shared/schema";
+import { updateRateSchema, insertCollectionSchema, updateCollectionSchema, insertProductSchema, updateProductSchema, insertSettingSchema, updateSettingSchema, insertOrderSchema, insertOrderItemSchema } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 
 // Create WebSocket manager for real-time updates
@@ -537,6 +537,150 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error updating setting:", error);
       res.status(500).json({ message: "Failed to update setting" });
+    }
+  });
+
+  // Order routes
+  // Create a new order
+  app.post("/api/orders", async (req, res) => {
+    try {
+      const result = insertOrderSchema.safeParse(req.body);
+      
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({ message: validationError.message });
+      }
+      
+      const newOrder = await storage.createOrder(result.data);
+      
+      // Broadcast the update via WebSockets
+      wsManager.broadcast('ORDER_CREATED', newOrder);
+      
+      return res.status(201).json(newOrder);
+    } catch (error) {
+      console.error("Error creating order:", error);
+      res.status(500).json({ message: "Failed to create order" });
+    }
+  });
+  
+  // Get all orders
+  app.get("/api/orders", async (req, res) => {
+    try {
+      const orders = await storage.getOrders();
+      res.json(orders);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch orders" });
+    }
+  });
+  
+  // Get a specific order by ID
+  app.get("/api/orders/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const order = await storage.getOrderById(id);
+      
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+      
+      res.json(order);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch order" });
+    }
+  });
+  
+  // Get a specific order by order number
+  app.get("/api/orders/number/:orderNumber", async (req, res) => {
+    try {
+      const orderNumber = req.params.orderNumber;
+      const order = await storage.getOrderByNumber(orderNumber);
+      
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+      
+      res.json(order);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch order" });
+    }
+  });
+  
+  // Update order status
+  app.patch("/api/orders/:id/status", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { status } = req.body;
+      
+      if (!status) {
+        return res.status(400).json({ message: "Status is required" });
+      }
+      
+      const updatedOrder = await storage.updateOrderStatus(id, status);
+      
+      // Broadcast the update via WebSockets
+      wsManager.broadcast('ORDER_UPDATED', updatedOrder);
+      
+      return res.json(updatedOrder);
+    } catch (error) {
+      console.error("Error updating order status:", error);
+      res.status(500).json({ message: "Failed to update order status" });
+    }
+  });
+  
+  // Add item to order
+  app.post("/api/orders/:id/items", async (req, res) => {
+    try {
+      const orderId = parseInt(req.params.id);
+      
+      // Check if order exists
+      const order = await storage.getOrderById(orderId);
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+      
+      // Add orderId to the request body
+      req.body.orderId = orderId;
+      
+      const result = insertOrderItemSchema.safeParse(req.body);
+      
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({ message: validationError.message });
+      }
+      
+      // Check if product exists
+      const product = await storage.getProductById(result.data.productId);
+      if (!product) {
+        return res.status(400).json({ message: "Product does not exist" });
+      }
+      
+      const newOrderItem = await storage.addOrderItem(result.data);
+      
+      // Broadcast the update via WebSockets
+      wsManager.broadcast('ORDER_ITEM_ADDED', newOrderItem);
+      
+      return res.status(201).json(newOrderItem);
+    } catch (error) {
+      console.error("Error adding order item:", error);
+      res.status(500).json({ message: "Failed to add order item" });
+    }
+  });
+  
+  // Get order items for a specific order
+  app.get("/api/orders/:id/items", async (req, res) => {
+    try {
+      const orderId = parseInt(req.params.id);
+      
+      // Check if order exists
+      const order = await storage.getOrderById(orderId);
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+      
+      const orderItems = await storage.getOrderItems(orderId);
+      res.json(orderItems);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch order items" });
     }
   });
 

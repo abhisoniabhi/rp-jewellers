@@ -49,6 +49,7 @@ const invoiceFormSchema = z.object({
     required_error: "Invoice date is required",
   }),
   gstNumber: z.string().optional(),
+  customWeight: z.coerce.number().min(0.1, "Weight must be at least 0.1g").optional(),
   customRate: z.coerce.number().min(0, "Rate cannot be negative").optional(),
   karatType: z.enum(["22K", "18K"]).default("22K"),
   additionalCharges: z.coerce.number().min(0, "Charges cannot be negative").default(0),
@@ -94,6 +95,7 @@ export function InvoiceGenerator({ product, collection, rates }: InvoiceGenerato
     includeProductImage: true,
     includeMakingCharges: true,
     makingChargesPercentage: 8,
+    customWeight: product.weight || 0,
     customRate: defaultGoldRate,
     additionalCharges: 0,
     discount: 0,
@@ -124,7 +126,8 @@ export function InvoiceGenerator({ product, collection, rates }: InvoiceGenerato
     const purityFactor = values.karatType === "22K" ? 0.916 : 0.75;
     const adjustedGoldRate = goldRate * purityFactor;
     
-    const weight = product.weight || 0;
+    // Use custom weight if specified, otherwise use product weight
+    const weight = values.customWeight !== undefined ? values.customWeight : product.weight || 0;
     const productPrice = (adjustedGoldRate * weight) / 10; // Price per gram
     
     // Add making charges if enabled
@@ -281,13 +284,17 @@ export function InvoiceGenerator({ product, collection, rates }: InvoiceGenerato
       ctx.fillStyle = '#4B5563'; // gray-600
       ctx.font = '16px Arial';
       ctx.fillText(`${product.name} (${data.karatType})`, 30, currentY + 25);
-      ctx.fillText(`${product.weight}g`, 300, currentY + 25);
+      
+      // Use custom weight if provided
+      const displayWeight = data.customWeight !== undefined ? data.customWeight : product.weight || 0;
+      ctx.fillText(`${displayWeight}g`, 300, currentY + 25);
+      
       ctx.fillText(`₹${data.customRate || defaultGoldRate}/10g`, 450, currentY + 25);
       
       // Calculate with purity factor
       const purityFactor = data.karatType === "22K" ? 0.916 : 0.75;
       const adjustedGoldRate = (data.customRate || defaultGoldRate) * purityFactor;
-      const baseAmount = (adjustedGoldRate * (product.weight || 0) / 10).toFixed(2);
+      const baseAmount = (adjustedGoldRate * displayWeight / 10).toFixed(2);
       ctx.fillText(`₹${baseAmount}`, 600, currentY + 25);
       
       currentY += 40;
@@ -297,7 +304,7 @@ export function InvoiceGenerator({ product, collection, rates }: InvoiceGenerato
       if (data.includeMakingCharges) {
         ctx.fillText(`Making Charges (${data.makingChargesPercentage}%)`, 30, yPos);
         // Use the adjusted gold rate for making charges calculation
-        const makingCharges = ((adjustedGoldRate * (product.weight || 0) / 10) * (data.makingChargesPercentage / 100)).toFixed(2);
+        const makingCharges = ((adjustedGoldRate * displayWeight / 10) * (data.makingChargesPercentage / 100)).toFixed(2);
         ctx.fillText(`₹${makingCharges}`, 600, yPos);
         yPos += 35;
       }
@@ -558,31 +565,61 @@ export function InvoiceGenerator({ product, collection, rates }: InvoiceGenerato
                 
                 <div className="space-y-2">
                   <h3 className="text-lg font-medium">Pricing</h3>
-                  <FormField
-                    control={form.control}
-                    name="customRate"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Gold Rate (per 10g)</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="number" 
-                            placeholder="Custom Gold Rate" 
-                            {...field} 
-                            onChange={(e) => {
-                              field.onChange(e);
-                              // Trigger form state update to recalculate total
-                              setTimeout(() => form.trigger(), 100);
-                            }}
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          Default: ₹{defaultGoldRate}
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <FormField
+                      control={form.control}
+                      name="customWeight"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Product Weight (g)</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              step="0.01"
+                              min="0.01"
+                              placeholder="Weight in grams" 
+                              {...field} 
+                              onChange={(e) => {
+                                field.onChange(e);
+                                // Trigger form state update to recalculate total
+                                setTimeout(() => form.trigger(), 100);
+                              }}
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Default: {product.weight}g
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  
+                    <FormField
+                      control={form.control}
+                      name="customRate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Gold Rate (per 10g)</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              placeholder="Custom Gold Rate" 
+                              {...field} 
+                              onChange={(e) => {
+                                field.onChange(e);
+                                // Trigger form state update to recalculate total
+                                setTimeout(() => form.trigger(), 100);
+                              }}
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Default: ₹{defaultGoldRate}
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
 
                   <FormField
                     control={form.control}

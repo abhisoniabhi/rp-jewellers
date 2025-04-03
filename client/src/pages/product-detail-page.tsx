@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Star, ShoppingCart, Heart, Award, Package, Shield, Share2, Receipt } from "lucide-react";
+import { ArrowLeft, Star, ShoppingCart, Heart, Award, Share2, Receipt } from "lucide-react";
 import { InvoiceGenerator } from "@/components/invoice/invoice-generator-new";
 
 export default function ProductDetailPage() {
@@ -219,14 +219,6 @@ export default function ProductDetailPage() {
               <div className="flex items-center gap-2">
                 <Star className="h-5 w-5 text-amber-600" />
                 <span className="text-sm">Hallmarked</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Shield className="h-5 w-5 text-amber-600" />
-                <span className="text-sm">1-Year Warranty</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Package className="h-5 w-5 text-amber-600" />
-                <span className="text-sm">Gift Box Included</span>
               </div>
             </div>
           </div>

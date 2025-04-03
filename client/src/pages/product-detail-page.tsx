@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Star, ShoppingCart, Heart, Award, Share2, Receipt } from "lucide-react";
+import { ArrowLeft, Star, Heart, Award, Share2, Receipt, MapPin, MessageSquare } from "lucide-react";
 import { InvoiceGenerator } from "@/components/invoice/invoice-generator-new";
 
 export default function ProductDetailPage() {
@@ -265,11 +265,29 @@ export default function ProductDetailPage() {
           {/* Call to action buttons */}
           <div className="fixed bottom-16 left-0 right-0 bg-white border-t border-gray-200 p-3 shadow-lg">
             <div className="container mx-auto flex gap-2">
-              <Button className="w-1/2 bg-amber-600 hover:bg-amber-700">
-                <ShoppingCart className="h-4 w-4 mr-2" />
+              <Button 
+                className="w-1/2 bg-amber-600 hover:bg-amber-700"
+                onClick={() => {
+                  // Create WhatsApp message with product details
+                  const message = `Hi, I'm interested in the ${product.name}${product.karatType ? ` (${product.karatType})` : ''}. Could you provide more information?`;
+                  const encodedMessage = encodeURIComponent(message);
+                  // Open WhatsApp with the pre-filled message to a specific business number
+                  // Note: In a real app, this would be a real jeweler's phone number
+                  window.open(`https://wa.me/919876543210?text=${encodedMessage}`, '_blank');
+                }}
+              >
+                <MessageSquare className="h-4 w-4 mr-2" />
                 Inquire Now
               </Button>
-              <Button className="w-1/2" variant="outline">
+              <Button 
+                className="w-1/2" 
+                variant="outline"
+                onClick={() => {
+                  // Open Google Maps with Delhi's Main Market location
+                  window.open('https://www.google.com/maps/search/jewelry+shop+main+market+delhi', '_blank');
+                }}
+              >
+                <MapPin className="h-4 w-4 mr-2" />
                 Visit Shop
               </Button>
             </div>

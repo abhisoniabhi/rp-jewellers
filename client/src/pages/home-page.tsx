@@ -121,8 +121,8 @@ export default function HomePage() {
           {/* Featured Products */}
           <FeaturedProducts />
           
-          {/* Admin quick-access floating button (for mobile) */}
-          {user && <AdminTrigger rates={rates} />}
+          {/* Admin quick-access floating button - visible to everyone for now */}
+          <AdminTrigger rates={rates} />
           
           <div className="mt-3 text-2xs text-gray-500 px-1">
             <p className="text-center">

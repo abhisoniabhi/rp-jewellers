@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -270,22 +270,8 @@ export function AdminPanel({ rates, isOpen, onOpenChange }: AdminPanelProps) {
                   <Button type="button" variant="outline" className="mr-2" onClick={() => onOpenChange(false)}>
                     Cancel
                   </Button>
-                  <Button 
-                    type="submit" 
-                    className="bg-amber-500 hover:bg-amber-600 text-white flex items-center gap-2" 
-                    disabled={updateRateMutation.isPending}
-                  >
-                    {updateRateMutation.isPending ? (
-                      <>
-                        <span className="animate-spin">⏳</span>
-                        <span>Updating...</span>
-                      </>
-                    ) : (
-                      <>
-                        <span>💰</span>
-                        <span>Update Gold Rate</span>
-                      </>
-                    )}
+                  <Button type="submit" className="bg-burgundy-default text-white" disabled={updateRateMutation.isPending}>
+                    {updateRateMutation.isPending ? "Updating..." : "Update Rate"}
                   </Button>
                 </div>
               </form>
@@ -371,22 +357,8 @@ export function AdminPanel({ rates, isOpen, onOpenChange }: AdminPanelProps) {
                   <Button type="button" variant="outline" className="mr-2" onClick={() => onOpenChange(false)}>
                     Cancel
                   </Button>
-                  <Button 
-                    type="submit" 
-                    className="bg-gray-300 hover:bg-gray-400 text-gray-800 flex items-center gap-2" 
-                    disabled={updateRateMutation.isPending}
-                  >
-                    {updateRateMutation.isPending ? (
-                      <>
-                        <span className="animate-spin">⏳</span>
-                        <span>Updating...</span>
-                      </>
-                    ) : (
-                      <>
-                        <span>🥈</span>
-                        <span>Update Silver Rate</span>
-                      </>
-                    )}
+                  <Button type="submit" className="bg-burgundy-default text-white" disabled={updateRateMutation.isPending}>
+                    {updateRateMutation.isPending ? "Updating..." : "Update Rate"}
                   </Button>
                 </div>
               </form>

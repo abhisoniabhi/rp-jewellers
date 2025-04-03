@@ -1,27 +1,33 @@
 import * as React from "react"
-import useEmblaCarousel, {
-  type UseEmblaCarouselType,
-} from "embla-carousel-react"
 import { ArrowLeft, ArrowRight } from "lucide-react"
-
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 
-type CarouselApi = UseEmblaCarouselType[1]
-type UseCarouselParameters = Parameters<typeof useEmblaCarousel>
-type CarouselOptions = UseCarouselParameters[0]
-type CarouselPlugin = UseCarouselParameters[1]
+// Simple alternative to embla-carousel
+const createSimpleCarousel = () => {
+  return {
+    scrollNext: () => {},
+    scrollPrev: () => {},
+    canScrollNext: () => true,
+    canScrollPrev: () => true,
+    on: () => {},
+    off: () => {},
+    destroy: () => {},
+  }
+}
+
+type CarouselApi = ReturnType<typeof createSimpleCarousel>
 
 type CarouselProps = {
-  opts?: CarouselOptions
-  plugins?: CarouselPlugin
+  opts?: any
+  plugins?: any
   orientation?: "horizontal" | "vertical"
   setApi?: (api: CarouselApi) => void
 }
 
 type CarouselContextProps = {
-  carouselRef: ReturnType<typeof useEmblaCarousel>[0]
-  api: ReturnType<typeof useEmblaCarousel>[1]
+  carouselRef: React.RefObject<HTMLDivElement>
+  api: CarouselApi | null
   scrollPrev: () => void
   scrollNext: () => void
   canScrollPrev: boolean
@@ -56,32 +62,23 @@ const Carousel = React.forwardRef<
     },
     ref
   ) => {
-    const [carouselRef, api] = useEmblaCarousel(
-      {
-        ...opts,
-        axis: orientation === "horizontal" ? "x" : "y",
-      },
-      plugins
-    )
-    const [canScrollPrev, setCanScrollPrev] = React.useState(false)
-    const [canScrollNext, setCanScrollNext] = React.useState(false)
+    const carouselRef = React.useRef<HTMLDivElement>(null)
+    const [api] = React.useState<CarouselApi | null>(() => createSimpleCarousel())
+    const [canScrollPrev, setCanScrollPrev] = React.useState(true)
+    const [canScrollNext, setCanScrollNext] = React.useState(true)
 
-    const onSelect = React.useCallback((api: CarouselApi) => {
-      if (!api) {
-        return
-      }
-
-      setCanScrollPrev(api.canScrollPrev())
-      setCanScrollNext(api.canScrollNext())
-    }, [])
-
+    // Simplified scroll functions for basic operation
     const scrollPrev = React.useCallback(() => {
-      api?.scrollPrev()
-    }, [api])
+      if (carouselRef.current) {
+        carouselRef.current.scrollBy({ left: -200, behavior: 'smooth' });
+      }
+    }, [carouselRef])
 
     const scrollNext = React.useCallback(() => {
-      api?.scrollNext()
-    }, [api])
+      if (carouselRef.current) {
+        carouselRef.current.scrollBy({ left: 200, behavior: 'smooth' });
+      }
+    }, [carouselRef])
 
     const handleKeyDown = React.useCallback(
       (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -96,36 +93,39 @@ const Carousel = React.forwardRef<
       [scrollPrev, scrollNext]
     )
 
+    // Handle scroll events to update navigation state
     React.useEffect(() => {
-      if (!api || !setApi) {
-        return
+      const element = carouselRef.current
+      if (!element) return
+
+      const handleScroll = () => {
+        if (element) {
+          setCanScrollPrev(element.scrollLeft > 0)
+          setCanScrollNext(element.scrollLeft < element.scrollWidth - element.clientWidth - 10)
+        }
       }
 
-      setApi(api)
-    }, [api, setApi])
+      // Initial check
+      handleScroll()
 
-    React.useEffect(() => {
-      if (!api) {
-        return
-      }
-
-      onSelect(api)
-      api.on("reInit", onSelect)
-      api.on("select", onSelect)
+      // Add event listeners
+      element.addEventListener('scroll', handleScroll)
+      window.addEventListener('resize', handleScroll)
 
       return () => {
-        api?.off("select", onSelect)
+        element.removeEventListener('scroll', handleScroll)
+        window.addEventListener('resize', handleScroll)
       }
-    }, [api, onSelect])
+    }, [carouselRef])
 
+    // Simplified provider
     return (
       <CarouselContext.Provider
         value={{
           carouselRef,
-          api: api,
+          api,
           opts,
-          orientation:
-            orientation || (opts?.axis === "y" ? "vertical" : "horizontal"),
+          orientation,
           scrollPrev,
           scrollNext,
           canScrollPrev,

@@ -25,7 +25,7 @@ interface ScreenshotGeneratorProps {
 export function ScreenshotGenerator({ rates }: ScreenshotGeneratorProps) {
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
-  const shopName = "RP Jewellers"; // Fixed shop name
+  const [shopName, setShopName] = useState("RP Jewellers"); // Editable shop name
   const [includeTimestamp, setIncludeTimestamp] = useState(true);
   const [includeWatermark, setIncludeWatermark] = useState(true);
   const [screenshotUrl, setScreenshotUrl] = useState<string | null>(null);
@@ -107,6 +107,16 @@ export function ScreenshotGenerator({ rates }: ScreenshotGeneratorProps) {
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
+          <div className="space-y-2">
+            <Label htmlFor="shop-name">Shop Name</Label>
+            <Input 
+              id="shop-name" 
+              value={shopName}
+              onChange={(e) => setShopName(e.target.value)}
+              placeholder="Your Jewelry Shop Name" 
+            />
+          </div>
+          
           <div className="flex items-center justify-between">
             <Label htmlFor="timestamp" className="cursor-pointer">Show Date</Label>
             <Switch

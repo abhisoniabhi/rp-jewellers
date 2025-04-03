@@ -44,9 +44,6 @@ const invoiceFormSchema = z.object({
   shopName: z.string().min(1, "Shop name is required"),
   shopAddress: z.string().min(1, "Shop address is required"),
   shopContact: z.string().min(1, "Contact number is required"),
-  customerName: z.string().min(1, "Customer name is required"),
-  customerContact: z.string().optional(),
-  customerAddress: z.string().optional(),
   invoiceNumber: z.string().min(1, "Invoice number is required"),
   invoiceDate: z.date({
     required_error: "Invoice date is required",
@@ -198,19 +195,17 @@ export function InvoiceGenerator({ product, collection, rates }: InvoiceGenerato
       ctx.fillText(`Date: ${format(data.invoiceDate, 'dd/MM/yyyy')}`, 780, 70);
       ctx.textAlign = 'left';
       
-      // Customer details
+      // Shop details (replacing customer details)
       ctx.fillStyle = '#1F2937'; // gray-800
       ctx.font = 'bold 18px Arial';
-      ctx.fillText('Bill To:', 20, 120);
+      ctx.fillText('Shop Details:', 20, 120);
       
       ctx.fillStyle = '#4B5563'; // gray-600
       ctx.font = '16px Arial';
-      ctx.fillText(data.customerName, 20, 150);
-      if (data.customerAddress) {
-        ctx.fillText(data.customerAddress, 20, 175);
-      }
-      if (data.customerContact) {
-        ctx.fillText(`Contact: ${data.customerContact}`, 20, 200);
+      ctx.fillText(data.shopContact, 20, 150);
+      ctx.fillText(data.shopAddress, 20, 175);
+      if (data.gstNumber) {
+        ctx.fillText(`GST No: ${data.gstNumber}`, 20, 200);
       }
       
       // Product details
@@ -371,10 +366,14 @@ export function InvoiceGenerator({ product, collection, rates }: InvoiceGenerato
   // Download the invoice
   const handleDownload = () => {
     if (invoicePreview) {
-      const shopName = form.getValues("shopName").replace(/\s+/g, "-").toLowerCase();
-      const customerName = form.getValues("customerName").replace(/\s+/g, "-").toLowerCase();
-      const invoiceNumber = form.getValues("invoiceNumber");
-      const fileName = `invoice-${shopName}-${customerName}-${invoiceNumber}.png`;
+      const shopNameValue = form.getValues("shopName");
+      const shopName = typeof shopNameValue === 'string' ? shopNameValue.replace(/\s+/g, "-").toLowerCase() : 'shop';
+      
+      const invoiceNumberValue = form.getValues("invoiceNumber");
+      const invoiceNumber = typeof invoiceNumberValue === 'string' ? invoiceNumberValue : 'invoice';
+      
+      const currentDate = format(new Date(), 'yyyy-MM-dd');
+      const fileName = `invoice-${shopName}-${invoiceNumber}-${currentDate}.png`;
       
       downloadScreenshot(invoicePreview, fileName);
       
@@ -495,51 +494,7 @@ export function InvoiceGenerator({ product, collection, rates }: InvoiceGenerato
                   />
                 </div>
                 
-                <div className="space-y-2">
-                  <h3 className="text-lg font-medium">Customer Information</h3>
-                  <FormField
-                    control={form.control}
-                    name="customerName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Customer Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Customer Name" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="customerContact"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Customer Contact (Optional)</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Customer Contact" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="customerAddress"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Customer Address (Optional)</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Customer Address" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
+
                 <div className="space-y-2">
                   <h3 className="text-lg font-medium">Invoice Details</h3>
                   <div className="grid grid-cols-2 gap-2">

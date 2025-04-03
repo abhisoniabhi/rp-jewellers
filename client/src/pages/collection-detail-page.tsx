@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useRoute } from "wouter";
+import { useRoute, useLocation } from "wouter";
 import { Loader2, ArrowLeft, Scale, Clock, Tag } from "lucide-react";
 import { Link } from "wouter";
 import { useEffect } from "react";
@@ -10,10 +10,26 @@ import { Button } from "@/components/ui/button";
 import { wsClient, WS_EVENTS } from "@/lib/websocket";
 import { queryClient } from "@/lib/queryClient";
 import { Badge } from "@/components/ui/badge";
+import { ProductCard } from "@/components/ui/product-card";
+import { useToast } from "@/hooks/use-toast";
 
 export default function CollectionDetailPage() {
   const [, params] = useRoute("/collections/:id");
   const collectionId = params?.id ? parseInt(params.id) : null;
+  const [, navigate] = useLocation();
+  const { toast } = useToast();
+  
+  // Handler for adding products to order
+  const handleAddToOrder = (product: Product) => {
+    // Navigate to order page with product ID
+    navigate(`/order?productId=${product.id}`);
+    
+    // Show success toast
+    toast({
+      title: "Added to order",
+      description: `${product.name} has been added to your order.`,
+    });
+  };
   
   // Fetch collection data
   const { 
@@ -182,47 +198,11 @@ export default function CollectionDetailPage() {
             {products && products.length > 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {products.map((product) => (
-                  <Link href={`/products/${product.id}`} key={product.id}>
-                    <div className="bg-white rounded-md overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer">
-                      <div className="aspect-square overflow-hidden">
-                        <img 
-                          src={product.imageUrl || collection.imageUrl} 
-                          alt={product.name}
-                          className="object-cover w-full h-full hover:scale-105 transition-transform" 
-                        />
-                      </div>
-                      <div className="p-3">
-                        <div className="flex justify-between items-start mb-1">
-                          <h3 className="font-semibold text-amber-800 truncate flex-1">{product.name}</h3>
-                          {product.inStock === 1 ? (
-                            <Badge className="text-xs bg-green-100 text-green-800 border-none">In Stock</Badge>
-                          ) : (
-                            <Badge className="text-xs bg-red-100 text-red-800 border-none">Out of Stock</Badge>
-                          )}
-                        </div>
-                        
-                        <div className="flex items-center justify-between mt-2">
-                          {product.price !== undefined && (
-                            <p className="text-amber-600 font-bold">
-                              {product.price}%
-                            </p>
-                          )}
-                          <div className="flex flex-wrap gap-1">
-                            {product.category && (
-                              <Badge variant="outline" className="text-xs bg-amber-50 border-amber-200 text-amber-800">
-                                {product.category}
-                              </Badge>
-                            )}
-                            {product.weight > 0 && (
-                              <Badge variant="outline" className="text-xs bg-blue-50 border-blue-200 text-blue-800">
-                                {product.weight}g
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </Link>
+                  <ProductCard 
+                    key={product.id} 
+                    product={product}
+                    onAddToOrder={handleAddToOrder}
+                  />
                 ))}
               </div>
             ) : (

@@ -1,4 +1,4 @@
-import { users, rates, collections, products, settings, type User, type InsertUser, type Rate, type InsertRate, type UpdateRate, type Collection, type InsertCollection, type UpdateCollection, type Product, type InsertProduct, type UpdateProduct, type Setting, type InsertSetting, type UpdateSetting } from "@shared/schema";
+import { users, rates, collections, products, settings, orders, orderItems, type User, type InsertUser, type Rate, type InsertRate, type UpdateRate, type Collection, type InsertCollection, type UpdateCollection, type Product, type InsertProduct, type UpdateProduct, type Setting, type InsertSetting, type UpdateSetting, type Order, type InsertOrder, type OrderItem, type InsertOrderItem } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
 
@@ -39,6 +39,17 @@ export interface IStorage {
   createSetting(setting: InsertSetting): Promise<Setting>;
   updateSetting(key: string, value: string): Promise<Setting>;
   
+  // Order related methods
+  createOrder(order: InsertOrder): Promise<Order>;
+  getOrders(): Promise<Order[]>;
+  getOrderById(id: number): Promise<Order | undefined>;
+  getOrderByNumber(orderNumber: string): Promise<Order | undefined>;
+  updateOrderStatus(id: number, status: string): Promise<Order>;
+  
+  // Order items related methods
+  addOrderItem(item: InsertOrderItem): Promise<OrderItem>;
+  getOrderItems(orderId: number): Promise<OrderItem[]>;
+  
   // Session store
   sessionStore: any; // Using any for sessionStore
 }
@@ -49,11 +60,15 @@ export class MemStorage implements IStorage {
   private collections: Map<number, Collection>;
   private products: Map<number, Product>;
   private settings: Map<string, Setting>;
+  private orders: Map<number, Order>;
+  private orderItems: Map<number, OrderItem>;
   sessionStore: any; // Using any for sessionStore type
   private userIdCounter: number;
   private rateIdCounter: number;
   private collectionIdCounter: number;
   private productIdCounter: number;
+  private orderIdCounter: number;
+  private orderItemIdCounter: number;
 
   constructor() {
     this.users = new Map();
@@ -61,10 +76,14 @@ export class MemStorage implements IStorage {
     this.collections = new Map();
     this.products = new Map();
     this.settings = new Map();
+    this.orders = new Map();
+    this.orderItems = new Map();
     this.userIdCounter = 1;
     this.rateIdCounter = 1;
     this.collectionIdCounter = 1;
     this.productIdCounter = 1;
+    this.orderIdCounter = 1;
+    this.orderItemIdCounter = 1;
     this.sessionStore = new MemoryStore({
       checkPeriod: 86400000 // prune expired entries every 24h
     });
@@ -582,6 +601,80 @@ export class MemStorage implements IStorage {
     
     this.settings.set(key, updatedSetting);
     return updatedSetting;
+  }
+
+  // Order methods
+  async createOrder(insertOrder: InsertOrder): Promise<Order> {
+    const id = this.orderIdCounter++;
+    const now = new Date().toISOString();
+    
+    // Generate a unique order number based on timestamp and id
+    const orderNumber = `ORD-${Date.now().toString().slice(-6)}-${id}`;
+    
+    const order: Order = {
+      id,
+      orderNumber,
+      customerName: insertOrder.customerName || null,
+      customerPhone: insertOrder.customerPhone || null,
+      status: insertOrder.status || "pending",
+      createdAt: now
+    };
+    
+    this.orders.set(id, order);
+    return order;
+  }
+  
+  async getOrders(): Promise<Order[]> {
+    return Array.from(this.orders.values());
+  }
+  
+  async getOrderById(id: number): Promise<Order | undefined> {
+    return this.orders.get(id);
+  }
+  
+  async getOrderByNumber(orderNumber: string): Promise<Order | undefined> {
+    return Array.from(this.orders.values()).find(
+      (order) => order.orderNumber === orderNumber
+    );
+  }
+  
+  async updateOrderStatus(id: number, status: string): Promise<Order> {
+    const existingOrder = this.orders.get(id);
+    if (!existingOrder) {
+      throw new Error(`Order with id ${id} not found`);
+    }
+    
+    const updatedOrder: Order = {
+      ...existingOrder,
+      status
+    };
+    
+    this.orders.set(id, updatedOrder);
+    return updatedOrder;
+  }
+  
+  // Order item methods
+  async addOrderItem(insertOrderItem: InsertOrderItem): Promise<OrderItem> {
+    const id = this.orderItemIdCounter++;
+    const now = new Date().toISOString();
+    
+    const orderItem: OrderItem = {
+      id,
+      orderId: insertOrderItem.orderId,
+      productId: insertOrderItem.productId,
+      quantity: insertOrderItem.quantity || 1,
+      price: insertOrderItem.price,
+      createdAt: now
+    };
+    
+    this.orderItems.set(id, orderItem);
+    return orderItem;
+  }
+  
+  async getOrderItems(orderId: number): Promise<OrderItem[]> {
+    return Array.from(this.orderItems.values()).filter(
+      (item) => item.orderId === orderId
+    );
   }
 }
 

@@ -6,6 +6,7 @@ import AdminPage from "@/pages/admin-page";
 import AuthPage from "@/pages/auth-page";
 import CollectionDetailPage from "@/pages/collection-detail-page";
 import ProductDetailPage from "@/pages/product-detail-page";
+import OrderPage from "@/pages/order-page";
 import { ProtectedRoute } from "./lib/protected-route";
 
 function Router() {
@@ -16,6 +17,8 @@ function Router() {
       <Route path="/auth" component={AuthPage} />
       <Route path="/collections/:id" component={CollectionDetailPage} />
       <Route path="/products/:productId" component={ProductDetailPage} />
+      <Route path="/order" component={OrderPage} />
+      <Route path="/order/:orderNumber" component={OrderPage} />
       <Route component={NotFound} />
     </Switch>
   );

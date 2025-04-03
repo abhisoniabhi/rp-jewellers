@@ -53,6 +53,7 @@ const invoiceFormSchema = z.object({
   }),
   gstNumber: z.string().optional(),
   customRate: z.coerce.number().min(0, "Rate cannot be negative").optional(),
+  karatType: z.enum(["22K", "18K"]).default("22K"),
   additionalCharges: z.coerce.number().min(0, "Charges cannot be negative").default(0),
   discount: z.coerce.number().min(0, "Discount cannot be negative").default(0),
   discountType: z.enum(["percentage", "amount"]).default("percentage"),
@@ -121,8 +122,13 @@ export function InvoiceGenerator({ product, collection, rates }: InvoiceGenerato
       }
     }
     
+    // Adjust gold rate based on karat type
+    // 22K is 91.6% pure gold, 18K is 75% pure gold
+    const purityFactor = values.karatType === "22K" ? 0.916 : 0.75;
+    const adjustedGoldRate = goldRate * purityFactor;
+    
     const weight = product.weight || 0;
-    const productPrice = (goldRate * weight) / 10; // Price per gram
+    const productPrice = (adjustedGoldRate * weight) / 10; // Price per gram
     
     // Add making charges if enabled
     let totalPrice = productPrice;
@@ -279,11 +285,14 @@ export function InvoiceGenerator({ product, collection, rates }: InvoiceGenerato
       // Product row
       ctx.fillStyle = '#4B5563'; // gray-600
       ctx.font = '16px Arial';
-      ctx.fillText(product.name, 30, currentY + 25);
+      ctx.fillText(`${product.name} (${data.karatType})`, 30, currentY + 25);
       ctx.fillText(`${product.weight}g`, 300, currentY + 25);
       ctx.fillText(`₹${data.customRate || defaultGoldRate}/10g`, 450, currentY + 25);
       
-      const baseAmount = ((data.customRate || defaultGoldRate) * (product.weight || 0) / 10).toFixed(2);
+      // Calculate with purity factor
+      const purityFactor = data.karatType === "22K" ? 0.916 : 0.75;
+      const adjustedGoldRate = (data.customRate || defaultGoldRate) * purityFactor;
+      const baseAmount = (adjustedGoldRate * (product.weight || 0) / 10).toFixed(2);
       ctx.fillText(`₹${baseAmount}`, 600, currentY + 25);
       
       currentY += 40;
@@ -292,7 +301,8 @@ export function InvoiceGenerator({ product, collection, rates }: InvoiceGenerato
       // Making charges row
       if (data.includeMakingCharges) {
         ctx.fillText(`Making Charges (${data.makingChargesPercentage}%)`, 30, yPos);
-        const makingCharges = (((data.customRate || defaultGoldRate) * (product.weight || 0) / 10) * (data.makingChargesPercentage / 100)).toFixed(2);
+        // Use the adjusted gold rate for making charges calculation
+        const makingCharges = ((adjustedGoldRate * (product.weight || 0) / 10) * (data.makingChargesPercentage / 100)).toFixed(2);
         ctx.fillText(`₹${makingCharges}`, 600, yPos);
         yPos += 35;
       }
@@ -613,6 +623,34 @@ export function InvoiceGenerator({ product, collection, rates }: InvoiceGenerato
                         </FormControl>
                         <FormDescription>
                           Default: ₹{defaultGoldRate}
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="karatType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Gold Karat Type</FormLabel>
+                        <Select 
+                          onValueChange={field.onChange} 
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select karat type" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="22K">22K Gold</SelectItem>
+                            <SelectItem value="18K">18K Gold</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormDescription>
+                          Choose between 22K and 18K gold for calculations
                         </FormDescription>
                         <FormMessage />
                       </FormItem>

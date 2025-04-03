@@ -11,27 +11,27 @@ export function FeaturedCollections() {
 
   if (isLoading) {
     return (
-      <div className="py-6">
-        <h2 className="text-xl sm:text-2xl font-semibold mb-4">Featured Collections</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <section className="py-4 sm:py-6">
+        <h2 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-4 text-amber-800">Featured Collections</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="space-y-2">
-              <Skeleton className="aspect-square w-full" />
-              <Skeleton className="h-4 w-3/4" />
-              <Skeleton className="h-3 w-1/2" />
+              <Skeleton className="aspect-square w-full rounded-md" />
+              <Skeleton className="h-4 w-3/4 rounded" />
+              <Skeleton className="h-3 w-1/2 rounded" />
             </div>
           ))}
         </div>
-      </div>
+      </section>
     );
   }
 
   if (error) {
     return (
-      <div className="py-6">
-        <h2 className="text-xl sm:text-2xl font-semibold mb-4">Featured Collections</h2>
-        <p className="text-red-500">Failed to load collections</p>
-      </div>
+      <section className="py-4 sm:py-6">
+        <h2 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-4 text-amber-800">Featured Collections</h2>
+        <p className="text-red-500 text-sm">Failed to load collections</p>
+      </section>
     );
   }
 
@@ -45,17 +45,17 @@ export function FeaturedCollections() {
   }
 
   return (
-    <div className="py-6">
-      <h2 className="text-xl sm:text-2xl font-semibold mb-4">Featured Collections</h2>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+    <section className="py-4 sm:py-6">
+      <h2 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-4 text-amber-800">Featured Collections</h2>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
         {featuredCollections.map((collection) => (
           <CollectionCard 
             key={collection.id} 
             collection={collection} 
-            className="rounded-md shadow-sm transition-transform hover:scale-105"
+            className="rounded-md shadow-sm transition-all hover:shadow-md hover:scale-[1.02]"
           />
         ))}
       </div>
-    </div>
+    </section>
   );
 }

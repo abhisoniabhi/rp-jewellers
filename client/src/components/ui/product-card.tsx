@@ -105,29 +105,33 @@ export function ProductCard({ product, onAddToOrder, className = "" }: ProductCa
             </div>
           )}
           
-          {/* Action buttons that appear on hover */}
+          {/* Action buttons - always visible on mobile, appears on hover on desktop */}
           <motion.div 
-            className="absolute bottom-0 left-0 right-0 flex justify-between p-2 bg-gradient-to-t from-black/60 to-transparent"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: isHovered ? 1 : 0, y: isHovered ? 0 : 10 }}
+            className="absolute bottom-0 left-0 right-0 flex justify-between p-2 bg-gradient-to-t from-black/70 to-transparent"
+            initial={{ opacity: 0.9, y: 0 }}
+            animate={{ 
+              opacity: isHovered ? 1 : 0.9, 
+              y: 0,
+              backgroundColor: isHovered ? "rgba(0,0,0,0.5)" : "transparent" 
+            }}
             transition={{ duration: 0.3 }}
           >
             <Button
               variant="secondary"
               size="sm"
-              className="px-2 py-1 h-8 bg-white/90 text-amber-800 hover:bg-white"
+              className="px-2 py-1 h-8 bg-amber-500 hover:bg-amber-600 text-white shadow-md"
               onClick={handleAddToOrder}
               disabled={product.inStock === 0}
             >
               <ShoppingBag className="h-3.5 w-3.5 mr-1" />
-              Add to Order
+              <span className="text-xs sm:text-sm">Add to Order</span>
             </Button>
             
             <div className="flex gap-1">
               <Button
                 variant="secondary"
                 size="icon"
-                className="h-8 w-8 bg-white/90 text-amber-800 hover:bg-white"
+                className="h-8 w-8 bg-white/90 text-amber-800 hover:bg-white shadow-md"
                 onClick={handleShare}
               >
                 <Share2 className="h-3.5 w-3.5" />

@@ -83,18 +83,18 @@ export default function HomePage() {
       <SearchBar />
       
       {/* Poster area with improved styles */}
-      <div className="bg-gradient-to-r from-amber-50 to-yellow-50 p-3 border-b border-amber-100">
+      <div className="bg-gradient-to-r from-amber-50 to-yellow-50 p-2 sm:p-3 border-b border-amber-100">
         <div className="container mx-auto">
-          <div className="h-52 w-full bg-white rounded-lg shadow-md border border-amber-100 overflow-hidden">
-            <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-amber-50 to-yellow-50 p-4">
+          <div className="h-40 sm:h-48 md:h-52 w-full bg-white rounded-lg shadow-md border border-amber-100 overflow-hidden">
+            <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-amber-50 to-yellow-50 p-3 sm:p-4">
               <div className="text-center flex flex-col items-center">
                 <img 
                   src={rpLogo} 
                   alt="RP Jewellers Logo" 
-                  className="h-24 w-24 object-contain mb-2 rounded-full border-4 border-amber-300 p-1 shadow-lg" 
+                  className="h-16 w-16 sm:h-20 sm:w-20 md:h-24 md:w-24 object-contain mb-2 rounded-full border-4 border-amber-300 p-1 shadow-lg" 
                 />
-                <h2 className="text-xl font-bold text-amber-800 mb-1">RP JEWELLERS</h2>
-                <p className="text-amber-700">Today's Gold & Silver Rates</p>
+                <h2 className="text-lg sm:text-xl font-bold text-amber-800 mb-1">RP JEWELLERS</h2>
+                <p className="text-sm sm:text-base text-amber-700">Today's Gold & Silver Rates</p>
               </div>
             </div>
           </div>
@@ -102,29 +102,35 @@ export default function HomePage() {
       </div>
       
       <main className="flex-grow bg-gray-100">
-        <div className="container mx-auto px-3 py-3 pb-24">
-          <div className="grid grid-cols-2 gap-3">
+        <div className="container mx-auto px-2 sm:px-3 py-3 pb-20 sm:pb-24">
+          {/* Rates Cards - 1 column on extra small devices, 2 columns on larger */}
+          <div className="grid grid-cols-1 xs:grid-cols-2 gap-2 sm:gap-3">
             {rates.map((rate) => (
               <RateCard key={rate.id} rate={rate} />
             ))}
           </div>
           
-          <div className="mt-4 flex justify-center gap-3 flex-wrap">
+          {/* Action buttons */}
+          <div className="mt-3 sm:mt-4 flex justify-center gap-2 sm:gap-3 flex-wrap">
             <ShareButton />
             <ScreenshotGenerator rates={rates} />
             <CustomRateGenerator rates={rates} />
           </div>
           
           {/* Featured Collections */}
-          <FeaturedCollections />
+          <div className="mt-4 sm:mt-6">
+            <FeaturedCollections />
+          </div>
           
           {/* Featured Products */}
-          <FeaturedProducts />
+          <div className="mt-4 sm:mt-6">
+            <FeaturedProducts />
+          </div>
           
           {/* Admin quick-access floating button - visible to everyone for now */}
           <AdminTrigger rates={rates} />
           
-          <div className="mt-3 text-2xs text-gray-500 px-1">
+          <div className="mt-4 sm:mt-6 text-3xs xs:text-2xs sm:text-xs text-gray-500 px-1">
             <p className="text-center">
               *Above displayed data is for information purpose only and hence cannot be used for legal purposes or doing any sort of transaction. Transactions above 50,000 is deal only via Bank mode (RTGS/NEFT/UPI/IMPS). If found misusing of our data, will eventually land accused into legal consequences.
             </p>

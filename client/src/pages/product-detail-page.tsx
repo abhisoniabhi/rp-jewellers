@@ -50,7 +50,20 @@ export default function ProductDetailPage() {
     queryKey: ["/api/rates"],
   });
   
-  const isLoading = productLoading || collectionLoading || ratesLoading;
+  // Fetch store settings
+  const {
+    data: settings,
+    isLoading: settingsLoading
+  } = useQuery({
+    queryKey: ["/api/settings"],
+    queryFn: async () => {
+      const res = await fetch("/api/settings");
+      if (!res.ok) throw new Error("Failed to fetch settings");
+      return res.json();
+    }
+  });
+  
+  const isLoading = productLoading || collectionLoading || ratesLoading || settingsLoading;
   
   // Handle loading state
   if (isLoading) {
@@ -268,12 +281,31 @@ export default function ProductDetailPage() {
               <Button 
                 className="w-1/2 bg-amber-600 hover:bg-amber-700"
                 onClick={() => {
+                  // Get the WhatsApp number from settings, or use fallback
+                  let whatsappNumber = "919876543210"; // Default fallback
+                  
+                  if (settings && settings.length > 0) {
+                    const whatsappSetting = settings.find(s => s.key === "whatsappNumber");
+                    if (whatsappSetting) {
+                      whatsappNumber = whatsappSetting.value.replace(/\+/g, ''); // Remove + if present
+                    }
+                  }
+                  
+                  // Get store name if available from settings
+                  let storeName = "the jeweler";
+                  if (settings && settings.length > 0) {
+                    const storeNameSetting = settings.find(s => s.key === "storeName");
+                    if (storeNameSetting) {
+                      storeName = storeNameSetting.value;
+                    }
+                  }
+                  
                   // Create WhatsApp message with product details
-                  const message = `Hi, I'm interested in the ${product.name}${product.karatType ? ` (${product.karatType})` : ''}. Could you provide more information?`;
+                  const message = `Hi ${storeName}, I'm interested in the ${product.name}${product.karatType ? ` (${product.karatType})` : ''}. Could you provide more information?`;
                   const encodedMessage = encodeURIComponent(message);
-                  // Open WhatsApp with the pre-filled message to a specific business number
-                  // Note: In a real app, this would be a real jeweler's phone number
-                  window.open(`https://wa.me/919876543210?text=${encodedMessage}`, '_blank');
+                  
+                  // Open WhatsApp with the pre-filled message
+                  window.open(`https://wa.me/${whatsappNumber}?text=${encodedMessage}`, '_blank');
                 }}
               >
                 <MessageSquare className="h-4 w-4 mr-2" />
@@ -283,8 +315,33 @@ export default function ProductDetailPage() {
                 className="w-1/2" 
                 variant="outline"
                 onClick={() => {
-                  // Open Google Maps with Delhi's Main Market location
-                  window.open('https://www.google.com/maps/search/jewelry+shop+main+market+delhi', '_blank');
+                  // Get the store location from settings, or use fallback
+                  if (settings && settings.length > 0) {
+                    const locationSetting = settings.find(s => s.key === "storeLocation");
+                    
+                    if (locationSetting && locationSetting.value) {
+                      // Check if it's a Google Maps URL
+                      if (locationSetting.value.includes('google.com/maps')) {
+                        window.open(locationSetting.value, '_blank');
+                      } 
+                      // Check if it's a coordinate pair
+                      else if (locationSetting.value.includes(',')) {
+                        window.open(`https://www.google.com/maps?q=${locationSetting.value}`, '_blank');
+                      }
+                      // Otherwise search by address
+                      else {
+                        const addressSetting = settings.find(s => s.key === "storeAddress");
+                        const searchQuery = addressSetting ? addressSetting.value : "jewelry shop";
+                        window.open(`https://www.google.com/maps/search/${encodeURIComponent(searchQuery)}`, '_blank');
+                      }
+                    } else {
+                      // Fallback to default search
+                      window.open('https://www.google.com/maps/search/jewelry+shop', '_blank');
+                    }
+                  } else {
+                    // Fallback if no settings
+                    window.open('https://www.google.com/maps/search/jewelry+shop', '_blank');
+                  }
                 }}
               >
                 <MapPin className="h-4 w-4 mr-2" />

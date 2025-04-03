@@ -1,4 +1,4 @@
-import { users, rates, collections, products, type User, type InsertUser, type Rate, type InsertRate, type UpdateRate, type Collection, type InsertCollection, type UpdateCollection, type Product, type InsertProduct, type UpdateProduct } from "@shared/schema";
+import { users, rates, collections, products, settings, type User, type InsertUser, type Rate, type InsertRate, type UpdateRate, type Collection, type InsertCollection, type UpdateCollection, type Product, type InsertProduct, type UpdateProduct, type Setting, type InsertSetting, type UpdateSetting } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
 
@@ -33,6 +33,12 @@ export interface IStorage {
   updateProduct(id: number, product: Partial<UpdateProduct>): Promise<Product>;
   deleteProduct(id: number): Promise<boolean>;
   
+  // Settings related methods
+  getSettings(): Promise<Setting[]>;
+  getSettingByKey(key: string): Promise<Setting | undefined>;
+  createSetting(setting: InsertSetting): Promise<Setting>;
+  updateSetting(key: string, value: string): Promise<Setting>;
+  
   // Session store
   sessionStore: any; // Using any for sessionStore
 }
@@ -42,6 +48,7 @@ export class MemStorage implements IStorage {
   private rates: Map<number, Rate>;
   private collections: Map<number, Collection>;
   private products: Map<number, Product>;
+  private settings: Map<string, Setting>;
   sessionStore: any; // Using any for sessionStore type
   private userIdCounter: number;
   private rateIdCounter: number;
@@ -53,6 +60,7 @@ export class MemStorage implements IStorage {
     this.rates = new Map();
     this.collections = new Map();
     this.products = new Map();
+    this.settings = new Map();
     this.userIdCounter = 1;
     this.rateIdCounter = 1;
     this.collectionIdCounter = 1;
@@ -65,6 +73,46 @@ export class MemStorage implements IStorage {
     this.initializeRates();
     this.initializeCollections();
     this.initializeProducts();
+    this.initializeSettings();
+  }
+  
+  private initializeSettings() {
+    const defaultSettings: InsertSetting[] = [
+      {
+        key: "whatsappNumber",
+        value: "+919876543210", // Default WhatsApp number
+        description: "WhatsApp number for customer inquiries"
+      },
+      {
+        key: "storeLocation",
+        value: "28.6139,77.2090", // Default location (New Delhi)
+        description: "Store location coordinates (latitude,longitude)"
+      },
+      {
+        key: "storeAddress",
+        value: "123 Jewelry Market, New Delhi, India",
+        description: "Store physical address"
+      },
+      {
+        key: "storeName",
+        value: "Jewel Palace",
+        description: "Store name"
+      }
+    ];
+    
+    let idCounter = 1;
+    defaultSettings.forEach(setting => {
+      const now = new Date().toISOString();
+      const settingItem: Setting = {
+        id: idCounter++,
+        key: setting.key,
+        value: setting.value,
+        description: setting.description || null,
+        createdAt: now,
+        updatedAt: now
+      };
+      this.settings.set(setting.key, settingItem);
+    });
   }
   
   private initializeRates() {
@@ -489,6 +537,51 @@ export class MemStorage implements IStorage {
     
     this.products.delete(id);
     return true;
+  }
+  
+  // Settings methods
+  async getSettings(): Promise<Setting[]> {
+    return Array.from(this.settings.values());
+  }
+  
+  async getSettingByKey(key: string): Promise<Setting | undefined> {
+    return this.settings.get(key);
+  }
+  
+  async createSetting(insertSetting: InsertSetting): Promise<Setting> {
+    const now = new Date().toISOString();
+    // Generate an ID for the new setting (in a real DB, this would be auto-generated)
+    const id = Math.max(0, ...Array.from(this.settings.values()).map(s => s.id)) + 1;
+    
+    const setting: Setting = {
+      id,
+      key: insertSetting.key,
+      value: insertSetting.value,
+      description: insertSetting.description || null,
+      createdAt: now,
+      updatedAt: now
+    };
+    
+    this.settings.set(setting.key, setting);
+    return setting;
+  }
+  
+  async updateSetting(key: string, value: string): Promise<Setting> {
+    const existingSetting = this.settings.get(key);
+    if (!existingSetting) {
+      throw new Error(`Setting with key ${key} not found`);
+    }
+    
+    const now = new Date().toISOString();
+    
+    const updatedSetting: Setting = {
+      ...existingSetting,
+      value,
+      updatedAt: now
+    };
+    
+    this.settings.set(key, updatedSetting);
+    return updatedSetting;
   }
 }
 

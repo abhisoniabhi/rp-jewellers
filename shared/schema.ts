@@ -107,6 +107,31 @@ export const updateProductSchema = createInsertSchema(products).pick({
 export type InsertCollection = z.infer<typeof insertCollectionSchema>;
 export type UpdateCollection = z.infer<typeof updateCollectionSchema>;
 export type Collection = typeof collections.$inferSelect;
+// Settings model
+export const settings = pgTable("settings", {
+  id: serial("id").primaryKey(),
+  key: varchar("key", { length: 50 }).notNull().unique(),
+  value: text("value").notNull(),
+  description: text("description"),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
+export const insertSettingSchema = createInsertSchema(settings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  description: z.string().optional()
+});
+
+export const updateSettingSchema = createInsertSchema(settings).pick({
+  value: true,
+});
+
 export type InsertProduct = z.infer<typeof insertProductSchema>;
 export type UpdateProduct = z.infer<typeof updateProductSchema>;
 export type Product = typeof products.$inferSelect;
+export type InsertSetting = z.infer<typeof insertSettingSchema>;
+export type UpdateSetting = z.infer<typeof updateSettingSchema>;
+export type Setting = typeof settings.$inferSelect;

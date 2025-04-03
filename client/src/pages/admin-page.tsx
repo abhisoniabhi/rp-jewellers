@@ -848,6 +848,12 @@ export default function AdminPage() {
                 Rates
               </TabsTrigger>
               <TabsTrigger 
+                value="products" 
+                className="data-[state=active]:bg-amber-600 data-[state=active]:text-white rounded-md py-2.5 transition-all font-medium text-sm"
+              >
+                Products
+              </TabsTrigger>
+              <TabsTrigger 
                 value="collections" 
                 className="data-[state=active]:bg-amber-600 data-[state=active]:text-white rounded-md py-2.5 transition-all font-medium text-sm"
               >
@@ -858,12 +864,6 @@ export default function AdminPage() {
                 className="data-[state=active]:bg-amber-600 data-[state=active]:text-white rounded-md py-2.5 transition-all font-medium text-sm"
               >
                 Categories
-              </TabsTrigger>
-              <TabsTrigger 
-                value="products" 
-                className="data-[state=active]:bg-amber-600 data-[state=active]:text-white rounded-md py-2.5 transition-all font-medium text-sm"
-              >
-                Products
               </TabsTrigger>
               <TabsTrigger 
                 value="settings" 

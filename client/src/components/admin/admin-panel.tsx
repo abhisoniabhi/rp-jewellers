@@ -160,10 +160,10 @@ export function AdminPanel({ rates, isOpen, onOpenChange }: AdminPanelProps) {
           <DialogTitle className="font-playfair text-lg font-bold text-burgundy-default">Admin Panel</DialogTitle>
         </DialogHeader>
         
-        <Tabs defaultValue="gold" className="w-full" onValueChange={setActiveTab}>
+        <Tabs defaultValue="gold" className="w-full">
           <TabsList className="grid w-full grid-cols-3 mb-4">
-            <TabsTrigger value="gold">Gold Rates</TabsTrigger>
-            <TabsTrigger value="silver">Silver Rates</TabsTrigger>
+            <TabsTrigger value="gold" onClick={() => setActiveTab("gold")}>Gold Rates</TabsTrigger>
+            <TabsTrigger value="silver" onClick={() => setActiveTab("silver")}>Silver Rates</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
           

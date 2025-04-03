@@ -298,7 +298,7 @@ export default function AdminPage() {
     mutationFn: async (data: SettingsFormData) => {
       // Update each setting individually
       const updatePromises = Object.entries(data).map(([key, value]) => {
-        return apiRequest("PATCH", `/api/settings/${key}`, { value });
+        return apiRequest("PUT", `/api/settings/${key}`, { value });
       });
       
       await Promise.all(updatePromises);

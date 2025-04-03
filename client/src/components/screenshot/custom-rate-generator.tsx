@@ -41,7 +41,7 @@ interface CustomRateGeneratorProps {
 
 export function CustomRateGenerator({ rates }: CustomRateGeneratorProps) {
   const [open, setOpen] = useState(false);
-  const shopName = "RP Jewellers"; // Fixed shop name
+  const [shopName, setShopName] = useState("RP Jewellers"); // Editable shop name
   const [shopContact, setShopContact] = useState("");
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [includeTimestamp, setIncludeTimestamp] = useState(true);
@@ -153,15 +153,15 @@ export function CustomRateGenerator({ rates }: CustomRateGeneratorProps) {
       <DialogTrigger asChild>
         <Button variant="outline" className="flex gap-1 items-center">
           <FileImage className="h-4 w-4" />
-          <span className="text-xs">Custom Rate List</span>
+          <span className="text-xs">Rate Poster Generator</span>
         </Button>
       </DialogTrigger>
       
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Create Custom Rate List</DialogTitle>
+          <DialogTitle>Rate Poster Generator</DialogTitle>
           <DialogDescription className="text-xs text-gray-500 mt-1">
-            Create a branded rate list with your shop name, logo, and even set your own custom rates.
+            Create a branded rate poster with your shop name, logo, and even set your own custom rates.
           </DialogDescription>
         </DialogHeader>
         
@@ -173,6 +173,21 @@ export function CustomRateGenerator({ rates }: CustomRateGeneratorProps) {
           </TabsList>
           
           <TabsContent value="settings" className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="shop-name" className="flex items-center gap-2">
+                <Edit className="h-4 w-4" />
+                <span>Shop Name</span>
+              </Label>
+              <Input 
+                id="shop-name" 
+                value={shopName}
+                onChange={(e) => setShopName(e.target.value)}
+                placeholder="Your Jewelry Shop Name" 
+                className="border-amber-200 focus-visible:ring-amber-500"
+              />
+              <p className="text-xs text-gray-500">This name will appear on your rate poster</p>
+            </div>
+            
             <div className="space-y-2">
               <Label htmlFor="shop-contact">Contact Info</Label>
               <Input 

@@ -3,7 +3,7 @@ import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingBag, Heart, Share2 } from "lucide-react";
+import { ShoppingBag, Heart, Share2, MessageCircle } from "lucide-react";
 import { Product } from "@shared/schema";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
@@ -25,6 +25,8 @@ export function ProductCard({ product, onAddToOrder, className = "" }: ProductCa
     
     if (onAddToOrder) {
       onAddToOrder(product);
+      // Navigate to order page after adding to order
+      navigate('/order');
     } else {
       // If no callback is provided, navigate to order page with product ID
       navigate(`/order?productId=${product.id}`);
@@ -105,39 +107,47 @@ export function ProductCard({ product, onAddToOrder, className = "" }: ProductCa
             </div>
           )}
           
-          {/* Action buttons - always visible on mobile, appears on hover on desktop */}
-          <motion.div 
-            className="absolute bottom-0 left-0 right-0 flex justify-between p-2 bg-gradient-to-t from-black/70 to-transparent"
-            initial={{ opacity: 0.9, y: 0 }}
-            animate={{ 
-              opacity: isHovered ? 1 : 0.9, 
-              y: 0,
-              backgroundColor: isHovered ? "rgba(0,0,0,0.5)" : "transparent" 
-            }}
-            transition={{ duration: 0.3 }}
-          >
-            <Button
-              variant="secondary"
-              size="sm"
-              className="px-2 py-1 h-8 bg-amber-500 hover:bg-amber-600 text-white shadow-md"
-              onClick={handleAddToOrder}
-              disabled={product.inStock === 0}
-            >
-              <ShoppingBag className="h-3.5 w-3.5 mr-1" />
-              <span className="text-xs sm:text-sm">Add to Order</span>
-            </Button>
-            
-            <div className="flex gap-1">
+          {/* Action buttons - always visible, more prominent design */}
+          <div className="absolute bottom-0 left-0 right-0 p-2 pb-3 bg-gradient-to-t from-black/80 via-black/60 to-transparent">
+            <div className="flex flex-col gap-2">
               <Button
-                variant="secondary"
-                size="icon"
-                className="h-8 w-8 bg-white/90 text-amber-800 hover:bg-white shadow-md"
-                onClick={handleShare}
+                variant="default"
+                size="sm"
+                className="w-full px-2 py-1 h-8 bg-amber-500 hover:bg-amber-600 text-white shadow-md font-medium border border-amber-400"
+                onClick={handleAddToOrder}
+                disabled={product.inStock === 0}
               >
-                <Share2 className="h-3.5 w-3.5" />
+                <ShoppingBag className="h-3.5 w-3.5 mr-1" />
+                <span className="text-xs sm:text-sm">Add to Order</span>
               </Button>
+              
+              <div className="flex gap-1.5 w-full">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="flex-1 h-7 bg-white/90 text-amber-800 hover:bg-white shadow-md text-xs"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    const whatsappMessage = `Hi, I'm interested in the ${product.name}. Can you provide more details?`;
+                    window.open(`https://wa.me/?text=${encodeURIComponent(whatsappMessage)}`, '_blank');
+                  }}
+                >
+                  <MessageCircle className="h-3 w-3 mr-1" />
+                  Enquire
+                </Button>
+                
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  className="h-7 w-7 bg-white/90 text-amber-800 hover:bg-white shadow-md"
+                  onClick={handleShare}
+                >
+                  <Share2 className="h-3 w-3" />
+                </Button>
+              </div>
             </div>
-          </motion.div>
+          </div>
         </div>
         
         <div className="p-3">

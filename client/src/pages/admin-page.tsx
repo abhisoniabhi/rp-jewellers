@@ -28,6 +28,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { eventBus, EVENTS } from "@/lib/events";
 import { wsClient, WS_EVENTS } from "@/lib/websocket";
+import { SettingsManager } from "@/components/admin/settings-manager";
 import { Product, Collection, InsertProduct, Setting } from "@shared/schema";
 
 const rateSchema = z.object({
@@ -1321,115 +1322,7 @@ export default function AdminPage() {
 
             {/* Settings Tab Content */}
             <TabsContent value="settings" className="space-y-4 animate-in fade-in-50 slide-in-from-left-5">
-              <Card className="shadow-md border-amber-100">
-                <CardHeader className="bg-gradient-to-r from-amber-50 to-yellow-50 border-b">
-                  <CardTitle className="text-amber-800 flex items-center">
-                    <span className="bg-amber-100 rounded-full p-1.5 mr-2">
-                      <Settings className="h-5 w-5 text-amber-700" />
-                    </span>
-                    Store Settings
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-6">
-                  <Form {...settingsForm}>
-                    <form onSubmit={settingsForm.handleSubmit(onSettingsSubmit)} className="space-y-6">
-                      <div className="space-y-4">
-                        <FormField
-                          control={settingsForm.control}
-                          name="storeName"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-amber-900">Store Name</FormLabel>
-                              <FormControl>
-                                <Input {...field} placeholder="Enter your store name" className="border-amber-200 focus-visible:ring-amber-500" />
-                              </FormControl>
-                              <FormDescription>
-                                This will be displayed at the top of invoices and on product pages.
-                              </FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={settingsForm.control}
-                          name="whatsappNumber"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-amber-900">WhatsApp Number</FormLabel>
-                              <FormControl>
-                                <Input {...field} placeholder="Enter WhatsApp number (e.g., +919876543210)" className="border-amber-200 focus-visible:ring-amber-500" />
-                              </FormControl>
-                              <FormDescription>
-                                This number will be used for the "Inquire Now" button on product pages.
-                              </FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={settingsForm.control}
-                          name="storeAddress"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-amber-900">Store Address</FormLabel>
-                              <FormControl>
-                                <Textarea {...field} placeholder="Enter your store's full address" className="border-amber-200 focus-visible:ring-amber-500" />
-                              </FormControl>
-                              <FormDescription>
-                                This address will be displayed on invoices and in store information.
-                              </FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={settingsForm.control}
-                          name="storeLocation"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-amber-900">Google Maps Location URL</FormLabel>
-                              <FormControl>
-                                <Input {...field} placeholder="Enter Google Maps URL" className="border-amber-200 focus-visible:ring-amber-500" />
-                              </FormControl>
-                              <FormDescription>
-                                This link will be used for the "Visit Shop" button on product pages.
-                                <br />
-                                <span className="text-xs text-gray-500 mt-1 block">
-                                  (Tip: Open Google Maps, search for your store, click "Share", and copy the link)
-                                </span>
-                              </FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-
-                      <div className="flex justify-end pt-2">
-                        <Button 
-                          type="submit" 
-                          className="bg-amber-600 hover:bg-amber-700 text-white" 
-                          disabled={updateSettingsMutation.isPending}
-                        >
-                          {updateSettingsMutation.isPending ? (
-                            <>
-                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                              Saving...
-                            </>
-                          ) : (
-                            <>
-                              <Save className="h-4 w-4 mr-2" />
-                              Save Settings
-                            </>
-                          )}
-                        </Button>
-                      </div>
-                    </form>
-                  </Form>
-                </CardContent>
-              </Card>
+              <SettingsManager />
             </TabsContent>
           </Tabs>
           

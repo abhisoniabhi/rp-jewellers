@@ -62,27 +62,27 @@ export function FeaturedProducts() {
 
   if (isLoading) {
     return (
-      <div className="py-6">
-        <h2 className="text-xl sm:text-2xl font-semibold mb-4">Featured Products</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+      <section className="py-4 sm:py-6">
+        <h2 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-4 text-amber-800">Featured Products</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="space-y-2">
-              <Skeleton className="aspect-square w-full" />
-              <Skeleton className="h-4 w-3/4" />
-              <Skeleton className="h-3 w-1/2" />
+              <Skeleton className="aspect-square w-full rounded-md" />
+              <Skeleton className="h-4 w-3/4 rounded" />
+              <Skeleton className="h-3 w-1/2 rounded" />
             </div>
           ))}
         </div>
-      </div>
+      </section>
     );
   }
 
   if (error) {
     return (
-      <div className="py-6">
-        <h2 className="text-xl sm:text-2xl font-semibold mb-4">Featured Products</h2>
-        <p className="text-red-500">Failed to load products</p>
-      </div>
+      <section className="py-4 sm:py-6">
+        <h2 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-4 text-amber-800">Featured Products</h2>
+        <p className="text-red-500 text-sm">Failed to load products</p>
+      </section>
     );
   }
 
@@ -91,8 +91,7 @@ export function FeaturedProducts() {
     (product) => product.featured === 1
   );
 
-  // If no featured products, show trending ones (for demo purposes)
-  // In a real application you might want to return null or a message
+  // If no featured products, show popular ones (for demo purposes)
   const productsToShow = featuredProducts?.length ? featuredProducts : products?.slice(0, 4);
 
   if (!productsToShow || productsToShow.length === 0) {
@@ -100,11 +99,18 @@ export function FeaturedProducts() {
   }
 
   return (
-    <div className="py-6">
-      <h2 className="text-xl sm:text-2xl font-semibold mb-4">
-        {featuredProducts?.length ? "Featured Products" : "Popular Products"}
-      </h2>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+    <section className="py-4 sm:py-6">
+      <div className="flex justify-between items-center mb-2 sm:mb-4">
+        <h2 className="text-lg sm:text-xl font-semibold text-amber-800">
+          {featuredProducts?.length ? "Featured Products" : "Popular Products"}
+        </h2>
+        
+        <a href="/products" className="text-xs sm:text-sm text-amber-600 hover:text-amber-800 font-medium">
+          View All →
+        </a>
+      </div>
+      
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
         {productsToShow.map((product) => (
           <ProductCard 
             key={product.id} 
@@ -113,7 +119,7 @@ export function FeaturedProducts() {
           />
         ))}
       </div>
-    </div>
+    </section>
   );
 }
 

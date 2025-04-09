@@ -130,27 +130,16 @@ export function ProductCard({ product, onAddToOrder, className = "" }: ProductCa
           
           {/* Action buttons in a vertical layout */}
           <div className="space-y-1">
-            <div className="flex gap-1">
-              <Button
-                variant="default"
-                size="sm"
-                className="flex-1 h-7 px-2 bg-amber-500 hover:bg-amber-600 text-white shadow-sm border border-amber-400 text-[10px]"
-                onClick={handleAddToOrder}
-                disabled={product.inStock === 0}
-              >
-                <ShoppingBag className="h-3 w-3 mr-1" />
-                Add to Order
-              </Button>
-              
-              <Button
-                variant="secondary"
-                size="icon"
-                className="h-7 w-7 bg-white/90 text-amber-800 hover:bg-white shadow-sm"
-                onClick={handleShare}
-              >
-                <Share2 className="h-3 w-3" />
-              </Button>
-            </div>
+            <Button
+              variant="default"
+              size="sm"
+              className="w-full h-7 px-2 bg-amber-500 hover:bg-amber-600 text-white shadow-sm border border-amber-400 text-[10px]"
+              onClick={handleAddToOrder}
+              disabled={product.inStock === 0}
+            >
+              <ShoppingBag className="h-3 w-3 mr-1" />
+              Add to Order
+            </Button>
             
             <Button
               variant="secondary"

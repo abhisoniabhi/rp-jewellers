@@ -45,27 +45,41 @@ Your application is already configured to work with the PostgreSQL database thro
 
 4. Add the following environment variables:
    - `DATABASE_URL`: Copy the **Internal Database URL** from your PostgreSQL service
+   - `RENDER_DATABASE_URL`: Use the same URL as DATABASE_URL (needed for initialization script)
    - `NODE_ENV`: `production`
    - `SESSION_SECRET`: A random string for session security (generate one with `openssl rand -hex 32`)
+   - `DB_SSL`: `true` (enables SSL for secure database connections)
+   - `INITIALIZE_SAMPLE_ORDERS`: `false` (set to `true` if you want sample order data)
 
 5. Click **Create Web Service**
 
-## Step 4: Run Database Migrations (If Needed)
+## Step 4: Initialize Your Database
 
-If this is your first deployment or you have schema changes:
+The application includes a database initialization script that will create all necessary tables and populate them with default data if they don't exist.
 
 1. SSH into your Render web service (available in the Shell tab)
 2. Run the following commands:
    ```
    cd /opt/render/project/src
-   npx drizzle-kit generate
-   npx drizzle-kit push
+   # Set production environment
+   export NODE_ENV=production 
+   # Run the database initialization script
+   node scripts/init-database.js
    ```
 
-Alternatively, you can add a database migration step to your build command:
+Alternatively, you can add the database initialization step to your build command:
 ```
-npm install && npm run build && npx drizzle-kit push
+npm install && npm run build && NODE_ENV=production node scripts/init-database.js
 ```
+
+The initialization script will:
+1. Create all required database tables if they don't exist
+2. Add a default admin user (username: `admin`, password: `admin123`) if none exists
+3. Add default gold and silver rates
+4. Add default product collections and sample products
+5. Configure default application settings
+
+**Important:** After deployment, log in with the default admin credentials and immediately change the password for security.
 
 ## Step 5: Verify Your Deployment
 
@@ -107,9 +121,10 @@ For production traffic:
 - Check for missing environment variables
 
 ### Empty or Missing Data
-- Verify that database migrations ran successfully
-- Check that your database has the expected tables and data
-- Look for schema version mismatch errors in the logs
+- Run the database initialization script manually: `NODE_ENV=production node scripts/init-database.js`
+- Check that the script executed without errors
+- Verify database tables and content using the Render PostgreSQL console
+- Check environment variables - the script uses `RENDER_DATABASE_URL` in production mode
 
 ## Database Backup Strategy
 

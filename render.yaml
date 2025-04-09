@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: rp-jewellers
+    env: node
+    region: singapore # Choose a region closest to your users
+    buildCommand: npm install && npm run build
+    startCommand: node server/index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        fromService:
+          type: web
+          name: rp-jewellers
+          envVarKey: PORT
+    healthCheckPath: /
+    autoDeploy: true

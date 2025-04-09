@@ -3,6 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="RP Jewellers - Get latest gold and silver rates, view premium jewelry collections, and place orders easily." />
+    <meta name="theme-color" content="#B45309" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -10,10 +12,32 @@
       rel="stylesheet"
     />
     <link rel="icon" href="/src/assets/rp-logo.jpg" type="image/jpeg" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
     <title>RP Jewellers - Premium Gold & Silver Rates</title>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Service worker registration
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/service-worker.js')
+            .then(registration => {
+              console.log('Service Worker registered with scope:', registration.scope);
+            })
+            .catch(error => {
+              console.error('Service Worker registration failed:', error);
+            });
+        });
+      }
+    </script>
+    <noscript>
+      <div style="padding: 20px; text-align: center; font-family: system-ui, sans-serif;">
+        <h2>JavaScript Required</h2>
+        <p>Please enable JavaScript to use RP Jewellers application.</p>
+      </div>
+    </noscript>
   </body>
 </html>

@@ -76,29 +76,58 @@ export function setupAuth(app: Express) {
   });
 
   app.post("/api/register", async (req, res, next) => {
-    const existingUser = await storage.getUserByUsername(req.body.username);
-    if (existingUser) {
-      return res.status(400).send("Username already exists");
-    }
-
     try {
+      // First check if username already exists
+      const existingUser = await storage.getUserByUsername(req.body.username);
+      if (existingUser) {
+        return res.status(400).send("Username already exists");
+      }
+
+      // Hash the password
       const hashedPassword = await hashPassword(req.body.password);
-      const user = await storage.createUser({
+      
+      // Add additional user metadata if needed
+      const timestamp = new Date().toISOString();
+      const userData = {
         ...req.body,
         password: hashedPassword,
-      });
+        role: 'admin', // Default role to admin
+        createdAt: timestamp
+      };
+      
+      // Create the user in the database (with fallback to memory storage if DB is unavailable)
+      const user = await storage.createUser(userData);
+      
+      console.log(`User created successfully: ${user.username} (${user.id})`);
 
+      // Log the user in
       req.login(user, (err) => {
         if (err) return next(err);
-        res.status(201).json(user);
+        
+        // Return the user data without sensitive information
+        const { password, ...safeUserData } = user;
+        res.status(201).json(safeUserData);
       });
     } catch (error) {
+      console.error("Error during user registration:", error);
       next(error);
     }
   });
 
   app.post("/api/login", passport.authenticate("local"), (req, res) => {
-    res.status(200).json(req.user);
+    // req.user is guaranteed to exist here because passport.authenticate ensures
+    // a successful authentication before executing this callback
+    if (req.user) {
+      console.log(`User logged in successfully: ${req.user.username} (${req.user.id})`);
+      
+      // TypeScript safe way to destructure
+      const user = req.user as Express.User;
+      const { password, ...safeUserData } = user;
+      res.status(200).json(safeUserData);
+    } else {
+      // This is a fallback that shouldn't happen due to how passport works
+      res.status(500).send("Authentication succeeded but user data is missing");
+    }
   });
 
   app.post("/api/logout", (req, res, next) => {
@@ -110,6 +139,14 @@ export function setupAuth(app: Express) {
 
   app.get("/api/user", (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
-    res.json(req.user);
+    
+    // Return user data without sensitive information
+    if (req.user) {
+      const user = req.user as Express.User;
+      const { password, ...safeUserData } = user;
+      res.json(safeUserData);
+    } else {
+      res.sendStatus(401);
+    }
   });
 }

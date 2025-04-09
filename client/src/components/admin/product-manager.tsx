@@ -270,8 +270,8 @@ export function ProductManager({ collection, onBack }: ProductManagerProps) {
   }
 
   return (
-    <div className="max-w-2xl mx-auto py-6 bg-white rounded-xl shadow-sm border border-amber-100">
-      <div className="flex items-center justify-between px-6 pb-6 border-b border-amber-100">
+    <div className="w-full max-w-5xl mx-auto py-4 sm:py-6 bg-white rounded-xl shadow-sm border border-amber-100">
+      <div className="flex items-center justify-between px-4 sm:px-6 pb-4 sm:pb-6 border-b border-amber-100">
         <div className="flex items-center gap-2">
           <Button 
             variant="ghost" 
@@ -282,21 +282,21 @@ export function ProductManager({ collection, onBack }: ProductManagerProps) {
             <ArrowLeft className="h-5 w-5 text-amber-700" />
           </Button>
           <div>
-            <h2 className="text-xl font-semibold text-amber-800 flex items-center gap-1.5">
-              <ShoppingBag className="h-5 w-5 text-amber-600" />
-              {collection.name}
+            <h2 className="text-lg sm:text-xl font-semibold text-amber-800 flex items-center gap-1.5 truncate">
+              <ShoppingBag className="h-5 w-5 text-amber-600 flex-shrink-0" />
+              <span className="truncate">{collection.name}</span>
             </h2>
           </div>
         </div>
       </div>
 
-      <div className="px-6 py-8">
-        <div className="text-center">
-          <div className="inline-flex items-center justify-center p-5 bg-amber-50 rounded-full mb-4">
-            <Plus className="h-8 w-8 text-amber-600" />
+      <div className="px-4 sm:px-6 py-6 sm:py-8">
+        <div className="text-center max-w-md mx-auto">
+          <div className="inline-flex items-center justify-center p-4 sm:p-5 bg-amber-50 rounded-full mb-3 sm:mb-4">
+            <Plus className="h-6 sm:h-8 w-6 sm:w-8 text-amber-600" />
           </div>
-          <h3 className="text-lg font-medium text-amber-800 mb-2">Add Products to Collection</h3>
-          <p className="text-amber-600/80 max-w-md mx-auto mb-6">
+          <h3 className="text-base sm:text-lg font-medium text-amber-800 mb-2">Add Products to Collection</h3>
+          <p className="text-amber-600/80 mb-6 text-sm sm:text-base">
             Add products to this collection to showcase them to your customers. Products can be jewelry items, accessories, or any other items you sell.
           </p>
           <Button 
@@ -384,7 +384,7 @@ export function ProductManager({ collection, onBack }: ProductManagerProps) {
                 )}
               />
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="price"
@@ -426,7 +426,7 @@ export function ProductManager({ collection, onBack }: ProductManagerProps) {
                 />
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="weight"
@@ -782,19 +782,19 @@ export function ProductManager({ collection, onBack }: ProductManagerProps) {
                 )}
               />
               
-              <div className="flex items-center justify-between gap-4 pt-6 border-t border-amber-100 mt-6">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 pt-6 border-t border-amber-100 mt-6">
                 <Button 
                   type="button" 
                   variant="outline" 
                   onClick={handleCloseDialog}
-                  className="border-amber-300 flex-1"
+                  className="border-amber-300 w-full sm:w-auto"
                 >
                   Cancel
                 </Button>
                 <Button 
                   type="submit" 
                   disabled={createMutation.isPending || updateMutation.isPending}
-                  className="bg-amber-600 hover:bg-amber-700 text-white flex-1 py-6"
+                  className="bg-amber-600 hover:bg-amber-700 text-white w-full sm:w-auto py-5 sm:py-6"
                   size="lg"
                 >
                   {(createMutation.isPending || updateMutation.isPending) ? (

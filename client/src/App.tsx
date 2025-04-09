@@ -9,6 +9,7 @@ import CollectionDetailPage from "@/pages/collection-detail-page";
 import ProductDetailPage from "@/pages/product-detail-page";
 import OrderPage from "@/pages/order-page";
 import { ProtectedRoute } from "./lib/protected-route";
+import { NotificationProvider } from "@/hooks/use-notifications";
 
 function Router() {
   return (
@@ -29,8 +30,10 @@ function Router() {
 function App() {
   return (
     <>
-      <Router />
-      <Toaster />
+      <NotificationProvider>
+        <Router />
+        <Toaster />
+      </NotificationProvider>
     </>
   );
 }

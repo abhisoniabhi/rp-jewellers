@@ -1,4 +1,4 @@
-import { users, rates, collections, products, settings, orders, orderItems, type User, type InsertUser, type Rate, type InsertRate, type UpdateRate, type Collection, type InsertCollection, type UpdateCollection, type Product, type InsertProduct, type UpdateProduct, type Setting, type InsertSetting, type UpdateSetting, type Order, type InsertOrder, type OrderItem, type InsertOrderItem } from "@shared/schema";
+import { users, rates, collections, products, settings, orders, orderItems, notifications, type User, type InsertUser, type Rate, type InsertRate, type UpdateRate, type Collection, type InsertCollection, type UpdateCollection, type Product, type InsertProduct, type UpdateProduct, type Setting, type InsertSetting, type UpdateSetting, type Order, type InsertOrder, type OrderItem, type InsertOrderItem, type Notification, type InsertNotification } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
 
@@ -49,6 +49,13 @@ export interface IStorage {
   // Order items related methods
   addOrderItem(item: InsertOrderItem): Promise<OrderItem>;
   getOrderItems(orderId: number): Promise<OrderItem[]>;
+  
+  // Notification related methods
+  createNotification(notification: InsertNotification): Promise<Notification>;
+  getNotifications(userId: number): Promise<Notification[]>;
+  getUnreadNotifications(userId: number): Promise<Notification[]>;
+  markNotificationAsRead(id: number): Promise<Notification>;
+  deleteNotification(id: number): Promise<boolean>;
   
   // Session store
   sessionStore: any; // Using any for sessionStore
@@ -675,6 +682,61 @@ export class MemStorage implements IStorage {
     return Array.from(this.orderItems.values()).filter(
       (item) => item.orderId === orderId
     );
+  }
+  
+  // Add notification properties to the constructor
+  private notifications: Map<number, Notification> = new Map();
+  private notificationIdCounter: number = 1;
+  
+  // Notification methods
+  async createNotification(notification: InsertNotification): Promise<Notification> {
+    const id = this.notificationIdCounter++;
+    const now = new Date().toISOString();
+    
+    const newNotification: Notification = {
+      id,
+      title: notification.title,
+      message: notification.message,
+      type: notification.type,
+      read: notification.read || 0,
+      userId: notification.userId,
+      createdAt: now
+    };
+    
+    this.notifications.set(id, newNotification);
+    return newNotification;
+  }
+  
+  async getNotifications(userId: number): Promise<Notification[]> {
+    return Array.from(this.notifications.values())
+      .filter(notification => notification.userId === userId)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()); // Sort by latest first
+  }
+  
+  async getUnreadNotifications(userId: number): Promise<Notification[]> {
+    return Array.from(this.notifications.values())
+      .filter(notification => notification.userId === userId && notification.read === 0)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()); // Sort by latest first
+  }
+  
+  async markNotificationAsRead(id: number): Promise<Notification> {
+    const notification = this.notifications.get(id);
+    if (!notification) {
+      throw new Error(`Notification with id ${id} not found`);
+    }
+    
+    const updatedNotification = { ...notification, read: 1 };
+    this.notifications.set(id, updatedNotification);
+    return updatedNotification;
+  }
+  
+  async deleteNotification(id: number): Promise<boolean> {
+    if (!this.notifications.has(id)) {
+      return false;
+    }
+    
+    this.notifications.delete(id);
+    return true;
   }
 }
 

@@ -128,23 +128,34 @@ export function ProductCard({ product, onAddToOrder, className = "" }: ProductCa
             </div>
           </div>
           
-          {/* Action buttons moved below the image */}
-          <div className="flex gap-1">
-            <Button
-              variant="default"
-              size="sm"
-              className="flex-1 h-6 px-1 bg-amber-500 hover:bg-amber-600 text-white shadow-sm border border-amber-400 text-[10px]"
-              onClick={handleAddToOrder}
-              disabled={product.inStock === 0}
-            >
-              <ShoppingBag className="h-2.5 w-2.5 mr-1" />
-              Add to Order
-            </Button>
+          {/* Action buttons in a vertical layout */}
+          <div className="space-y-1">
+            <div className="flex gap-1">
+              <Button
+                variant="default"
+                size="sm"
+                className="flex-1 h-7 px-2 bg-amber-500 hover:bg-amber-600 text-white shadow-sm border border-amber-400 text-[10px]"
+                onClick={handleAddToOrder}
+                disabled={product.inStock === 0}
+              >
+                <ShoppingBag className="h-3 w-3 mr-1" />
+                Add to Order
+              </Button>
+              
+              <Button
+                variant="secondary"
+                size="icon"
+                className="h-7 w-7 bg-white/90 text-amber-800 hover:bg-white shadow-sm"
+                onClick={handleShare}
+              >
+                <Share2 className="h-3 w-3" />
+              </Button>
+            </div>
             
             <Button
               variant="secondary"
               size="sm"
-              className="flex-1 h-6 px-1 bg-white/90 text-amber-800 hover:bg-white shadow-sm text-[10px]"
+              className="w-full h-7 px-2 bg-white/90 text-amber-800 hover:bg-white shadow-sm text-[10px]"
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
@@ -152,17 +163,8 @@ export function ProductCard({ product, onAddToOrder, className = "" }: ProductCa
                 window.open(`https://wa.me/?text=${encodeURIComponent(whatsappMessage)}`, '_blank');
               }}
             >
-              <MessageCircle className="h-2.5 w-2.5 mr-1" />
-              Enquire
-            </Button>
-            
-            <Button
-              variant="secondary"
-              size="icon"
-              className="h-6 w-6 bg-white/90 text-amber-800 hover:bg-white shadow-sm"
-              onClick={handleShare}
-            >
-              <Share2 className="h-2.5 w-2.5" />
+              <MessageCircle className="h-3 w-3 mr-1" />
+              Inquire Now
             </Button>
           </div>
         </div>

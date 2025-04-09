@@ -2,9 +2,11 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
+import { createStorage } from "./db";
 import { setupAuth } from "./auth";
 import { updateRateSchema, insertCollectionSchema, updateCollectionSchema, insertProductSchema, updateProductSchema, insertSettingSchema, updateSettingSchema, insertOrderSchema, insertOrderItemSchema, insertNotificationSchema } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
+import { IStorage } from "./storage";
 
 // OTP store type definitions
 interface OtpData {
@@ -70,6 +72,25 @@ class WebSocketManager {
 export const wsManager = new WebSocketManager();
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Initialize database connection
+  let dbStorage: IStorage;
+  
+  if (process.env.DATABASE_URL) {
+    try {
+      console.log("Initializing PostgreSQL storage with connection string...");
+      dbStorage = await createStorage(process.env.DATABASE_URL);
+      console.log("PostgreSQL storage initialized successfully");
+      
+      // Replace in-memory storage with database-backed storage
+      Object.assign(storage, dbStorage);
+    } catch (error) {
+      console.error("Error initializing PostgreSQL storage:", error);
+      console.log("Falling back to in-memory storage");
+    }
+  } else {
+    console.log("No DATABASE_URL environment variable found, using in-memory storage");
+  }
+  
   // Setup authentication routes
   setupAuth(app);
   

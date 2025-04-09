@@ -11,6 +11,7 @@ import { ScreenshotGenerator } from "@/components/screenshot/screenshot-generato
 import { CustomRateGenerator } from "@/components/screenshot/custom-rate-generator";
 import { FeaturedCollections } from "@/components/layout/featured-collections";
 import { FeaturedProducts } from "@/components/layout/featured-products";
+import { ConnectionStatus } from "@/components/ui/connection-status";
 import { useEffect } from "react";
 import { queryClient } from "@/lib/queryClient";
 import { wsClient, WS_EVENTS } from "@/lib/websocket";
@@ -103,6 +104,9 @@ export default function HomePage() {
       
       <main className="flex-grow bg-gray-100">
         <div className="container mx-auto px-2 sm:px-3 py-3 pb-20 sm:pb-24">
+          {/* Connection Status indicator */}
+          <ConnectionStatus />
+          
           {/* Rates Cards - 2 square cards per row */}
           <div className="grid grid-cols-2 gap-3">
             {rates.map((rate) => (

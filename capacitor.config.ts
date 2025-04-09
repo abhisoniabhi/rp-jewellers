@@ -3,10 +3,10 @@ import { CapacitorConfig } from '@capacitor/cli';
 const config: CapacitorConfig = {
   appId: 'io.rpjewellers.app',
   appName: 'RP Jewellers',
-  webDir: 'dist',
+  webDir: 'dist/public',
   server: {
     androidScheme: 'https',
-    hostname: 'your-render-app-name.onrender.com',
+    hostname: 'rp-jewellers.onrender.com',
     cleartext: true
   },
   plugins: {

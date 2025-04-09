@@ -564,47 +564,62 @@ export class PostgresStorage implements IStorage {
   // Migration utilities
   async initializeDatabase(): Promise<void> {
     try {
-      // Check if tables exist and have data
-      const usersExist = await this.db.select().from(users).limit(1);
+      console.log("Checking database and initializing if necessary...");
       
-      // If no users exist, initialize with default data
-      if (usersExist.length === 0) {
-        console.log("Initializing database with default data...");
-        
-        // Copy data from memFallback
+      // Check if rates exist
+      const ratesExist = await this.db.select().from(rates).limit(1);
+      // Check if collections exist
+      const collectionsExist = await this.db.select().from(collections).limit(1);
+      // Check if products exist
+      const productsExist = await this.db.select().from(products).limit(1);
+      // Check if settings exist
+      const settingsExist = await this.db.select().from(settings).limit(1);
+      
+      console.log(`Database check: Rates (${ratesExist.length}), Collections (${collectionsExist.length}), Products (${productsExist.length}), Settings (${settingsExist.length})`);
+      
+      // Initialize with default data where needed 
+      
+      // Copy data from memFallback only as needed
+      if (ratesExist.length === 0) {
+        console.log("Initializing rates with default data...");
         const memRates = await this.memFallback.getRates();
-        const memCollections = await this.memFallback.getCollections();
-        const memProducts = await this.memFallback.getProducts();
-        const memSettings = await this.memFallback.getSettings();
-        
-        // Insert default rates
         for (const rate of memRates) {
           const { id, ...rateData } = rate;
           await this.db.insert(rates).values(rateData);
         }
-        
-        // Insert default collections
+      }
+      
+      if (collectionsExist.length === 0) {
+        console.log("Initializing collections with default data...");
+        const memCollections = await this.memFallback.getCollections();
         for (const collection of memCollections) {
           const { id, ...collectionData } = collection;
           await this.db.insert(collections).values(collectionData);
         }
-        
-        // Insert default products
+      }
+      
+      if (productsExist.length === 0) {
+        console.log("Initializing products with default data...");
+        const memProducts = await this.memFallback.getProducts();
         for (const product of memProducts) {
           const { id, ...productData } = product;
           await this.db.insert(products).values(productData);
         }
-        
-        // Insert default settings
-        for (const setting of memSettings) {
-          const { id, ...settingData } = setting;
-          await this.db.insert(settings).values(settingData);
-        }
-        
-        console.log("Database initialized with default data");
       }
+      
+      if (settingsExist.length === 0) {
+        console.log("Initializing settings with default data...");
+        const memSettings = await this.memFallback.getSettings();
+        for (const setting of memSettings) {
+          const { key, value } = setting;
+          await this.db.insert(settings).values({ key, value });
+        }
+      }
+      
+      console.log("Database initialization completed successfully");
     } catch (error) {
       console.error("Error initializing database:", error);
+      throw error; // Rethrow to allow caller to handle
     }
   }
 }
@@ -613,14 +628,26 @@ export class PostgresStorage implements IStorage {
 export async function initPool(connectionString: string): Promise<any> {
   try {
     // For local development, use with pg
-    const { Pool } = require("pg");
+    // Dynamic import for pg since we're using ESM
+    const pg = await import("pg");
+    const Pool = pg.default.Pool;
+    
     const pool = new Pool({
       connectionString,
-      ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false
+      ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false,
+      // Add shorter connection timeout
+      connectionTimeoutMillis: 5000, // 5 seconds timeout
+      query_timeout: 10000, // 10 seconds query timeout
+      idle_in_transaction_session_timeout: 10000 // 10 seconds idle timeout
     });
     
-    // Test the connection
-    await pool.query("SELECT NOW()");
+    // Test the connection with a timeout
+    const connectionTestPromise = pool.query("SELECT NOW()");
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error("Connection timeout")), 5000)
+    );
+    
+    await Promise.race([connectionTestPromise, timeoutPromise]);
     console.log("Database pool connected successfully");
     return pool;
   } catch (error) {
@@ -637,7 +664,9 @@ export async function createStorage(connectionString?: string): Promise<IStorage
   }
   
   try {
-    // Initialize the pool
+    console.log("Attempting to connect to PostgreSQL database...");
+    
+    // Initialize the pool with a shorter connection timeout
     const pool = await initPool(connectionString);
     
     // Create PostgreSQL storage
@@ -646,9 +675,16 @@ export async function createStorage(connectionString?: string): Promise<IStorage
     // Initialize database with default data if needed
     await pgStorage.initializeDatabase();
     
+    console.log("Successfully connected to PostgreSQL database");
     return pgStorage;
   } catch (error) {
     console.error("Failed to initialize PostgreSQL storage, falling back to in-memory storage:", error);
+    
+    // For deployment to Render, this error handling is important 
+    // In development on Replit, we'll use in-memory storage
+    console.log("Using in-memory storage as fallback");
+    
+    // Return in-memory storage
     return new MemStorage();
   }
 }

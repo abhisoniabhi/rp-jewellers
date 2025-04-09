@@ -115,11 +115,6 @@ export function ProductCard({ product, onAddToOrder, className = "" }: ProductCa
             <p className="font-bold text-amber-600 text-xs">₹ {product.price}</p>
             
             <div className="flex gap-1">
-              {product.weight > 0 && (
-                <Badge variant="outline" className="text-[9px] px-1 py-0">
-                  {product.weight}g
-                </Badge>
-              )}
               {product.karatType && (
                 <Badge variant="secondary" className="text-[9px] px-1 py-0">
                   {product.karatType}

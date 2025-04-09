@@ -28,10 +28,11 @@ import { Separator } from "@/components/ui/separator";
 // Helper function to calculate derived gold rates
 function calculateDerivedRates(baseRate: number): { [key: string]: number } {
   return {
-    '24K': baseRate,
-    '22K': Math.round(baseRate * 22 / 24),
-    '18K': Math.round(baseRate * 18 / 24),
-    '14K': Math.round(baseRate * 14 / 24),
+    '24K': baseRate, // 99.99 pure gold (base rate)
+    '22K': Math.round(baseRate * 0.916), // 22K is 91.6% pure
+    '18K': Math.round(baseRate * 0.75), // 18K is 75% pure
+    '14K': Math.round(baseRate * 0.585), // 14K is 58.5% pure
+    '99.5': Math.round(baseRate * 0.995), // 99.5% of 99.99 gold
   };
 }
 
@@ -64,16 +65,16 @@ export function CustomRateGenerator({ rates }: CustomRateGeneratorProps) {
 
   // State for custom rates
   const [custom24kRate, setCustom24kRate] = useState(baseGoldRate);
-  const [custom22kRate, setCustom22kRate] = useState(Math.round(baseGoldRate * 22 / 24));
-  const [custom18kRate, setCustom18kRate] = useState(Math.round(baseGoldRate * 18 / 24));
-  const [custom14kRate, setCustom14kRate] = useState(Math.round(baseGoldRate * 14 / 24));
+  const [custom22kRate, setCustom22kRate] = useState(Math.round(baseGoldRate * 0.916)); // 22K is 91.6% pure
+  const [custom18kRate, setCustom18kRate] = useState(Math.round(baseGoldRate * 0.75)); // 18K is 75% pure
+  const [custom14kRate, setCustom14kRate] = useState(Math.round(baseGoldRate * 0.585)); // 14K is 58.5% pure
   
   // Function to update all rates based on 24K
   const updateAllRatesFrom24K = (base24kRate: number) => {
     setCustom24kRate(base24kRate);
-    setCustom22kRate(Math.round(base24kRate * 22 / 24));
-    setCustom18kRate(Math.round(base24kRate * 18 / 24));
-    setCustom14kRate(Math.round(base24kRate * 14 / 24));
+    setCustom22kRate(Math.round(base24kRate * 0.916)); // 22K is 91.6% pure
+    setCustom18kRate(Math.round(base24kRate * 0.75)); // 18K is 75% pure
+    setCustom14kRate(Math.round(base24kRate * 0.585)); // 14K is 58.5% pure
   };
   
   // Calculate or use direct custom rates

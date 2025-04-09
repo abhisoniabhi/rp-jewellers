@@ -7,6 +7,7 @@ import { setupAuth } from "./auth";
 import { updateRateSchema, insertCollectionSchema, updateCollectionSchema, insertProductSchema, updateProductSchema, insertSettingSchema, updateSettingSchema, insertOrderSchema, insertOrderItemSchema, insertNotificationSchema } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import { IStorage } from "./storage";
+import { config } from "./config";
 
 // OTP store type definitions
 interface OtpData {
@@ -75,10 +76,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize database connection
   let dbStorage: IStorage;
   
-  if (process.env.DATABASE_URL) {
+  if (config.database.url) {
     try {
       console.log("Initializing PostgreSQL storage with connection string...");
-      dbStorage = await createStorage(process.env.DATABASE_URL);
+      dbStorage = await createStorage(config.database.url);
       console.log("PostgreSQL storage initialized successfully");
       
       // Replace in-memory storage with database-backed storage

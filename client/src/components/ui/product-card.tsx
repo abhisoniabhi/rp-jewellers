@@ -113,14 +113,6 @@ export function ProductCard({ product, onAddToOrder, className = "" }: ProductCa
           
           <div className="flex items-center justify-between mt-1 mb-2">
             <p className="font-bold text-amber-600 text-xs">₹ {product.price}</p>
-            
-            <div className="flex gap-1">
-              {product.karatType && (
-                <Badge variant="secondary" className="text-[9px] px-1 py-0">
-                  {product.karatType}
-                </Badge>
-              )}
-            </div>
           </div>
           
           {/* Action buttons in a vertical layout */}

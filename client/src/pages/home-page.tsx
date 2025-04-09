@@ -127,8 +127,7 @@ export default function HomePage() {
             <FeaturedProducts />
           </div>
           
-          {/* Admin quick-access floating button - visible to everyone for now */}
-          <AdminTrigger rates={rates} />
+          {/* Admin panel is now accessible via the /admin route */}
           
           <div className="mt-4 sm:mt-6 text-3xs xs:text-2xs sm:text-xs text-gray-500 px-1">
             <p className="text-center">

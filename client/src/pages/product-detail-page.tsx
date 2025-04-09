@@ -276,7 +276,7 @@ export default function ProductDetailPage() {
           )}
           
           {/* Call to action buttons */}
-          <div className="fixed bottom-16 left-0 right-0 bg-white border-t border-gray-200 p-3 shadow-lg">
+          <div className="mt-6 mb-20">
             <div className="container mx-auto flex gap-2">
               <Button 
                 className="w-1/2 bg-amber-600 hover:bg-amber-700"

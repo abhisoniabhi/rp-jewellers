@@ -98,7 +98,7 @@ export default function OrderPage() {
     const params = new URLSearchParams(window.location.search);
     const productId = params.get('productId');
     
-    if (productId && products && isCreatingOrder) {
+    if (productId && products) {
       // Find the product
       const productIdNum = parseInt(productId);
       const product = products.find((p: Product) => p.id === productIdNum);
@@ -109,14 +109,14 @@ export default function OrderPage() {
         
         if (existingItem) {
           // Update quantity
-          setCart(cart.map(item => 
+          setCart(prevCart => prevCart.map(item => 
             item.productId === productIdNum 
               ? { ...item, quantity: item.quantity + 1 } 
               : item
           ));
         } else {
           // Add new item
-          setCart([...cart, { 
+          setCart(prevCart => [...prevCart, { 
             productId: productIdNum, 
             quantity: 1, 
             product 
@@ -132,7 +132,7 @@ export default function OrderPage() {
         });
       }
     }
-  }, [products, isCreatingOrder]);
+  }, [products, cart, toast]);
 
   // Create a new order
   const createOrderMutation = useMutation({
@@ -225,14 +225,14 @@ export default function OrderPage() {
     
     if (existingItem) {
       // Update quantity
-      setCart(cart.map(item => 
+      setCart(prevCart => prevCart.map(item => 
         item.productId === product.id 
           ? { ...item, quantity: item.quantity + 1 } 
           : item
       ));
     } else {
       // Add new item
-      setCart([...cart, { 
+      setCart(prevCart => [...prevCart, { 
         productId: product.id, 
         quantity: 1, 
         product 
@@ -240,14 +240,14 @@ export default function OrderPage() {
     }
 
     toast({
-      title: 'Product added to cart',
-      description: `${product.name} has been added to your cart.`
+      title: 'Product added to order',
+      description: `${product.name} has been added to your order.`
     });
   };
 
   // Handle remove from cart
   const handleRemoveFromCart = (productId: number) => {
-    setCart(cart.filter(item => item.productId !== productId));
+    setCart(prevCart => prevCart.filter(item => item.productId !== productId));
   };
 
   // Handle update quantity
@@ -257,7 +257,7 @@ export default function OrderPage() {
       return;
     }
 
-    setCart(cart.map(item => 
+    setCart(prevCart => prevCart.map(item => 
       item.productId === productId 
         ? { ...item, quantity } 
         : item

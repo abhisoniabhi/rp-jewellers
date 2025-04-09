@@ -3,7 +3,7 @@ import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingBag, Heart, Share2, MessageCircle } from "lucide-react";
+import { ShoppingBag, Share2, MessageCircle } from "lucide-react";
 import { Product } from "@shared/schema";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
@@ -63,7 +63,7 @@ export function ProductCard({ product, onAddToOrder, className = "" }: ProductCa
     <motion.div
       initial={{ opacity: 1 }}
       whileHover={{ 
-        scale: 1.03,
+        scale: 1.02,
         transition: { duration: 0.3, ease: "easeOut" }
       }}
       className="h-full"
@@ -73,7 +73,7 @@ export function ProductCard({ product, onAddToOrder, className = "" }: ProductCa
       <Card className={`overflow-hidden h-full border-amber-100 shadow-sm ${isHovered ? 'shadow-lg border-amber-200' : ''} ${className}`}>
         <div className="relative aspect-square overflow-hidden">
           <motion.div
-            animate={isHovered ? { scale: 1.08 } : { scale: 1 }}
+            animate={isHovered ? { scale: 1.05 } : { scale: 1 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
             className="h-full w-full"
           >
@@ -101,73 +101,69 @@ export function ProductCard({ product, onAddToOrder, className = "" }: ProductCa
           
           {product.inStock === 0 && (
             <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-              <Badge variant="destructive" className="text-sm px-2 py-1">
+              <Badge variant="destructive" className="text-xs px-2 py-0.5">
                 Out of Stock
               </Badge>
             </div>
           )}
-          
-          {/* Action buttons - always visible, more prominent design */}
-          <div className="absolute bottom-0 left-0 right-0 p-2 pb-3 bg-gradient-to-t from-black/80 via-black/60 to-transparent">
-            <div className="flex flex-col gap-2">
-              <Button
-                variant="default"
-                size="sm"
-                className="w-full px-2 py-1 h-8 bg-amber-500 hover:bg-amber-600 text-white shadow-md font-medium border border-amber-400"
-                onClick={handleAddToOrder}
-                disabled={product.inStock === 0}
-              >
-                <ShoppingBag className="h-3.5 w-3.5 mr-1" />
-                <span className="text-xs sm:text-sm">Add to Order</span>
-              </Button>
-              
-              <div className="flex gap-1.5 w-full">
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  className="flex-1 h-7 bg-white/90 text-amber-800 hover:bg-white shadow-md text-xs"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    const whatsappMessage = `Hi, I'm interested in the ${product.name}. Can you provide more details?`;
-                    window.open(`https://wa.me/?text=${encodeURIComponent(whatsappMessage)}`, '_blank');
-                  }}
-                >
-                  <MessageCircle className="h-3 w-3 mr-1" />
-                  Enquire
-                </Button>
-                
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  className="h-7 w-7 bg-white/90 text-amber-800 hover:bg-white shadow-md"
-                  onClick={handleShare}
-                >
-                  <Share2 className="h-3 w-3" />
-                </Button>
-              </div>
-            </div>
-          </div>
         </div>
         
-        <div className="p-3">
-          <h3 className="font-medium text-amber-800 line-clamp-1">{product.name}</h3>
+        <div className="p-2">
+          <h3 className="font-medium text-amber-800 text-xs leading-tight line-clamp-1">{product.name}</h3>
           
-          <div className="flex items-center justify-between mt-2 text-sm">
-            <p className="font-bold text-amber-600">₹ {product.price}</p>
+          <div className="flex items-center justify-between mt-1 mb-2">
+            <p className="font-bold text-amber-600 text-xs">₹ {product.price}</p>
             
             <div className="flex gap-1">
               {product.weight > 0 && (
-                <Badge variant="outline" className="text-xs">
+                <Badge variant="outline" className="text-[9px] px-1 py-0">
                   {product.weight}g
                 </Badge>
               )}
               {product.karatType && (
-                <Badge variant="secondary" className="text-xs">
+                <Badge variant="secondary" className="text-[9px] px-1 py-0">
                   {product.karatType}
                 </Badge>
               )}
             </div>
+          </div>
+          
+          {/* Action buttons moved below the image */}
+          <div className="flex gap-1">
+            <Button
+              variant="default"
+              size="sm"
+              className="flex-1 h-6 px-1 bg-amber-500 hover:bg-amber-600 text-white shadow-sm border border-amber-400 text-[10px]"
+              onClick={handleAddToOrder}
+              disabled={product.inStock === 0}
+            >
+              <ShoppingBag className="h-2.5 w-2.5 mr-1" />
+              Add to Order
+            </Button>
+            
+            <Button
+              variant="secondary"
+              size="sm"
+              className="flex-1 h-6 px-1 bg-white/90 text-amber-800 hover:bg-white shadow-sm text-[10px]"
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                const whatsappMessage = `Hi, I'm interested in the ${product.name}. Can you provide more details?`;
+                window.open(`https://wa.me/?text=${encodeURIComponent(whatsappMessage)}`, '_blank');
+              }}
+            >
+              <MessageCircle className="h-2.5 w-2.5 mr-1" />
+              Enquire
+            </Button>
+            
+            <Button
+              variant="secondary"
+              size="icon"
+              className="h-6 w-6 bg-white/90 text-amber-800 hover:bg-white shadow-sm"
+              onClick={handleShare}
+            >
+              <Share2 className="h-2.5 w-2.5" />
+            </Button>
           </div>
         </div>
       </Card>

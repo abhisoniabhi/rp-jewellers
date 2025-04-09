@@ -162,7 +162,7 @@ export function CustomRateGenerator({ rates }: CustomRateGeneratorProps) {
         <DialogHeader>
           <DialogTitle>Rate Poster Generator</DialogTitle>
           <DialogDescription className="text-xs text-gray-500 mt-1">
-            Create a branded rate poster with your shop name, logo, and even set your own custom rates.
+            Create a branded rate poster with your logo, address, phone number and custom rates.
           </DialogDescription>
         </DialogHeader>
         

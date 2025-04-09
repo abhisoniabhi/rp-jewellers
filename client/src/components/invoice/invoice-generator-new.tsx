@@ -250,7 +250,7 @@ export function InvoiceGenerator({ product, collection, rates }: InvoiceGenerato
           
           ctx.font = '14px Arial';
           ctx.fillText(`Category: ${product.category || 'N/A'}`, 160, currentY + 50);
-          ctx.fillText(`Type: ${product.karatType || 'N/A'}`, 160, currentY + 75);
+          // Remove karatType reference
           if (collection) {
             ctx.fillText(`Collection: ${collection.name}`, 160, currentY + 100);
           }
@@ -283,7 +283,7 @@ export function InvoiceGenerator({ product, collection, rates }: InvoiceGenerato
       // Product row
       ctx.fillStyle = '#4B5563'; // gray-600
       ctx.font = '16px Arial';
-      ctx.fillText(`${product.name} (${data.karatType})`, 30, currentY + 25);
+      ctx.fillText(`${product.name}`, 30, currentY + 25);
       
       // Use custom weight if provided
       const displayWeight = data.customWeight !== undefined ? data.customWeight : product.weight || 0;

@@ -21,12 +21,12 @@ export function BottomNavigation() {
             </div>
           </Link>
           
-          <Link href="/gallery">
+          <Link href="/admin">
             <div className="flex flex-col items-center py-2 xs:py-3 w-1/5 text-center">
-              <div className={`w-8 h-8 xs:w-9 xs:h-9 sm:w-10 sm:h-10 ${location === '/gallery' ? 'bg-amber-500' : ''} rounded-full flex items-center justify-center mb-0.5 xs:mb-1`}>
-                <Image className="text-gray-300 h-4 w-4 xs:h-4.5 xs:w-4.5 sm:h-5 sm:w-5" />
+              <div className={`w-8 h-8 xs:w-9 xs:h-9 sm:w-10 sm:h-10 ${location === '/admin' ? 'bg-amber-500' : ''} rounded-full flex items-center justify-center mb-0.5 xs:mb-1`}>
+                <Shield className={`${location === '/admin' ? 'text-white' : 'text-gray-300'} h-4 w-4 xs:h-4.5 xs:w-4.5 sm:h-5 sm:w-5`} />
               </div>
-              <span className="text-3xs xs:text-2xs">Gallery</span>
+              <span className="text-3xs xs:text-2xs">Admin</span>
             </div>
           </Link>
           

@@ -121,23 +121,23 @@ export default function ProductDetailPage() {
       <Header />
       
       <main className="flex-grow bg-gray-50">
-        <div className="container mx-auto px-4 py-4 pb-24">
+        <div className="container mx-auto px-3 py-3 pb-20">
           {/* Back navigation */}
-          <div className="mb-4">
+          <div className="mb-3">
             <Button 
               variant="ghost" 
               className="flex items-center text-amber-800 hover:text-amber-600 p-0 h-auto"
               onClick={() => window.history.back()}
             >
-              <ArrowLeft className="h-4 w-4 mr-1" />
-              <span>Back</span>
+              <ArrowLeft className="h-3 w-3 mr-1" />
+              <span className="text-xs">Back</span>
             </Button>
           </div>
           
           {/* Product image and basic info */}
-          <div className="bg-white rounded-lg shadow-md overflow-hidden mb-4">
+          <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-3">
             <div className="relative">
-              <div className="aspect-square w-full">
+              <div className="aspect-square w-full max-h-[250px] sm:max-h-[300px]">
                 <img 
                   src={product.imageUrl} 
                   alt={product.name} 
@@ -146,32 +146,32 @@ export default function ProductDetailPage() {
               </div>
               
               {/* Badges overlay */}
-              <div className="absolute top-2 right-2 flex flex-col gap-2">
+              <div className="absolute top-2 right-2 flex flex-col gap-1">
                 {product.featured === 1 && (
-                  <Badge className="bg-amber-500 text-white border-none">
+                  <Badge className="bg-amber-500 text-white border-none text-[10px]">
                     Featured
                   </Badge>
                 )}
                 {product.inStock === 1 ? (
-                  <Badge className="bg-green-500 text-white border-none">
+                  <Badge className="bg-green-500 text-white border-none text-[10px]">
                     In Stock
                   </Badge>
                 ) : (
-                  <Badge className="bg-red-500 text-white border-none">
+                  <Badge className="bg-red-500 text-white border-none text-[10px]">
                     Out of Stock
                   </Badge>
                 )}
               </div>
             </div>
             
-            <div className="p-4">
-              <h1 className="text-xl font-bold text-amber-800">{product.name}</h1>
+            <div className="p-3">
+              <h1 className="text-base font-bold text-amber-800">{product.name}</h1>
               
               {/* Collection tag */}
               {collection && (
                 <Link href={`/collections/${collection.id}`}>
-                  <div className="inline-block cursor-pointer">
-                    <Badge variant="outline" className="mt-1 text-xs bg-amber-50 border-amber-200 text-amber-800">
+                  <div className="inline-block cursor-pointer mt-1">
+                    <Badge variant="outline" className="text-[10px] bg-amber-50 border-amber-200 text-amber-800">
                       {collection.name}
                     </Badge>
                   </div>
@@ -179,34 +179,29 @@ export default function ProductDetailPage() {
               )}
               
               {/* Price and details in a flex container */}
-              <div className="mt-4 flex justify-between items-center">
-                <div className="space-y-1">
-                  <p className="text-2xl font-bold text-amber-600">{product.price}%</p>
-                  <div className="flex gap-2">
+              <div className="mt-2 flex justify-between items-center">
+                <div>
+                  <p className="text-lg font-bold text-amber-600">{product.price}%</p>
+                  <div className="flex flex-wrap gap-1 mt-1">
                     {product.weight > 0 && (
-                      <Badge variant="outline" className="bg-blue-50 border-blue-200 text-blue-800">
+                      <Badge variant="outline" className="bg-blue-50 border-blue-200 text-blue-800 text-[10px]">
                         {product.weight}g
                       </Badge>
                     )}
-                    {product.karatType && (
-                      <Badge variant="secondary" className="bg-amber-100 text-amber-800 border-none">
-                        {product.karatType}
-                      </Badge>
-                    )}
                     {product.category && (
-                      <Badge variant="outline" className="bg-green-50 border-green-200 text-green-800">
+                      <Badge variant="outline" className="bg-green-50 border-green-200 text-green-800 text-[10px]">
                         {product.category}
                       </Badge>
                     )}
                   </div>
                 </div>
                 
-                <div className="flex gap-2">
-                  <Button size="icon" variant="outline" className="rounded-full h-10 w-10 border-amber-200">
-                    <Heart className="h-5 w-5 text-red-500" />
+                <div className="flex gap-1">
+                  <Button size="icon" variant="outline" className="rounded-full h-8 w-8 border-amber-200">
+                    <Heart className="h-4 w-4 text-red-500" />
                   </Button>
-                  <Button size="icon" variant="outline" className="rounded-full h-10 w-10 border-amber-200">
-                    <Share2 className="h-5 w-5 text-blue-500" />
+                  <Button size="icon" variant="outline" className="rounded-full h-8 w-8 border-amber-200">
+                    <Share2 className="h-4 w-4 text-blue-500" />
                   </Button>
                 </div>
               </div>
@@ -214,43 +209,43 @@ export default function ProductDetailPage() {
           </div>
           
           {/* Product description */}
-          <div className="bg-white rounded-lg shadow-md overflow-hidden p-4 mb-4">
-            <h2 className="text-lg font-semibold text-amber-800 mb-2">Description</h2>
-            <p className="text-gray-700">
+          <div className="bg-white rounded-lg shadow-sm overflow-hidden p-3 mb-3">
+            <h2 className="text-sm font-semibold text-amber-800 mb-1">Description</h2>
+            <p className="text-xs text-gray-700">
               {product.description || "No description available for this product."}
             </p>
           </div>
           
           {/* Product features */}
-          <div className="bg-white rounded-lg shadow-md overflow-hidden p-4 mb-4">
-            <h2 className="text-lg font-semibold text-amber-800 mb-2">Features</h2>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="flex items-center gap-2">
-                <Award className="h-5 w-5 text-amber-600" />
-                <span className="text-sm">Premium Quality</span>
+          <div className="bg-white rounded-lg shadow-sm overflow-hidden p-3 mb-3">
+            <h2 className="text-sm font-semibold text-amber-800 mb-1">Features</h2>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="flex items-center gap-1">
+                <Award className="h-3 w-3 text-amber-600" />
+                <span className="text-xs">Premium Quality</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Star className="h-5 w-5 text-amber-600" />
-                <span className="text-sm">Hallmarked</span>
+              <div className="flex items-center gap-1">
+                <Star className="h-3 w-3 text-amber-600" />
+                <span className="text-xs">Hallmarked</span>
               </div>
             </div>
           </div>
           
           {/* Related collection */}
           {collection && (
-            <div className="bg-white rounded-lg shadow-md overflow-hidden p-4 mb-4">
-              <h2 className="text-lg font-semibold text-amber-800 mb-2">From Collection</h2>
+            <div className="bg-white rounded-lg shadow-sm overflow-hidden p-3 mb-3">
+              <h2 className="text-sm font-semibold text-amber-800 mb-1">From Collection</h2>
               <div className="flex items-center gap-2">
                 <img 
                   src={collection.imageUrl} 
                   alt={collection.name} 
-                  className="w-16 h-16 object-cover rounded-lg"
+                  className="w-12 h-12 object-cover rounded-lg"
                 />
                 <div>
-                  <h3 className="font-medium text-amber-800">{collection.name}</h3>
-                  <p className="text-sm text-gray-500 line-clamp-1">{collection.description}</p>
+                  <h3 className="font-medium text-amber-800 text-xs">{collection.name}</h3>
+                  <p className="text-xs text-gray-500 line-clamp-1">{collection.description}</p>
                   <Link href={`/collections/${collection.id}`}>
-                    <span className="text-sm text-amber-600 hover:underline cursor-pointer">
+                    <span className="text-xs text-amber-600 hover:underline cursor-pointer">
                       View Collection
                     </span>
                   </Link>
@@ -261,14 +256,14 @@ export default function ProductDetailPage() {
           
           {/* Invoice Generator */}
           {rates && rates.length > 0 && (
-            <div className="bg-white rounded-lg shadow-md overflow-hidden p-4 mb-4">
-              <h2 className="text-lg font-semibold text-amber-800 mb-2">
-                <div className="flex items-center gap-2">
-                  <Receipt className="h-5 w-5 text-amber-600" />
+            <div className="bg-white rounded-lg shadow-sm overflow-hidden p-3 mb-3">
+              <h2 className="text-sm font-semibold text-amber-800 mb-1">
+                <div className="flex items-center gap-1">
+                  <Receipt className="h-3 w-3 text-amber-600" />
                   <span>For Jewellers</span>
                 </div>
               </h2>
-              <p className="text-gray-700 mb-3">
+              <p className="text-xs text-gray-700 mb-2">
                 Generate a professional invoice for this product with your shop details and current gold rates.
               </p>
               <InvoiceGenerator product={product} collection={collection} rates={rates} />
@@ -276,10 +271,10 @@ export default function ProductDetailPage() {
           )}
           
           {/* Call to action buttons */}
-          <div className="mt-6 mb-20">
+          <div className="mt-4 mb-16">
             <div className="container mx-auto flex gap-2">
               <Button 
-                className="w-1/2 bg-amber-600 hover:bg-amber-700"
+                className="w-1/2 bg-amber-600 hover:bg-amber-700 h-9 text-xs"
                 onClick={() => {
                   // Get the WhatsApp number from settings, or use fallback
                   let whatsappNumber = "919876543210"; // Default fallback
@@ -301,18 +296,18 @@ export default function ProductDetailPage() {
                   }
                   
                   // Create WhatsApp message with product details
-                  const message = `Hi ${storeName}, I'm interested in the ${product.name}${product.karatType ? ` (${product.karatType})` : ''}. Could you provide more information?`;
+                  const message = `Hi ${storeName}, I'm interested in the ${product.name}. Could you provide more information?`;
                   const encodedMessage = encodeURIComponent(message);
                   
                   // Open WhatsApp with the pre-filled message
                   window.open(`https://wa.me/${whatsappNumber}?text=${encodedMessage}`, '_blank');
                 }}
               >
-                <MessageSquare className="h-4 w-4 mr-2" />
+                <MessageSquare className="h-3 w-3 mr-1" />
                 Inquire Now
               </Button>
               <Button 
-                className="w-1/2" 
+                className="w-1/2 h-9 text-xs" 
                 variant="outline"
                 onClick={() => {
                   // Get the store location from settings, or use fallback
@@ -344,7 +339,7 @@ export default function ProductDetailPage() {
                   }
                 }}
               >
-                <MapPin className="h-4 w-4 mr-2" />
+                <MapPin className="h-3 w-3 mr-1" />
                 Visit Shop
               </Button>
             </div>

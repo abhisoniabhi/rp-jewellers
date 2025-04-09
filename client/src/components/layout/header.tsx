@@ -3,6 +3,7 @@ import { Link } from "wouter";
 import rpLogo from "../../assets/rp-logo.jpg";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
+import { NotificationBell } from "@/hooks/use-notifications";
 
 export function Header() {
   const auth = useAuth();
@@ -33,15 +34,22 @@ export function Header() {
             </Link>
             
             {user && (
-              <Link href="/admin">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="text-white hover:bg-amber-500/20 hidden sm:flex p-1"
-                >
-                  <Shield className="h-5 w-5" />
-                </Button>
-              </Link>
+              <>
+                {/* Notification Bell */}
+                <div className="text-white">
+                  <NotificationBell />
+                </div>
+                
+                <Link href="/admin">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-white hover:bg-amber-500/20 hidden sm:flex p-1"
+                  >
+                    <Shield className="h-5 w-5" />
+                  </Button>
+                </Link>
+              </>
             )}
           </div>
         </div>

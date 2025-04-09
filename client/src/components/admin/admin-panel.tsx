@@ -78,11 +78,30 @@ export function AdminPanel({ rates, isOpen, onOpenChange }: AdminPanelProps) {
       const res = await apiRequest("POST", "/api/rates/update", data);
       return await res.json();
     },
-    onSuccess: () => {
+    onSuccess: async (updatedRate) => {
       toast({
         title: "Success!",
-        description: "Rate updated successfully",
+        description: `Rate updated successfully to ₹${updatedRate.current}`,
       });
+      
+      // Create a notification for users about the rate update
+      try {
+        // For demo purposes, we're using user ID 1
+        const notification = {
+          title: "Rate Updated",
+          message: `${updatedRate.type} rate updated to ₹${updatedRate.current}`,
+          type: "rate_update",
+          read: 0,
+          userId: 1, // For demo, assuming user ID 1
+        };
+        
+        // Send the notification
+        await apiRequest("POST", "/api/notifications", notification);
+        console.log("Rate update notification created");
+      } catch (error) {
+        console.error("Failed to create notification:", error);
+      }
+      
       queryClient.invalidateQueries({ queryKey: ["/api/rates"] });
       onOpenChange(false);
     },
@@ -167,27 +186,27 @@ export function AdminPanel({ rates, isOpen, onOpenChange }: AdminPanelProps) {
         </DialogHeader>
         
         <Tabs defaultValue="gold" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-4 bg-gray-100 p-1 rounded-lg">
+          <TabsList className="flex flex-col sm:grid sm:grid-cols-3 gap-2 sm:gap-0 mb-4 bg-transparent sm:bg-gray-100 sm:p-1 rounded-lg">
             <TabsTrigger 
               value="gold" 
               onClick={() => setActiveTab("gold")}
-              className="data-[state=active]:bg-amber-500 data-[state=active]:text-white text-sm sm:text-base whitespace-nowrap px-1 sm:px-2"
+              className="data-[state=active]:bg-amber-500 data-[state=active]:text-white text-base border border-gray-200 sm:border-0 p-3 sm:p-2 h-auto"
             >
-              <span className="mr-1">💰</span> Gold Rates
+              <span className="mr-2">💰</span> Gold Rates
             </TabsTrigger>
             <TabsTrigger 
               value="silver" 
               onClick={() => setActiveTab("silver")}
-              className="data-[state=active]:bg-gray-300 data-[state=active]:text-gray-800 text-sm sm:text-base whitespace-nowrap px-1 sm:px-2"
+              className="data-[state=active]:bg-gray-300 data-[state=active]:text-gray-800 text-base border border-gray-200 sm:border-0 p-3 sm:p-2 h-auto"
             >
-              <span className="mr-1">🥈</span> Silver Rates
+              <span className="mr-2">🥈</span> Silver Rates
             </TabsTrigger>
             <TabsTrigger 
               value="settings" 
               onClick={() => setActiveTab("settings")}
-              className="data-[state=active]:bg-blue-500 data-[state=active]:text-white text-sm sm:text-base whitespace-nowrap px-1 sm:px-2"
+              className="data-[state=active]:bg-blue-500 data-[state=active]:text-white text-base border border-gray-200 sm:border-0 p-3 sm:p-2 h-auto"
             >
-              <span className="mr-1">⚙️</span> Settings
+              <span className="mr-2">⚙️</span> Settings
             </TabsTrigger>
           </TabsList>
           

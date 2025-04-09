@@ -43,6 +43,7 @@ export function CustomRateGenerator({ rates }: CustomRateGeneratorProps) {
   const [open, setOpen] = useState(false);
   const [shopName, setShopName] = useState("RP Jewellers"); // Editable shop name
   const [shopContact, setShopContact] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [includeTimestamp, setIncludeTimestamp] = useState(true);
   const [borderWidth, setBorderWidth] = useState(4);
@@ -189,12 +190,22 @@ export function CustomRateGenerator({ rates }: CustomRateGeneratorProps) {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="shop-contact">Contact Info</Label>
+              <Label htmlFor="shop-contact">Shop Address</Label>
               <Input 
                 id="shop-contact" 
                 value={shopContact}
                 onChange={(e) => setShopContact(e.target.value)}
-                placeholder="Phone or Address" 
+                placeholder="Shop Address" 
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="phone-number">Phone Number</Label>
+              <Input 
+                id="phone-number" 
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                placeholder="e.g. +91 9876543210" 
               />
             </div>
             
@@ -409,11 +420,14 @@ export function CustomRateGenerator({ rates }: CustomRateGeneratorProps) {
                     </div>
                   )}
                   <div className="text-right flex-1 ml-1">
-                    <h3 className="text-xl font-bold text-amber-800 -mt-1">
+                    <h3 className="text-xl font-bold text-amber-800 whitespace-pre-line leading-tight">
                       {shopName || "Your Jewellery Shop"}
                     </h3>
                     {shopContact && (
-                      <p className="text-xs text-gray-600">{shopContact}</p>
+                      <p className="text-xs text-gray-600 mt-1">{shopContact}</p>
+                    )}
+                    {phoneNumber && (
+                      <p className="text-xs font-medium text-amber-700 mt-0.5">{phoneNumber}</p>
                     )}
                   </div>
                 </div>

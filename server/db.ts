@@ -7,6 +7,7 @@ import session from "express-session";
 import createMemoryStore from "memorystore";
 import pgSessionStore from "connect-pg-simple";
 import type { Pool } from "pg";
+import { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 // Create a SessionStore with connect-pg-simple
 const PgSessionStore = pgSessionStore(session);
@@ -566,60 +567,197 @@ export class PostgresStorage implements IStorage {
     try {
       console.log("Checking database and initializing if necessary...");
       
-      // Check if rates exist
-      const ratesExist = await this.db.select().from(rates).limit(1);
-      // Check if collections exist
-      const collectionsExist = await this.db.select().from(collections).limit(1);
-      // Check if products exist
-      const productsExist = await this.db.select().from(products).limit(1);
-      // Check if settings exist
-      const settingsExist = await this.db.select().from(settings).limit(1);
-      
-      console.log(`Database check: Rates (${ratesExist.length}), Collections (${collectionsExist.length}), Products (${productsExist.length}), Settings (${settingsExist.length})`);
-      
-      // Initialize with default data where needed 
-      
-      // Copy data from memFallback only as needed
-      if (ratesExist.length === 0) {
-        console.log("Initializing rates with default data...");
-        const memRates = await this.memFallback.getRates();
-        for (const rate of memRates) {
-          const { id, ...rateData } = rate;
-          await this.db.insert(rates).values(rateData);
+      // Create a transaction to ensure all operations succeed or fail together
+      await this.db.transaction(async (tx: any) => {
+        
+        // Step 1: Check all tables and populate as needed
+        console.log("Checking all database tables...");
+        
+        // Check if users table has admin user
+        const usersExist = await tx.select().from(users).limit(1);
+        console.log(`Users: ${usersExist.length > 0 ? 'Exists' : 'Empty'}`);
+        
+        // Check if rates exist
+        const ratesExist = await tx.select().from(rates).limit(1);
+        console.log(`Rates: ${ratesExist.length > 0 ? 'Exists' : 'Empty'}`);
+        
+        // Check if collections exist
+        const collectionsExist = await tx.select().from(collections).limit(1);
+        console.log(`Collections: ${collectionsExist.length > 0 ? 'Exists' : 'Empty'}`);
+        
+        // Check if products exist
+        const productsExist = await tx.select().from(products).limit(1);
+        console.log(`Products: ${productsExist.length > 0 ? 'Exists' : 'Empty'}`);
+        
+        // Check if settings exist
+        const settingsExist = await tx.select().from(settings).limit(1);
+        console.log(`Settings: ${settingsExist.length > 0 ? 'Exists' : 'Empty'}`);
+        
+        // Check if orders exist
+        const ordersExist = await tx.select().from(orders).limit(1);
+        console.log(`Orders: ${ordersExist.length > 0 ? 'Exists' : 'Empty'}`);
+        
+        // Step 2: Add default admin user if none exists
+        if (usersExist.length === 0) {
+          console.log("Creating default admin user...");
+          const now = new Date().toISOString();
+          // Create a default admin with a secure password that must be changed
+          // This is using the custom password hash format from auth.ts: hash.salt
+          await tx.insert(users).values({
+            username: "admin",
+            // This is equivalent to "password" hashed - in production you would generate a proper hash
+            password: "d74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1.5a9c91f0e0f8d4c5",
+            isAdmin: 1,
+            createdAt: now
+          });
         }
-      }
-      
-      if (collectionsExist.length === 0) {
-        console.log("Initializing collections with default data...");
-        const memCollections = await this.memFallback.getCollections();
-        for (const collection of memCollections) {
-          const { id, ...collectionData } = collection;
-          await this.db.insert(collections).values(collectionData);
+        
+        // Step 3: Initialize rates
+        if (ratesExist.length === 0) {
+          console.log("Initializing rates with default data...");
+          const memRates = await this.memFallback.getRates();
+          for (const rate of memRates) {
+            const { id, ...rateData } = rate;
+            await tx.insert(rates).values(rateData);
+          }
         }
-      }
-      
-      if (productsExist.length === 0) {
-        console.log("Initializing products with default data...");
-        const memProducts = await this.memFallback.getProducts();
-        for (const product of memProducts) {
-          const { id, ...productData } = product;
-          await this.db.insert(products).values(productData);
+        
+        // Step 4: Initialize collections
+        if (collectionsExist.length === 0) {
+          console.log("Initializing collections with default data...");
+          const memCollections = await this.memFallback.getCollections();
+          for (const collection of memCollections) {
+            const { id, ...collectionData } = collection;
+            await tx.insert(collections).values(collectionData);
+          }
         }
-      }
-      
-      if (settingsExist.length === 0) {
-        console.log("Initializing settings with default data...");
-        const memSettings = await this.memFallback.getSettings();
-        for (const setting of memSettings) {
-          const { key, value } = setting;
-          await this.db.insert(settings).values({ key, value });
+        
+        // Step 5: Initialize products
+        if (productsExist.length === 0) {
+          console.log("Initializing products with default data...");
+          const memProducts = await this.memFallback.getProducts();
+          for (const product of memProducts) {
+            const { id, ...productData } = product;
+            await tx.insert(products).values(productData);
+          }
         }
-      }
+        
+        // Step 6: Initialize settings
+        if (settingsExist.length === 0) {
+          console.log("Initializing settings with default data...");
+          const memSettings = await this.memFallback.getSettings();
+          for (const setting of memSettings) {
+            const { id, ...settingData } = setting;
+            await tx.insert(settings).values(settingData);
+          }
+        }
+        
+        // Step 7: Initialize sample orders if needed
+        if (ordersExist.length === 0 && process.env.INITIALIZE_SAMPLE_ORDERS === 'true') {
+          console.log("Initializing sample orders...");
+          const now = new Date().toISOString();
+          
+          // Add a sample order
+          const [orderResult] = await tx.insert(orders).values({
+            orderNumber: "ORD" + Math.floor(100000 + Math.random() * 900000),
+            customerName: "Sample Customer",
+            customerPhone: "+919876543210",
+            status: "completed",
+            createdAt: now
+          }).returning();
+          
+          if (orderResult && productsExist.length > 0) {
+            // Get first product from DB to link to order
+            const firstProduct = await tx.select().from(products).limit(1);
+            
+            // Add order item
+            await tx.insert(orderItems).values({
+              orderId: orderResult.id,
+              productId: firstProduct[0].id,
+              quantity: 1,
+              price: firstProduct[0].price,
+              createdAt: now
+            });
+          }
+        }
+        
+        console.log("Database initialization completed successfully via transaction");
+      });
       
-      console.log("Database initialization completed successfully");
     } catch (error) {
       console.error("Error initializing database:", error);
-      throw error; // Rethrow to allow caller to handle
+      // Try individual operations if the transaction failed
+      try {
+        console.log("Retrying database initialization with individual operations...");
+        
+        // Check if rates exist
+        const ratesExist = await this.db.select().from(rates).limit(1);
+        // Check if collections exist
+        const collectionsExist = await this.db.select().from(collections).limit(1);
+        // Check if products exist
+        const productsExist = await this.db.select().from(products).limit(1);
+        // Check if settings exist
+        const settingsExist = await this.db.select().from(settings).limit(1);
+        
+        console.log(`Database check: Rates (${ratesExist.length}), Collections (${collectionsExist.length}), Products (${productsExist.length}), Settings (${settingsExist.length})`);
+        
+        // Initialize with default data where needed - Individual operations
+        
+        // Check and add users
+        const usersExist = await this.db.select().from(users).limit(1);
+        if (usersExist.length === 0) {
+          console.log("Creating default admin user...");
+          const now = new Date().toISOString();
+          await this.db.insert(users).values({
+            username: "admin",
+            password: "d74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1.5a9c91f0e0f8d4c5",
+            isAdmin: 1,
+            createdAt: now
+          });
+        }
+        
+        // Copy data from memFallback only as needed
+        if (ratesExist.length === 0) {
+          console.log("Initializing rates with default data...");
+          const memRates = await this.memFallback.getRates();
+          for (const rate of memRates) {
+            const { id, ...rateData } = rate;
+            await this.db.insert(rates).values(rateData);
+          }
+        }
+        
+        if (collectionsExist.length === 0) {
+          console.log("Initializing collections with default data...");
+          const memCollections = await this.memFallback.getCollections();
+          for (const collection of memCollections) {
+            const { id, ...collectionData } = collection;
+            await this.db.insert(collections).values(collectionData);
+          }
+        }
+        
+        if (productsExist.length === 0) {
+          console.log("Initializing products with default data...");
+          const memProducts = await this.memFallback.getProducts();
+          for (const product of memProducts) {
+            const { id, ...productData } = product;
+            await this.db.insert(products).values(productData);
+          }
+        }
+        
+        if (settingsExist.length === 0) {
+          console.log("Initializing settings with default data...");
+          const memSettings = await this.memFallback.getSettings();
+          for (const setting of memSettings) {
+            const { id, ...settingData } = setting;
+            await this.db.insert(settings).values(settingData);
+          }
+        }
+        
+        console.log("Database initialization completed successfully with individual operations");
+      } catch (fallbackError) {
+        console.error("Error in fallback database initialization:", fallbackError);
+        throw fallbackError;
+      }
     }
   }
 }

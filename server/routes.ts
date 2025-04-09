@@ -6,6 +6,27 @@ import { setupAuth } from "./auth";
 import { updateRateSchema, insertCollectionSchema, updateCollectionSchema, insertProductSchema, updateProductSchema, insertSettingSchema, updateSettingSchema, insertOrderSchema, insertOrderItemSchema } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 
+// OTP store type definitions
+interface OtpData {
+  otp: string;
+  expiresAt: number;
+  attempts: number;
+  userData: {
+    shopName: string;
+    userName: string;
+    mobileNumber: string;
+  };
+}
+
+interface OtpStore {
+  [key: string]: OtpData;
+}
+
+// Extend the global namespace to include our OTP store
+declare global {
+  var otpStore: OtpStore;
+}
+
 // Create WebSocket manager for real-time updates
 class WebSocketManager {
   private wss: WebSocketServer | null = null;
@@ -681,6 +702,119 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(orderItems);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch order items" });
+    }
+  });
+  
+  // OTP verification routes
+  // Send OTP
+  app.post("/api/otp/send", async (req, res) => {
+    try {
+      const { mobileNumber, shopName, userName } = req.body;
+      
+      if (!mobileNumber || !shopName || !userName) {
+        return res.status(400).json({ 
+          message: "Mobile number, shop name, and user name are required" 
+        });
+      }
+      
+      if (!/^\d{10}$/.test(mobileNumber)) {
+        return res.status(400).json({ 
+          message: "Please provide a valid 10-digit mobile number" 
+        });
+      }
+      
+      // In a real-world application, we would:
+      // 1. Generate a random OTP (4-6 digits)
+      // 2. Store it in the database with the mobile number and expiration time
+      // 3. Send it via an SMS gateway service
+      
+      // For this demo, we'll simulate sending an OTP
+      const generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
+      console.log(`[OTP] Generated OTP for ${mobileNumber}: ${generatedOtp}`);
+      
+      // Store OTP in memory for verification (in production, this would be in a database)
+      // This is a simple implementation - in production, use a proper data store
+      if (!global.otpStore) global.otpStore = {};
+      global.otpStore[mobileNumber] = {
+        otp: generatedOtp,
+        expiresAt: Date.now() + 5 * 60 * 1000, // 5 minutes expiry
+        attempts: 0,
+        userData: { shopName, userName, mobileNumber }
+      };
+      
+      // In a real app, we would send an SMS here
+      // For demo purposes, we're just returning success
+      return res.status(200).json({ 
+        message: "OTP sent successfully",
+        // ONLY FOR DEMO - in production, never send the OTP back in response
+        otp: generatedOtp  
+      });
+    } catch (error) {
+      console.error("Error sending OTP:", error);
+      res.status(500).json({ message: "Failed to send OTP" });
+    }
+  });
+  
+  // Verify OTP
+  app.post("/api/otp/verify", async (req, res) => {
+    try {
+      const { mobileNumber, otp } = req.body;
+      
+      if (!mobileNumber || !otp) {
+        return res.status(400).json({ 
+          message: "Mobile number and OTP are required" 
+        });
+      }
+      
+      // Check if OTP exists and is valid
+      if (!global.otpStore || !global.otpStore[mobileNumber]) {
+        return res.status(400).json({ 
+          message: "No OTP request found for this mobile number" 
+        });
+      }
+      
+      const otpData = global.otpStore[mobileNumber];
+      
+      // Check if OTP is expired
+      if (Date.now() > otpData.expiresAt) {
+        // Clean up expired OTP
+        delete global.otpStore[mobileNumber];
+        return res.status(400).json({ 
+          message: "OTP has expired. Please request a new one" 
+        });
+      }
+      
+      // Increment attempts
+      otpData.attempts += 1;
+      
+      // Check max attempts (3)
+      if (otpData.attempts > 3) {
+        delete global.otpStore[mobileNumber];
+        return res.status(400).json({ 
+          message: "Too many failed attempts. Please request a new OTP" 
+        });
+      }
+      
+      // Check if OTP matches
+      if (otpData.otp !== otp) {
+        return res.status(400).json({ 
+          message: `Invalid OTP. ${3 - otpData.attempts} attempts remaining` 
+        });
+      }
+      
+      // OTP is valid - clean up and return success
+      const userData = otpData.userData;
+      delete global.otpStore[mobileNumber];
+      
+      // In a real app, you might create a user here or sign them in
+      
+      return res.status(200).json({ 
+        message: "OTP verified successfully",
+        user: userData
+      });
+    } catch (error) {
+      console.error("Error verifying OTP:", error);
+      res.status(500).json({ message: "Failed to verify OTP" });
     }
   });
 

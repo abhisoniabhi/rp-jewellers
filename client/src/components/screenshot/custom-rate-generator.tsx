@@ -41,7 +41,7 @@ interface CustomRateGeneratorProps {
 
 export function CustomRateGenerator({ rates }: CustomRateGeneratorProps) {
   const [open, setOpen] = useState(false);
-  const [shopName, setShopName] = useState("RP Jewellers"); // Editable shop name
+  const shopName = "RP Jewellers"; // Fixed shop name
   const [shopContact, setShopContact] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
@@ -174,20 +174,7 @@ export function CustomRateGenerator({ rates }: CustomRateGeneratorProps) {
           </TabsList>
           
           <TabsContent value="settings" className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="shop-name" className="flex items-center gap-2">
-                <Edit className="h-4 w-4" />
-                <span>Shop Name</span>
-              </Label>
-              <Input 
-                id="shop-name" 
-                value={shopName}
-                onChange={(e) => setShopName(e.target.value)}
-                placeholder="Your Jewelry Shop Name" 
-                className="border-amber-200 focus-visible:ring-amber-500"
-              />
-              <p className="text-xs text-gray-500">This name will appear on your rate poster</p>
-            </div>
+
             
             <div className="space-y-2">
               <Label htmlFor="shop-contact">Shop Address</Label>

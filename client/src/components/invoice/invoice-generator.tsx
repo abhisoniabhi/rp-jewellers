@@ -208,7 +208,7 @@ export function InvoiceGenerator({ product, collection, rates }: InvoiceGenerato
             
             ctx.font = '14px Arial';
             ctx.fillText(`Category: ${product.category || 'N/A'}`, 160, currentY + 50);
-            ctx.fillText(`Type: ${product.karatType || 'N/A'}`, 160, currentY + 75);
+            // Remove karatType reference - no longer displaying
             if (collection) {
               ctx.fillText(`Collection: ${collection.name}`, 160, currentY + 100);
             }

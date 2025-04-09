@@ -181,7 +181,7 @@ export default function ProductDetailPage() {
               {/* Price and details in a flex container */}
               <div className="mt-2 flex justify-between items-center">
                 <div>
-                  <p className="text-lg font-bold text-amber-600">{product.price}%</p>
+                  <p className="text-base font-bold text-amber-600">{product.price}%</p>
                   <div className="flex flex-wrap gap-1 mt-1">
                     {product.weight > 0 && (
                       <Badge variant="outline" className="bg-blue-50 border-blue-200 text-blue-800 text-[10px]">

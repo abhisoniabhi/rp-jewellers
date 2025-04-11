@@ -3,8 +3,10 @@ services:
     name: rp-jewellers
     env: node
     region: singapore # Choose a region closest to your users
-    buildCommand: npm install && npm run build && chmod +x scripts/build.sh && ./scripts/build.sh
-    startCommand: NODE_ENV=production node dist/index.js
+    buildCommand: npm install && npm run build
+    startCommand: >
+      node scripts/render-pre-deploy.js &&
+      NODE_ENV=production node dist/index.js
     envVars:
       - key: NODE_ENV
         value: production

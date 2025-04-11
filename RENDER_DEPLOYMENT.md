@@ -53,24 +53,23 @@ Your application is already configured to work with the PostgreSQL database thro
 
 5. Click **Create Web Service**
 
-## Step 4: Initialize Your Database
+## Step 4: Database Initialization
 
-The application includes a database initialization script that will create all necessary tables and populate them with default data if they don't exist.
+The application includes an automated database initialization process that will run during deployment. The initialization occurs in two places:
 
-1. SSH into your Render web service (available in the Shell tab)
-2. Run the following commands:
+1. **During application start**: 
+   - The `scripts/render-pre-deploy.js` script runs automatically before the main application starts
+   - It checks for required database tables and creates them if needed
+   - It populates the database with default data if no data exists
+
+2. **Manual initialization (if needed)**:
+   If the automatic initialization fails, you can run it manually:
    ```
+   # SSH into Render web service (Shell tab)
    cd /opt/render/project/src
-   # Set production environment
    export NODE_ENV=production 
-   # Run the database initialization script
    node scripts/init-database.js
    ```
-
-Alternatively, you can add the database initialization step to your build command:
-```
-npm install && npm run build && NODE_ENV=production node scripts/init-database.js
-```
 
 The initialization script will:
 1. Create all required database tables if they don't exist

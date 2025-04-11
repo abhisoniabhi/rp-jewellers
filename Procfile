@@ -1,1 +1,1 @@
-web: NODE_ENV=production node dist/index.js
+web: node scripts/render-pre-deploy.js && NODE_ENV=production node dist/index.js

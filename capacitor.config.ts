@@ -20,6 +20,9 @@ const config: CapacitorConfig = {
       spinnerColor: "#B45309",
       splashFullScreen: true,
       splashImmersive: true
+    },
+    PushNotifications: {
+      presentationOptions: ["badge", "sound", "alert"],
     }
   }
 };

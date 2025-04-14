@@ -8,8 +8,11 @@ import LoginPage from "@/pages/login-page";
 import CollectionDetailPage from "@/pages/collection-detail-page";
 import ProductDetailPage from "@/pages/product-detail-page";
 import OrderPage from "@/pages/order-page";
+import FirebaseLoginPage from "@/pages/firebase-login-page";
+import NotificationsPage from "@/pages/notifications-page";
 import { ProtectedRoute } from "./lib/protected-route";
 import { NotificationProvider } from "@/hooks/use-notifications";
+import { AuthProvider } from "@/hooks/use-auth";
 
 function Router() {
   return (
@@ -18,6 +21,8 @@ function Router() {
       <Route path="/admin" component={AdminPage} />
       <Route path="/auth" component={AuthPage} />
       <Route path="/login" component={LoginPage} />
+      <Route path="/firebase-login" component={FirebaseLoginPage} />
+      <Route path="/notifications" component={NotificationsPage} />
       <Route path="/collections/:id" component={CollectionDetailPage} />
       <Route path="/products/:productId" component={ProductDetailPage} />
       <Route path="/order" component={OrderPage} />
@@ -30,10 +35,12 @@ function Router() {
 function App() {
   return (
     <>
-      <NotificationProvider>
-        <Router />
-        <Toaster />
-      </NotificationProvider>
+      <AuthProvider>
+        <NotificationProvider>
+          <Router />
+          <Toaster />
+        </NotificationProvider>
+      </AuthProvider>
     </>
   );
 }

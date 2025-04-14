@@ -19,6 +19,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useLocation } from 'wouter';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { InfoIcon } from 'lucide-react';
 
 const FirebaseLoginPage: React.FC = () => {
   const { toast } = useToast();
@@ -62,6 +64,11 @@ const FirebaseLoginPage: React.FC = () => {
       setLocation('/');
     } catch (error: any) {
       console.error('Login error:', error);
+      toast({
+        title: "Login failed",
+        description: error.message || "Please check your credentials and try again",
+        variant: "destructive",
+      });
     } finally {
       setIsLoggingIn(false);
     }
@@ -91,9 +98,18 @@ const FirebaseLoginPage: React.FC = () => {
     setIsLoggingIn(true);
     try {
       await emailSignUp(email, password);
+      toast({
+        title: "Account created",
+        description: "Your new account has been created successfully!",
+      });
       setLocation('/');
     } catch (error: any) {
       console.error('Signup error:', error);
+      toast({
+        title: "Signup failed",
+        description: error.message || "There was an error creating your account",
+        variant: "destructive",
+      });
     } finally {
       setIsLoggingIn(false);
     }
@@ -121,8 +137,17 @@ const FirebaseLoginPage: React.FC = () => {
       // The 'recaptcha-container' div must exist in the DOM
       await phoneLogin(formattedPhoneNumber, 'recaptcha-container');
       setIsOtpSent(true);
+      toast({
+        title: "OTP Sent",
+        description: `Verification code has been sent to ${formattedPhoneNumber}`,
+      });
     } catch (error: any) {
       console.error('Phone login error:', error);
+      toast({
+        title: "Failed to send OTP",
+        description: error.message || "Please check your phone number and try again",
+        variant: "destructive",
+      });
     } finally {
       setIsSendingOtp(false);
     }
@@ -143,22 +168,38 @@ const FirebaseLoginPage: React.FC = () => {
     setIsVerifyingOtp(true);
     try {
       await confirmOtp(otp);
+      toast({
+        title: "Authentication successful",
+        description: "You have been logged in successfully!",
+      });
       setLocation('/');
     } catch (error: any) {
       console.error('OTP verification error:', error);
+      toast({
+        title: "Verification failed",
+        description: error.message || "Invalid verification code. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsVerifyingOtp(false);
     }
   };
-  
-  // Redirect if already logged in
-  if (firebaseUser && !firebaseLoading) {
-    setLocation('/');
-    return null;
-  }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background px-4">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-background px-4 py-8">
+      <div className="w-full max-w-md mb-6 text-center">
+        <h1 className="text-3xl font-bold mb-2">RP Jewellers</h1>
+        <p className="text-muted-foreground">Sign in to access your account</p>
+      </div>
+      
+      <Alert className="mb-6 max-w-md">
+        <InfoIcon className="h-4 w-4" />
+        <AlertDescription>
+          This is a demo version with placeholder Firebase credentials.
+          You'll need to update with real credentials in <code className="text-xs font-mono">firebase.ts</code>.
+        </AlertDescription>
+      </Alert>
+      
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Sign In</CardTitle>
@@ -200,6 +241,7 @@ const FirebaseLoginPage: React.FC = () => {
                   <Button 
                     onClick={handleEmailLogin} 
                     disabled={isLoggingIn}
+                    className="bg-amber-600 hover:bg-amber-700"
                   >
                     {isLoggingIn ? 'Signing in...' : 'Sign in with Email'}
                   </Button>
@@ -229,15 +271,16 @@ const FirebaseLoginPage: React.FC = () => {
                         value={phoneNumber}
                         onChange={(e) => setPhoneNumber(e.target.value)}
                       />
+                      <p className="text-xs text-muted-foreground">Include country code (e.g., +91 for India)</p>
                     </div>
                     
                     {/* This div is needed for the reCAPTCHA */}
-                    <div id="recaptcha-container"></div>
+                    <div id="recaptcha-container" className="flex justify-center"></div>
                     
                     <Button 
                       onClick={handlePhoneLogin} 
                       disabled={isSendingOtp}
-                      className="w-full"
+                      className="w-full bg-amber-600 hover:bg-amber-700"
                     >
                       {isSendingOtp ? 'Sending code...' : 'Send verification code'}
                     </Button>
@@ -254,12 +297,13 @@ const FirebaseLoginPage: React.FC = () => {
                         value={otp}
                         onChange={(e) => setOtp(e.target.value)}
                       />
+                      <p className="text-xs text-muted-foreground">Enter the 6-digit code sent to your phone</p>
                     </div>
                     <div className="flex flex-col space-y-2">
                       <Button 
                         onClick={handleVerifyOtp} 
                         disabled={isVerifyingOtp}
-                        className="w-full"
+                        className="w-full bg-amber-600 hover:bg-amber-700"
                       >
                         {isVerifyingOtp ? 'Verifying...' : 'Verify code'}
                       </Button>
@@ -277,9 +321,9 @@ const FirebaseLoginPage: React.FC = () => {
             </TabsContent>
           </Tabs>
         </CardContent>
-        <CardFooter className="flex justify-center">
+        <CardFooter className="flex flex-col items-center gap-2">
           <p className="text-sm text-muted-foreground">
-            Secure login powered by Firebase
+            Secure authentication powered by Firebase
           </p>
         </CardFooter>
       </Card>

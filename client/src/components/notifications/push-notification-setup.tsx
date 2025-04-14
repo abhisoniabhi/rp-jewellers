@@ -52,40 +52,55 @@ const PushNotificationSetup: React.FC = () => {
         await PushNotifications.register();
       }
 
-      // Add listeners for push events
-      PushNotifications.addListener('registration', (token: Token) => {
-        console.log('Push registration success, token:', token.value);
-        toast({
-          title: 'Push Notifications Enabled',
-          description: 'Successfully registered for push notifications'
-        });
-      });
-
-      PushNotifications.addListener('registrationError', (error: any) => {
-        console.error('Error on registration:', error);
-        toast({
-          title: 'Registration Failed',
-          description: 'Failed to register for push notifications',
-          variant: 'destructive'
-        });
-      });
-
-      PushNotifications.addListener('pushNotificationReceived', (notification: PushNotificationSchema) => {
-        console.log('Push notification received:', notification);
-        setNotificationsList(prev => [...prev, notification]);
-        toast({
-          title: notification.title || 'New notification',
-          description: notification.body || 'You received a notification'
-        });
-      });
-
-      PushNotifications.addListener('pushNotificationActionPerformed', (action: ActionPerformed) => {
-        console.log('Push notification action performed:', action);
-      });
+      // Event handlers are defined outside
     } catch (error) {
       console.error('Error initializing push notifications:', error);
     }
   };
+  
+  // Add push notification event listeners
+  useEffect(() => {
+    if (!isCapacitorAvailable) return;
+    
+    // Add listeners for push events
+    const registrationListener = PushNotifications.addListener('registration', (token: Token) => {
+      console.log('Push registration success, token:', token.value);
+      toast({
+        title: 'Push Notifications Enabled',
+        description: 'Successfully registered for push notifications'
+      });
+    });
+
+    const errorListener = PushNotifications.addListener('registrationError', (error: any) => {
+      console.error('Error on registration:', error);
+      toast({
+        title: 'Registration Failed',
+        description: 'Failed to register for push notifications',
+        variant: 'destructive'
+      });
+    });
+
+    const notificationListener = PushNotifications.addListener('pushNotificationReceived', (notification: PushNotificationSchema) => {
+      console.log('Push notification received:', notification);
+      setNotificationsList(prev => [...prev, notification]);
+      toast({
+        title: notification.title || 'New notification',
+        description: notification.body || 'You received a notification'
+      });
+    });
+
+    const actionListener = PushNotifications.addListener('pushNotificationActionPerformed', (action: ActionPerformed) => {
+      console.log('Push notification action performed:', action);
+    });
+    
+    // Cleanup listeners when component unmounts
+    return () => {
+      registrationListener.remove();
+      errorListener.remove();
+      notificationListener.remove();
+      actionListener.remove();
+    };
+  }, [isCapacitorAvailable, toast]);
 
   // Request notifications permission using Firebase (for web)
   const handleRequestPermission = async () => {

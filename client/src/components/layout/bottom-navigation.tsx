@@ -7,7 +7,7 @@ export function BottomNavigation() {
   
   const auth = useAuth();
   const user = auth?.user || null;
-  const { firebaseUser } = useAuth();
+  const firebaseUser = auth?.firebaseUser || null;
   
   return (
     <nav className="bg-gradient-to-r from-amber-600 to-amber-700 text-white shadow-lg fixed bottom-0 left-0 right-0 z-50">
